@@ -1,6 +1,7 @@
 /*
- * Titles, creators and tags for recipe files bundled from recipes/community/,
- * derived from their path in github.com/shouryan01/Nikon-Recipes:
+ * Titles, creators and tags for downloaded community recipe files, derived from
+ * their path. SerbanJPG files are flat "<Name-With-Dashes>.np3"; the rest follow
+ * github.com/shouryan01/Nikon-Recipes:
  *   Nikon Creators/<Recipe>_<Creator>.NP3
  *   Color Grading/<Recipe>.NP3
  *   NikonPC/<Recipe>.NP3
@@ -17,10 +18,17 @@ export interface CommunityMeta {
 const isMono = (s: string) =>
   /b&w/i.test(s) || /BW(?![a-z])/.test(s) || /(^|[^a-z])bw([^a-z]|$)/i.test(s) || /mono|tri-?x|ilford|acros|t-?max|achromic|noir/i.test(s);
 
-export function describeCommunityFile(relPath: string): CommunityMeta {
+export function describeCommunityFile(relPath: string, sourceId = "shouryan01"): CommunityMeta {
   const parts = relPath.split("/");
   const file = parts[parts.length - 1];
   let title = file.replace(/\.np3$/i, "").trim();
+  if (sourceId === "serbanjpg") {
+    // "Modern-Chrome-Std" → "Modern Chrome Std", "Onipan-HC--R" → "Onipan HC R"
+    title = title.replace(/-+/g, " ").trim();
+    const tags = ["serbanjpg", "film"];
+    if (isMono(title) || /\bB W\b/.test(title)) tags.push("mono");
+    return { title, creator: "SerbanJPG", tags };
+  }
   const collection = parts[0];
   const tags: string[] = [];
   let creator: string | undefined;

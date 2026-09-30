@@ -26,7 +26,7 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 | **넣기·빼기·이름 바꾸기** | **＋ 레시피 넣기**로 여러 개를 한 번에 넣습니다. 번호(`PICCON01.NP3`…)는 자동으로 매기고 겹치지 않게 합니다. 카메라에 보일 이름을 바꿀 수 있고, 빼기는 휴지통으로 옮겨서 **되돌리기**가 됩니다. |
 | **나만의 필터 라이브러리** | 레시피마다 그 레시피로 찍은 내 사진을 모아 갤러리로 봅니다. 니콘 사진을 창에 끌어다 놓으면 사진 정보에 기록된 Picture Control 이름으로 레시피를 찾아 **자동으로 정리**합니다. 사진이 있는 레시피는 대표 사진으로 표시되고 **📷 내 사진** 필터로 모아 볼 수 있습니다. |
 | **자동 백업** | 카드에서 처음 보는 레시피는 내 레시피에 자동으로 보관합니다. 카드를 포맷해도 레시피가 남습니다. |
-| **커뮤니티 레시피 200여 개** | Nikon 크리에이터 · Nikon 컬러 그레이딩 · 독립 크리에이터의 레시피를 원본 저장소에서 바로 받습니다. 레시피마다 크리에이터와 원본 링크가 표시됩니다. |
+| **커뮤니티 레시피 260여 개** | Nikon 크리에이터 · Nikon 컬러 그레이딩 · 독립 크리에이터 · SerbanJPG 필름 레시피를 원본 저장소에서 바로 받습니다. 업데이트할 때는 바뀐 파일만 받습니다. 레시피마다 크리에이터·원본 링크와 함께 **설명·컨셉·추천 장면**이 표시되고 검색됩니다. |
 | **미리보기 비교** | 풍경·피부톤·야경·컬러 차트나 내 사진 위에서 원본/적용을 슬라이더로 비교합니다. 레시피 수치로 계산한 근사치입니다. |
 | **플렉시블 에디터** | 샤프닝, 명료도, 톤, 채도, 컬러 블렌더 8색, 컬러 그레이딩 3구간, 톤 커브(최대 20점)를 조절해 나만의 `.NP3`를 만듭니다. |
 | **Reddit·텍스트 가져오기** | 커뮤니티에 글로 공유된 수치를 붙여넣으면 레시피 여러 개를 자동으로 나눠 가져옵니다(한국어·영어). |
@@ -62,7 +62,7 @@ xattr -cr "/Applications/NP3 Lab.app"
 
 ## 저작권과 레시피 출처
 
-- 커뮤니티 레시피의 출처는 [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes)입니다. 레시피의 저작권은 **Nikon과 각 크리에이터**에게 있습니다.
+- 커뮤니티 레시피의 출처는 [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes)와 [SerbanJPG](https://serbanjpg.com)([vanlong20it/recipe-note](https://github.com/vanlong20it/recipe-note) 경유)이고, 레시피 설명은 [Timor88/NikonNP3](https://github.com/Timor88/NikonNP3)를 참고했습니다. 자세한 내용은 [NOTICE.md](NOTICE.md)를 보세요. 레시피의 저작권은 **Nikon과 각 크리에이터**에게 있습니다.
 - 원본 저장소에는 라이선스가 없어서, NP3 Lab은 레시피 파일을 **이 저장소와 배포 파일에 넣지 않습니다.** 사용자가 앱에서 버튼을 누르면 원본 저장소에서 직접 받아 자신의 컴퓨터에만 저장합니다.
 - 받은 레시피는 개인 용도로 쓰고, 공유할 때는 크리에이터를 밝혀 주세요.
 - 크리에이터나 저장소 관리자께서 제외를 원하시면 [이슈](https://github.com/MJ-best/np3-lab/issues)를 남겨 주세요.
@@ -103,7 +103,7 @@ npm run build      # dist/NP3-Lab.html 브라우저판
 
 - 직접 만든 레시피를 기본으로 넣으려면 `recipes/`에 JSON이나 `.NP3`를 두세요. 형식은 [recipes/README.md](recipes/README.md)를 보세요.
 - 미리보기 사진을 바꾸려면 `samples/`에 사진을 넣으세요. [samples/README.md](samples/README.md)를 보세요.
-- 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
+- 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기·증분 업데이트), `src/data/recipeNotes.ts`(레시피 설명), `src/look.ts`(수치로 컨셉 분석), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
 - 버그 제보와 PR 환영합니다. Windows 지원(꺼내기, 안내 문구)은 도움이 필요한 부분입니다.
 
 ## 라이선스
@@ -119,7 +119,7 @@ npm run build      # dist/NP3-Lab.html 브라우저판
 - **Insert the SD card and it opens by itself.** You see the recipes in `NIKON/CUSTOMPC` with previews. You can add recipes (numbered `PICCON01.NP3`… automatically), rename them (the name shown on the camera), remove them to the Trash with Undo, and eject. The app waits in the menu bar and starts at login.
 - **Automatic backup:** recipes found on a card are saved to My recipes.
 - **Your own filter library:** keep the photos you shot with each recipe as its gallery. Drop Nikon JPEGs on the window and they're filed under the recipe named in their EXIF automatically.
-- **200+ community recipes:** Nikon creators, Nikon color grading presets and independent creators, downloaded in the app from [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes). Each recipe shows its creator and a link to the original file.
+- **260+ community recipes:** Nikon creators, Nikon color grading presets, independent creators and [SerbanJPG](https://serbanjpg.com) film recipes, downloaded in the app from [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes) and [vanlong20it/recipe-note](https://github.com/vanlong20it/recipe-note). Updates only fetch changed files. Each recipe shows its creator, a link to the original file, and a searchable description, concept and recommended use (notes based on [Timor88/NikonNP3](https://github.com/Timor88/NikonNP3)).
 - **Editor, before/after preview, Reddit/text import, per-model camera instructions** (Zf, Z6III, Z5II, Z50II, ZR, Z8, Z9).
 
 **Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repository has no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).

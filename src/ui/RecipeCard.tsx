@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { t, tagLabel, tx } from "../i18n";
+import { lookOf } from "../look";
 import type { Recipe } from "../np3/recipe";
 import { renderThumbnail, type PreparedSource } from "../render/renderer";
 import { photosByRecipe } from "../photos";
@@ -70,6 +71,9 @@ export function RecipeCard({ recipe, source }: { recipe: Recipe; source: Prepare
           </button>
           <CardButton recipe={recipe} className="add-btn" />
         </div>
+        {(recipe.description || recipe.params) && (
+          <p class="card-desc">{recipe.description ? tx(recipe.description) : tx(lookOf(recipe.params!, recipe.tags.includes("mono")).summary)}</p>
+        )}
         <div class="card-meta">
           <code>{recipe.npName}</code>
           {recipe.tags.slice(0, 3).map((tag) => (

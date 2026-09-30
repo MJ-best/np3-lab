@@ -15,6 +15,7 @@ import {
   showToast,
 } from "../state";
 import { communityInfo } from "../community";
+import { lookOf } from "../look";
 import { photosByRecipe } from "../photos";
 import { CommunityPanel } from "./CommunityPanel";
 import { usePreparedSample } from "./hooks";
@@ -44,7 +45,10 @@ export function Gallery() {
     if ((filter === "reddit" || filter === "imaging-cloud") && r.origin?.kind !== filter) return false;
     if (filter.startsWith("tag:") && !r.tags.includes(filter.slice(4))) return false;
     if (!query.trim()) return true;
-    const hay = [tx(r.title), r.npName, ...r.tags.map(tagLabel), tx(r.description)].join(" ").toLowerCase();
+    const look = r.params ? lookOf(r.params, r.tags.includes("mono")).summary : undefined;
+    const hay = [tx(r.title), r.npName, r.author, ...r.tags.map(tagLabel), tx(r.description), tx(r.use), look?.ko, look?.en]
+      .join(" ")
+      .toLowerCase();
     return hay.includes(query.trim().toLowerCase());
   });
 

@@ -12,6 +12,7 @@ import {
   type RecipeParams,
 } from "../np3/recipe";
 import { formatRecipeText } from "../np3/textFormat";
+import { lookOf } from "../look";
 import { downloadBytes } from "../pack/download";
 import { fileBaseFor } from "../pack/naming";
 import {
@@ -102,6 +103,40 @@ function OriginInfo({ recipe }: { recipe: Recipe }) {
         </button>
       )}
     </div>
+  );
+}
+
+/** Concept (read from the values), recommended scenes and release date. */
+function RecipeNotes({ recipe }: { recipe: Recipe }) {
+  const look = recipe.params ? lookOf(recipe.params, recipe.tags.includes("mono")) : null;
+  if (!look && !recipe.use && !recipe.released) return null;
+  return (
+    <dl class="notes">
+      {look && (
+        <div>
+          <dt>{t("lookConcept")}</dt>
+          <dd title={t("lookAuto")}>{tx(look.summary)}</dd>
+        </div>
+      )}
+      {recipe.use && (
+        <div>
+          <dt>{t("recommendedUse")}</dt>
+          <dd>{tx(recipe.use)}</dd>
+        </div>
+      )}
+      {recipe.released && (
+        <div>
+          <dt>{t("releasedOn")}</dt>
+          <dd>{recipe.released}</dd>
+        </div>
+      )}
+      {recipe.noteCredit && (
+        <div>
+          <dt>{t("noteSource")}</dt>
+          <dd class="muted">{recipe.noteCredit}</dd>
+        </div>
+      )}
+    </dl>
   );
 }
 
@@ -205,6 +240,7 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
           {t("cameraName")}: <code>{recipe.npName}</code>
         </p>
         {recipe.description && <p class="detail-desc">{tx(recipe.description)}</p>}
+        <RecipeNotes recipe={recipe} />
         <OriginInfo recipe={recipe} />
         {recipe.tags.length > 0 && (
           <div class="card-meta">

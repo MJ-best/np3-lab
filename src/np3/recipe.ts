@@ -32,6 +32,12 @@ export interface Recipe {
   /** Name stored inside the NP3 file and shown on the camera (ASCII, max 19). */
   npName: string;
   description?: LocalizedText;
+  /** Scenes the recipe suits ("portraits · street"), from the creator's listing. */
+  use?: LocalizedText;
+  /** Release date (YYYY-MM-DD) from the creator's listing. */
+  released?: string;
+  /** Where the description comes from, when it isn't the recipe's own author. */
+  noteCredit?: string;
   tags: string[];
   author?: string;
   /** Parsed parameters; null when the file could not be understood (still packable via `raw`). */
