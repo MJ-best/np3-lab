@@ -317,7 +317,10 @@ export async function downloadCommunityRecipes(force = false): Promise<Recipe[] 
   return recipes;
 }
 
-export const isCommunityRecipe = (r: Recipe) => r.id.startsWith("community:");
+// A function declaration (hoisted): the stored recipes are counted per source at module load.
+export function isCommunityRecipe(r: Recipe): boolean {
+  return r.id.startsWith("community:");
+}
 
 /** Which source a community recipe came from (see recipeId). */
 export function communitySourceOf(r: Recipe): string | undefined {

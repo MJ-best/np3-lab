@@ -14,7 +14,7 @@
 | `04-night.jpg` | 야경 / Night |
 | `05-food.jpg` | 음식 / Food |
 
-그 밖에 인식하는 단어: `landscape`, `nature`, `street`, `product`, `sunset`, `snow`, `studio`, `people`, `cafe`.
+그 밖에 인식하는 단어: `landscape`, `nature`, `street`, `city`, `product`, `sunset`, `snow`, `studio`, `people`, `cafe`.
 
 ## 권장 규격
 
@@ -23,3 +23,8 @@
 - 공개 저장소에 올릴 때는 직접 찍었거나 재배포 권한이 있는 사진만 넣으세요. 인물 사진은 초상권 동의가 필요합니다.
 
 사진이 하나도 없으면 앱이 직접 그린 테스트 장면(풍경·피부톤·야경·컬러 차트)을 대신 씁니다.
+
+## 들어 있는 사진 / Included photos
+
+`01-city`, `02-nature`, `03-indoor`, `04-night`는 프로젝트 작성자(MJ-best)가 직접 찍은 사진으로, 이 프로젝트의 미리보기용으로 제공되었습니다. 위치·기기·작성자 정보 등 메타데이터는 모두 지웠습니다. `02-nature`와 `03-indoor`는 Zf에서 PinkWater_HYEYA 레시피로 찍은 JPEG라 완전한 중립 원본은 아닙니다.
+Photos by the project author (MJ-best), provided for previews in this project; all metadata removed. `02-nature` and `03-indoor` were shot on a Zf with the PinkWater_HYEYA recipe, so they aren't neutral originals. Please don't reuse them outside this project.

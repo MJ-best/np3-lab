@@ -124,6 +124,19 @@ describe("community downloads", () => {
     expect(JSON.parse(mem.get("nikonpclab.community2")!).v).toBe(2);
   });
 
+  it("loads the saved store at startup", async () => {
+    serve({
+      "shouryan01/Nikon-Recipes": { commit: "3".repeat(40), files: { "Nikon Creators/MOSS_Nagisa.NP3": np3("MOSS") } },
+      "vanlong20it/recipe-note": { commit: "4".repeat(40), files: { "assets/presets/serbanjpg/Juniper.np3": np3("Juniper") } },
+    });
+    await (await import("../src/community")).downloadCommunityRecipes();
+    // A fresh start reads the v2 store while the module is still initialising.
+    vi.resetModules();
+    const community = await import("../src/community");
+    expect(community.storedCommunityRecipes).toHaveLength(2);
+    expect(community.communityInfo.value!.sources.map((s) => s.count)).toEqual([1, 1]);
+  });
+
   it("keeps a source it couldn't reach", async () => {
     const repos: Record<string, Repo> = {
       "shouryan01/Nikon-Recipes": { commit: "f".repeat(40), files: { "NikonPC/Kodachrome.NP3": np3("Kodachrome") } },

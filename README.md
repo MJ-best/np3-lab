@@ -70,6 +70,7 @@ xattr -cr "/Applications/NP3 Lab.app"
 ## 알아둘 점
 
 - **미리보기는 근사치입니다.** 니콘의 실제 처리 엔진이 아니라 레시피 수치로 계산한 결과입니다.
+- **실기 검증:** Nikon Zf(펌웨어 3.01)에서 이 앱으로 카드에 넣은 NP3를 사진 촬영 메뉴 › Picture Control 관리 › 저장/편집으로 등록할 수 있음을 확인했습니다. Zf로 찍은 JPEG를 끌어다 놓으면 사진 정보(EXIF)로 촬영에 쓴 레시피를 찾아 정리하는 기능도 실제 파일로 확인했습니다. 다른 기종에서 확인하셨다면 이슈로 알려 주세요.
 - NP3 쓰기는 커뮤니티가 역공학한 라이브러리를 사용합니다. 직접 만든 레시피는 중요한 촬영 전에 카메라에서 먼저 확인하세요. 카드에서 읽거나 커뮤니티에서 받은 파일은 원본 바이트 그대로 씁니다.
 - NP3 형식상 톤 커브를 쓰면 콘트라스트·하이라이트·섀도·화이트/블랙 레벨은 저장되지 않습니다.
 
@@ -122,12 +123,14 @@ npm run build      # dist/NP3-Lab.html 브라우저판
 - **260+ community recipes:** Nikon creators, Nikon color grading presets, independent creators and [SerbanJPG](https://serbanjpg.com) film recipes, downloaded in the app from [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes) and [vanlong20it/recipe-note](https://github.com/vanlong20it/recipe-note). Updates only fetch changed files. Each recipe shows its creator, a link to the original file, and a searchable description, concept and recommended use (notes based on [Timor88/NikonNP3](https://github.com/Timor88/NikonNP3)).
 - **Editor, before/after preview, Reddit/text import, per-model camera instructions** (Zf, Z6III, Z5II, Z50II, ZR, Z8, Z9).
 
-**Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repository has no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).
+**Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repositories have no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).
 
 **Install:** download the DMG from [Releases](https://github.com/MJ-best/np3-lab/releases) and drag the app to Applications. It's unsigned, so right-click → Open the first time, or run `xattr -cr "/Applications/NP3 Lab.app"`.
 
 **Loading on the camera:**
 - **Zf:** MENU → Photo shooting menu → Manage Picture Control → Save/edit
 - **Z6III, Z5II, Z50II, ZR, Z8, Z9:** MENU → Photo shooting menu → Manage Picture Control → Load/save → Copy to camera
+
+**Tested on hardware:** on a Nikon Zf (firmware 3.01), NP3 files put on the card by this app register via Save/edit, and Zf JPEGs dropped on the window are filed under the recipe in their EXIF. If you've tried another model, please let us know in an issue.
 
 Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, references and trademarks.

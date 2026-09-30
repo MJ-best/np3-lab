@@ -27,6 +27,7 @@ const SCENE_LABELS: Record<string, { ko: string; en: string }> = {
   cafe: { ko: "카페", en: "Cafe" },
   night: { ko: "야경", en: "Night" },
   street: { ko: "거리", en: "Street" },
+  city: { ko: "도시", en: "City" },
   food: { ko: "음식", en: "Food" },
   product: { ko: "제품", en: "Product" },
   sunset: { ko: "노을", en: "Sunset" },
