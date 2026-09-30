@@ -31,6 +31,7 @@ import { usePreparedSample } from "./hooks";
 import { badgeClass, sourceBadge } from "./RecipeCard";
 import { cardRecipeById } from "../cards";
 import { CardButton } from "./CardButton";
+import { RecipePhotos } from "./RecipePhotos";
 import { SceneChips } from "./SceneChips";
 import { formatValue } from "./Slider";
 
@@ -190,6 +191,7 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
           <div class="no-preview">{t("noPreview")}</div>
         )}
         <p class="hint">{t("approxPreview")}</p>
+        {inLibrary && <RecipePhotos recipeId={recipe.id} />}
       </div>
       <aside class="detail-info">
         <div class="detail-head">

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { t, tagLabel, tx } from "../i18n";
 import type { Recipe } from "../np3/recipe";
 import { renderThumbnail, type PreparedSource } from "../render/renderer";
+import { photosByRecipe } from "../photos";
 import { detailId } from "../state";
 import { CardButton } from "./CardButton";
 
@@ -28,6 +29,8 @@ export function RecipeCard({ recipe, source }: { recipe: Recipe; source: Prepare
   const [thumb, setThumb] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLElement>(null);
+  const photos = photosByRecipe.value[recipe.id] ?? [];
+  const cover = photos[0];
 
   useEffect(() => {
     const el = ref.current;
@@ -38,18 +41,25 @@ export function RecipeCard({ recipe, source }: { recipe: Recipe; source: Prepare
   }, []);
 
   useEffect(() => {
-    if (!source || !visible) return;
+    if (!source || !visible || cover) return;
     let alive = true;
     enqueue(() => renderThumbnail(source, recipe.params ?? null, 520)).then((url) => alive && setThumb(url));
     return () => {
       alive = false;
     };
-  }, [source, recipe.params, visible]);
+  }, [source, recipe.params, visible, !!cover]);
 
   return (
     <article class="card" ref={ref}>
       <button class="card-thumb" onClick={() => (detailId.value = recipe.id)} aria-label={tx(recipe.title)}>
-        {thumb ? <img src={thumb} alt="" draggable={false} /> : <div class="thumb-placeholder" />}
+        {cover ? (
+          <img src={cover.thumbUrl} alt="" draggable={false} />
+        ) : thumb ? (
+          <img src={thumb} alt="" draggable={false} />
+        ) : (
+          <div class="thumb-placeholder" />
+        )}
+        {photos.length > 0 && <span class="badge floating bottom photo-count">📷 {photos.length}</span>}
         <span class={`badge floating ${badgeClass(recipe)}`}>{sourceBadge(recipe)}</span>
         {!recipe.params && <span class="badge floating right warn">NP3</span>}
       </button>

@@ -15,13 +15,14 @@ import {
   showToast,
 } from "../state";
 import { communityInfo } from "../community";
+import { photosByRecipe } from "../photos";
 import { CommunityPanel } from "./CommunityPanel";
 import { usePreparedSample } from "./hooks";
 import { np3FromCard, np3FromFiles } from "./ImportDialog";
 import { RecipeCard } from "./RecipeCard";
 import { SceneChips } from "./SceneChips";
 
-type Filter = "all" | "mine" | "reddit" | "imaging-cloud" | `tag:${string}`;
+type Filter = "all" | "photos" | "mine" | "reddit" | "imaging-cloud" | `tag:${string}`;
 
 export function Gallery() {
   const [query, setQuery] = useState("");
@@ -38,6 +39,7 @@ export function Gallery() {
   const hasCloud = recipes.some((r) => r.origin?.kind === "imaging-cloud");
 
   const visible = recipes.filter((r) => {
+    if (filter === "photos" && !photosByRecipe.value[r.id]?.length) return false;
     if (filter === "mine" && r.source === "builtin") return false;
     if ((filter === "reddit" || filter === "imaging-cloud") && r.origin?.kind !== filter) return false;
     if (filter.startsWith("tag:") && !r.tags.includes(filter.slice(4))) return false;
@@ -104,6 +106,11 @@ export function Gallery() {
         {hasReddit && (
           <button class={`chip${filter === "reddit" ? " active" : ""}`} onClick={() => setFilter("reddit")}>
             {t("filterReddit")}
+          </button>
+        )}
+        {Object.keys(photosByRecipe.value).length > 0 && (
+          <button class={`chip${filter === "photos" ? " active" : ""}`} onClick={() => setFilter("photos")}>
+            📷 {t("filterPhotos")}
           </button>
         )}
         {hasCloud && (

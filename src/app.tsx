@@ -3,7 +3,8 @@ import { activeCard, startCardSync } from "./cards";
 import { lang, setLang, t, type MessageKey } from "./i18n";
 import { isDesktop } from "./native";
 import { webglAvailable } from "./render/renderer";
-import { addUserPhoto, cart, dismissToast, importSession, openImport, route, toasts, type Route } from "./state";
+import { addPhotos, loadPhotoIndex, matchRecipeByExif } from "./photos";
+import { addUserPhoto, allRecipes, cart, dismissToast, importSession, openImport, route, showToast, toasts, type Route } from "./state";
 import { Cart } from "./ui/Cart";
 import { CardView } from "./ui/CardView";
 import { Editor } from "./ui/Editor";
@@ -53,7 +54,19 @@ function useWindowDrop() {
       const files = Array.from(e.dataTransfer?.files ?? []);
       const np3 = await np3FromFiles(files);
       if (np3.length > 0) openImport(importSession.value?.mode ?? "file", np3);
-      for (const f of files.filter((f) => f.type.startsWith("image/"))) await addUserPhoto(f);
+      const images = files.filter((f) => f.type.startsWith("image/"));
+      const unmatched: File[] = [];
+      const matched = new Map<string, File[]>();
+      for (const f of images) {
+        const recipe = await matchRecipeByExif(f, allRecipes.value);
+        if (recipe) matched.set(recipe.id, [...(matched.get(recipe.id) ?? []), f]);
+        else unmatched.push(f);
+      }
+      let filed = 0;
+      for (const [id, list] of matched) filed += await addPhotos(id, list);
+      if (filed > 0) showToast(t("photosFiled", { n: filed, m: matched.size }), "ok", 6000);
+      // Anything we can't place becomes a preview scene, as before.
+      for (const f of unmatched) await addUserPhoto(f);
     };
     window.addEventListener("dragenter", enter);
     window.addEventListener("dragleave", leave);
@@ -75,6 +88,7 @@ export function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
     document.documentElement.lang = lang.value;
+    void loadPhotoIndex();
     if (isDesktop) {
       document.documentElement.classList.add("desktop");
       startCardSync();

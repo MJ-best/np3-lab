@@ -24,6 +24,7 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 | --- | --- |
 | **카드 자동 인식** | 카드를 꽂으면 메뉴 막대에서 기다리던 앱이 열리고 `NIKON/CUSTOMPC` 속 레시피를 미리보기와 함께 보여줍니다. 다른 브랜드 카드와 네트워크 드라이브는 무시합니다. |
 | **넣기·빼기·이름 바꾸기** | **＋ 레시피 넣기**로 여러 개를 한 번에 넣습니다. 번호(`PICCON01.NP3`…)는 자동으로 매기고 겹치지 않게 합니다. 카메라에 보일 이름을 바꿀 수 있고, 빼기는 휴지통으로 옮겨서 **되돌리기**가 됩니다. |
+| **나만의 필터 라이브러리** | 레시피마다 그 레시피로 찍은 내 사진을 모아 갤러리로 봅니다. 니콘 사진을 창에 끌어다 놓으면 사진 정보에 기록된 Picture Control 이름으로 레시피를 찾아 **자동으로 정리**합니다. 사진이 있는 레시피는 대표 사진으로 표시되고 **📷 내 사진** 필터로 모아 볼 수 있습니다. |
 | **자동 백업** | 카드에서 처음 보는 레시피는 내 레시피에 자동으로 보관합니다. 카드를 포맷해도 레시피가 남습니다. |
 | **커뮤니티 레시피 200여 개** | Nikon 크리에이터 · Nikon 컬러 그레이딩 · 독립 크리에이터의 레시피를 원본 저장소에서 바로 받습니다. 레시피마다 크리에이터와 원본 링크가 표시됩니다. |
 | **미리보기 비교** | 풍경·피부톤·야경·컬러 차트나 내 사진 위에서 원본/적용을 슬라이더로 비교합니다. 레시피 수치로 계산한 근사치입니다. |
@@ -117,6 +118,7 @@ npm run build      # dist/NP3-Lab.html 브라우저판
 
 - **Insert the SD card and it opens by itself.** You see the recipes in `NIKON/CUSTOMPC` with previews. You can add recipes (numbered `PICCON01.NP3`… automatically), rename them (the name shown on the camera), remove them to the Trash with Undo, and eject. The app waits in the menu bar and starts at login.
 - **Automatic backup:** recipes found on a card are saved to My recipes.
+- **Your own filter library:** keep the photos you shot with each recipe as its gallery. Drop Nikon JPEGs on the window and they're filed under the recipe named in their EXIF automatically.
 - **200+ community recipes:** Nikon creators, Nikon color grading presets and independent creators, downloaded in the app from [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes). Each recipe shows its creator and a link to the original file.
 - **Editor, before/after preview, Reddit/text import, per-model camera instructions** (Zf, Z6III, Z5II, Z50II, ZR, Z8, Z9).
 
