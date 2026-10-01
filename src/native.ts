@@ -13,6 +13,23 @@ export interface NativeCardFile {
   bytes: Uint8Array;
 }
 
+export interface ExportFile {
+  /** Relative folder, e.g. "Community/Nikon Creators". */
+  dir: string;
+  /** File name without extension. */
+  base: string;
+  bytes: Uint8Array;
+}
+
+export interface ExportResult {
+  written: number;
+  /** Saved with the date appended because a different file had the name. */
+  renamed: number;
+  /** Already exported with the same contents. */
+  unchanged: number;
+  failed: number;
+}
+
 /** An NP3 file found elsewhere on the computer (e.g. exported from NX Studio). */
 export interface LocalNp3File {
   name: string;
@@ -37,6 +54,11 @@ export interface NativeBridge {
   trashFile(cardPath: string, fileName: string): Promise<boolean>;
   eject(cardPath: string): Promise<boolean>;
   reveal(cardPath: string): Promise<boolean>;
+  /** Folder picker for exports; null if cancelled. Only chosen folders can be written. */
+  chooseExportFolder(defaultPath?: string): Promise<string | null>;
+  /** Write recipes under `folder`, never overwriting; unchanged files are skipped. */
+  exportRecipes(folder: string, files: ExportFile[]): Promise<ExportResult>;
+  revealExport(folder: string): Promise<boolean>;
   /** NP3 files on this computer, newest first; only those modified after `sinceMs` if given. */
   findLocalNp3(sinceMs?: number): Promise<LocalNp3File[]>;
   getSettings(): Promise<NativeSettings>;

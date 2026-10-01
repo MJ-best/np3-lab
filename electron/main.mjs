@@ -9,6 +9,7 @@ import { promisify } from "node:util";
 import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, shell } from "electron";
 import { LOGIN_FLAG, setMacLoginAgent } from "./loginItem.mjs";
 import { findLocalNp3 } from "./localNp3.mjs";
+import { exportRecipes } from "./exportFiles.mjs";
 import { CARD_FILESYSTEMS, isSafeNp3Name, looksLikeNikonCard, parseMacMounts, withTimeout } from "./volumes.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -293,6 +294,35 @@ ipcMain.handle("card:reveal", async (_e, cardPath) => {
   requireCard(cardPath);
   const dir = await customPcDir(cardPath, false);
   await shell.openPath(dir ?? cardPath);
+  return true;
+});
+
+// Export: the page may only write into folders the user picked in the dialog.
+const exportFolders = new Set();
+
+ipcMain.handle("export:choose-folder", async (_e, defaultPath) => {
+  const options = {
+    properties: ["openDirectory", "createDirectory"],
+    defaultPath: typeof defaultPath === "string" && existsSync(defaultPath) ? defaultPath : app.getPath("pictures"),
+  };
+  const r = win && !win.isDestroyed() ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options);
+  if (r.canceled || !r.filePaths[0]) return null;
+  exportFolders.add(r.filePaths[0]);
+  return r.filePaths[0];
+});
+
+ipcMain.handle("export:write", async (_e, folder, files) => {
+  if (!exportFolders.has(folder)) throw new Error("folder-not-chosen");
+  if (!Array.isArray(files)) throw new Error("invalid-files");
+  const valid = files.filter(
+    (f) => f && typeof f.dir === "string" && typeof f.base === "string" && f.bytes instanceof Uint8Array && f.bytes.length <= 64 * 1024,
+  );
+  return exportRecipes(folder, valid);
+});
+
+ipcMain.handle("export:reveal", async (_e, folder) => {
+  if (!exportFolders.has(folder)) throw new Error("folder-not-chosen");
+  await shell.openPath(folder);
   return true;
 });
 

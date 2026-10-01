@@ -17,6 +17,7 @@ import {
 import { communityInfo } from "../community";
 import { lookOf } from "../look";
 import { importFromThisMac } from "../localNp3";
+import { exportAllRecipes } from "../exportAll";
 import { photosByRecipe } from "../photos";
 import { CommunityPanel } from "./CommunityPanel";
 import { usePreparedSample } from "./hooks";
@@ -149,6 +150,10 @@ export function Gallery() {
       {communityInfo.value && <CommunityPanel />}
 
       <div class="backup-row">
+        <button class="link" onClick={() => void exportAllRecipes()}>
+          {t("exportAll")}
+        </button>
+        <span aria-hidden="true">·</span>
         <button class="link" onClick={() => downloadText(exportBackup(), "np3-lab-backup.json")}>
           {t("backupExport")}
         </button>
