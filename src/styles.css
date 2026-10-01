@@ -218,21 +218,17 @@ code,
   padding: 5px 12px;
   font-size: 12.5px;
 }
-select.lang {
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  color: var(--text);
-  font: inherit;
-  font-size: 12.5px;
-  border: 1px solid var(--line);
-  background: var(--panel-2)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a3a3a3' stroke-width='1.5'/%3E%3C/svg%3E")
-    no-repeat right 10px center;
-  padding: 5px 26px 5px 12px;
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
-select.lang:hover {
-  background-color: var(--panel-3);
+.setting-row .segmented {
+  margin-bottom: 0;
 }
 /* Japanese glyphs (kanji shapes differ from Korean fonts). */
 html[lang="ja"] {
@@ -1601,9 +1597,6 @@ html.desktop .topbar input {
   accent-color: var(--accent);
   width: 16px;
   height: 16px;
-}
-.dialog.settings .segmented {
-  margin-top: 12px;
 }
 .badge.card {
   background: rgba(87, 207, 138, 0.14);

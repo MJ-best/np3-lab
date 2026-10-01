@@ -21,31 +21,49 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             ✕
           </button>
         </div>
-        <label class="toggle">
-          <input type="checkbox" checked={autoBackup.value} onChange={(e) => setAutoBackup(e.currentTarget.checked)} />
-          {t("setAutoBackup")}
-        </label>
-        <label class="toggle">
-          <input type="checkbox" checked={s?.openOnCard ?? true} disabled={!s} onChange={(e) => update({ openOnCard: e.currentTarget.checked })} />
-          {t("setOpenOnCard")}
-        </label>
-        <label class="toggle">
-          <input
-            type="checkbox"
-            checked={s?.openAtLogin ?? true}
-            disabled={!s || !s.canUseLoginItem}
-            onChange={(e) => update({ openAtLogin: e.currentTarget.checked })}
-          />
-          {t("setOpenAtLogin")}
-        </label>
-        {s && !s.canUseLoginItem && <p class="hint">{t("setLoginDevNote")}</p>}
-        <div class="segmented" role="radiogroup" aria-label="Language">
-          {LANGS.map((l) => (
-            <button key={l.id} role="radio" aria-checked={lang.value === l.id} class={lang.value === l.id ? "active" : ""} onClick={() => setLang(l.id)}>
-              {l.label}
-            </button>
-          ))}
+        <div class="setting-row">
+          <span>{t("language")}</span>
+          <div class="segmented" role="radiogroup" aria-label={t("language")}>
+            {LANGS.map((l) => (
+              <button
+                key={l.id}
+                role="radio"
+                aria-checked={lang.value === l.id}
+                class={lang.value === l.id ? "active" : ""}
+                onClick={() => setLang(l.id)}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
         </div>
+        {native && (
+          <>
+            <label class="toggle">
+              <input type="checkbox" checked={autoBackup.value} onChange={(e) => setAutoBackup(e.currentTarget.checked)} />
+              {t("setAutoBackup")}
+            </label>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                checked={s?.openOnCard ?? true}
+                disabled={!s}
+                onChange={(e) => update({ openOnCard: e.currentTarget.checked })}
+              />
+              {t("setOpenOnCard")}
+            </label>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                checked={s?.openAtLogin ?? true}
+                disabled={!s || !s.canUseLoginItem}
+                onChange={(e) => update({ openAtLogin: e.currentTarget.checked })}
+              />
+              {t("setOpenAtLogin")}
+            </label>
+            {s && !s.canUseLoginItem && <p class="hint">{t("setLoginDevNote")}</p>}
+          </>
+        )}
       </div>
     </Overlay>
   );

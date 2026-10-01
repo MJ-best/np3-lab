@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { activeCard, startCardSync } from "./cards";
-import { lang, setLang, t, type MessageKey, LANGS, type Lang } from "./i18n";
+import { lang, t, type MessageKey } from "./i18n";
 import { isDesktop } from "./native";
 import { webglAvailable } from "./render/renderer";
 import { addPhotos, loadPhotoIndex, matchRecipeByExif } from "./photos";
@@ -137,18 +137,9 @@ export function App() {
           ))}
         </nav>
         <div class="topbar-actions">
-          <select class="lang" aria-label="Language" value={lang.value} onChange={(e) => setLang(e.currentTarget.value as Lang)}>
-            {LANGS.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.label}
-              </option>
-            ))}
-          </select>
-          {isDesktop && (
-            <button class="lang" aria-label={t("settingsTitle")} title={t("settingsTitle")} onClick={() => setSettingsOpen(true)}>
-              ⚙︎
-            </button>
-          )}
+          <button class="lang" aria-label={t("settingsTitle")} title={t("settingsTitle")} onClick={() => setSettingsOpen(true)}>
+            ⚙︎
+          </button>
         </div>
       </header>
 
