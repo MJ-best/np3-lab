@@ -810,6 +810,8 @@ input[type="range"] {
   width: 100%;
   accent-color: var(--accent);
   margin: 0;
+  /* Touch: a vertical swipe over a slider scrolls the page instead of moving it. */
+  touch-action: pan-y;
 }
 input[type="range"].custom-track {
   -webkit-appearance: none;
@@ -1109,22 +1111,81 @@ input[type="range"].custom-track::-moz-range-thumb {
   .editor,
   .cart,
   .detail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .editor-preview {
     position: static;
   }
 }
-/* Only very narrow (browser) windows wrap the top bar; the desktop app is at least 900px wide. */
+/* Narrow windows and phones: one row, tabs between the logo and the settings button. */
 @media (max-width: 760px) {
   .topbar {
-    flex-wrap: wrap;
     gap: 10px;
   }
   .tabs {
     position: static;
     transform: none;
     margin: 0 auto;
+  }
+}
+/* Phones: the app name alone (no icon), so the three tabs fit. */
+@media (max-width: 480px) {
+  .topbar {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .brand svg {
+    display: none;
+  }
+  .tabs button {
+    padding: 6px 12px;
+  }
+  /* Recipes: search and buttons on one line, chip rows scroll sideways, two cards per row. */
+  .toolbar,
+  .toolbar-actions {
+    flex-wrap: nowrap;
+  }
+  .toolbar .search {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+  }
+  .toolbar-actions {
+    margin-left: 0;
+  }
+  .toolbar-actions > *,
+  .toolbar-actions .menu > summary {
+    white-space: nowrap;
+  }
+  .filters,
+  .scenes .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filters .chip,
+  .scenes .chip {
+    flex: none;
+    white-space: nowrap;
+  }
+  .gallery .scene-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .scenes {
+    min-width: 0;
+  }
+  .card-title-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .card-title {
+    flex-basis: 100%;
+  }
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 }
 /* Keep the logo clear of the centred tabs on narrower windows. */
@@ -1346,6 +1407,14 @@ html.desktop .topbar {
   padding-left: 88px; /* room for the traffic-light buttons */
   -webkit-app-region: drag;
   user-select: none;
+}
+/* Android app: no traffic lights; keep clear of the status and navigation bars (edge-to-edge). */
+html.android .topbar {
+  padding: calc(10px + max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px))) calc(20px + max(env(safe-area-inset-right), var(--safe-area-inset-right, 0px))) 10px calc(20px + max(env(safe-area-inset-left), var(--safe-area-inset-left, 0px)));
+  -webkit-app-region: no-drag;
+}
+html.android body {
+  padding-bottom: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
 }
 html.desktop .topbar button,
 html.desktop .topbar a,

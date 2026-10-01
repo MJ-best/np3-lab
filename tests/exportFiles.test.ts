@@ -2,7 +2,8 @@ import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { dateTag, exportRecipes, safeSegment, writeWithoutOverwrite } from "../electron/exportFiles.mjs";
+import { dateTag, safeSegment } from "../electron/cardRules.mjs";
+import { exportRecipes, writeWithoutOverwrite } from "../electron/exportFiles.mjs";
 
 let dir: string;
 beforeEach(async () => {

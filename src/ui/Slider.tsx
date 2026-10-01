@@ -1,3 +1,5 @@
+import { useRef } from "preact/hooks";
+
 interface Props {
   label: string;
   value: number;
@@ -21,6 +23,9 @@ export function formatValue(v: number, step: number, signed = true): string {
 export function Slider({ label, value, min, max, step, defaultValue, onChange, disabled, track }: Props) {
   const reset = () => defaultValue !== undefined && !disabled && onChange(defaultValue);
   const changed = defaultValue !== undefined && Math.abs(value - defaultValue) > 1e-9;
+  // Touch: the thumb jumps to the finger on touch-down. If the finger then scrolls the page
+  // (touch-action: pan-y), the browser cancels the pointer and the old value is put back.
+  const before = useRef<number | null>(null);
   return (
     <label class={`slider${disabled ? " disabled" : ""}${changed ? " changed" : ""}`}>
       <span class="slider-label" onDblClick={reset} title={defaultValue !== undefined ? "Double-click to reset" : undefined}>
@@ -36,6 +41,12 @@ export function Slider({ label, value, min, max, step, defaultValue, onChange, d
         style={track ? { "--track": track } : undefined}
         class={track ? "custom-track" : undefined}
         onInput={(e) => onChange(Number(e.currentTarget.value))}
+        onPointerDown={() => (before.current = value)}
+        onPointerUp={() => (before.current = null)}
+        onPointerCancel={() => {
+          if (before.current !== null) onChange(before.current);
+          before.current = null;
+        }}
         onDblClick={reset}
       />
       <input

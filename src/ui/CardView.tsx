@@ -9,12 +9,14 @@ import {
   ejectActiveCard,
   formatBytes,
   onActiveCard,
+  pickAndroidCard,
   removeFromActiveCard,
   renameOnActiveCard,
   revealActiveCard,
   type CardItem,
 } from "../cards";
 import { lang, t, tagLabel, tx } from "../i18n";
+import { isAndroid } from "../native";
 import { NP_NAME_MAX, type Recipe } from "../np3/recipe";
 import { MAX_PER_CARD } from "../pack/naming";
 import { renderThumbnail, type PreparedSource } from "../render/renderer";
@@ -183,9 +185,24 @@ export function CardView() {
             <path d="M26 6v10M32 6v10M38 6v10" stroke="currentColor" stroke-width="3" />
           </svg>
         </div>
-        <h2>{t("noCardTitle")}</h2>
-        <p>{t("noCardBody")}</p>
-        <p class="hint">{t("noCardTray")}</p>
+        {isAndroid ? (
+          <>
+            <h2>{t("noCardTitleAndroid")}</h2>
+            <p>{t("noCardBodyAndroid")}</p>
+            <p>
+              <button class="primary" onClick={() => void pickAndroidCard()}>
+                💾 {t("connectCard")}
+              </button>
+            </p>
+            <p class="hint">{t("pickCardHint")}</p>
+          </>
+        ) : (
+          <>
+            <h2>{t("noCardTitle")}</h2>
+            <p>{t("noCardBody")}</p>
+            <p class="hint">{t("noCardTray")}</p>
+          </>
+        )}
         <div class="panel no-card-guide">
           <CameraGuide />
         </div>
@@ -223,7 +240,11 @@ export function CardView() {
           <button class="primary" onClick={() => setPicking(true)} disabled={count >= MAX_PER_CARD}>
             {t("addRecipesBtn")}
           </button>
-          <button onClick={() => revealActiveCard()}>{t("revealInFinder")}</button>
+          {isAndroid ? (
+            <button onClick={() => void pickAndroidCard()}>{t("connectAnotherCard")}</button>
+          ) : (
+            <button onClick={() => revealActiveCard()}>{t("revealInFinder")}</button>
+          )}
           <button onClick={() => ejectActiveCard()}>⏏ {t("eject")}</button>
         </div>
       </div>

@@ -80,6 +80,18 @@ xattr -cr "/Applications/NP3 Lab.app"
 
 설치 없이 [Releases](https://github.com/MJ-best/np3-lab/releases)의 `NP3-Lab.html`을 Chrome이나 Edge로 열어도 대부분의 기능을 쓸 수 있습니다. Windows에서도 됩니다. 카드 자동 인식은 안 되고, 레시피를 담아 **SD카드에 바로 저장**(폴더 선택)하거나 **ZIP**으로 받습니다.
 
+## 안드로이드판
+
+Android 7.0 이상 휴대폰·태블릿에서 Mac 앱과 같은 카드 중심 화면을 씁니다. 아직 실험 단계입니다.
+
+1. USB OTG 카드리더에 SD카드를 꽂아 기기에 연결합니다.
+2. **SD카드 선택**을 누르고 카드(또는 그 안의 `NIKON` 폴더)를 고릅니다. 처음 한 번만 고르면 다음부터는 꽂기만 해도 읽습니다.
+3. 레시피 넣기·빼기·이름 바꾸기·자동 백업은 Mac 앱과 같습니다. 단, 빼기는 휴지통이 없어 바로 지워지고 **되돌리기**로 다시 씁니다.
+4. 꺼낼 때는 알림창의 USB 저장소 알림에서 **꺼내기**를 누른 뒤 카드리더를 뽑으세요.
+
+- NP3·ZIP·백업 저장은 시스템 저장 창으로, 전체 내보내기는 고른 폴더로 저장합니다.
+- 카드 자동 실행, 로그인 시 실행, NX Studio 파일 찾기는 Android판에 없습니다.
+
 ## 개발
 
 Node.js 22 이상이 필요합니다.
@@ -104,9 +116,13 @@ npm run dist:mac   # release/에 설치용 DMG 생성
 npm run build      # dist/NP3-Lab.html 브라우저판
 ```
 
+```bash
+npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, Android SDK 36 필요)
+```
+
 - 직접 만든 레시피를 기본으로 넣으려면 `recipes/`에 JSON이나 `.NP3`를 두세요. 형식은 [recipes/README.md](recipes/README.md)를 보세요.
 - 미리보기 사진을 바꾸려면 `samples/`에 사진을 넣으세요. [samples/README.md](samples/README.md)를 보세요.
-- 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기·증분 업데이트), `src/data/recipeNotes.ts`(레시피 설명), `src/look.ts`(수치로 컨셉 분석), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
+- 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `android/`·`src/androidBridge.ts`(Android: 저장소 접근 프레임워크로 카드 폴더 읽기·쓰기), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기·증분 업데이트), `src/data/recipeNotes.ts`(레시피 설명), `src/look.ts`(수치로 컨셉 분석), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
 - 버그 제보와 PR 환영합니다. Windows 지원(꺼내기, 안내 문구)은 도움이 필요한 부분입니다.
 
 ## 라이선스

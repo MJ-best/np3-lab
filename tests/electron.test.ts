@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { appBundleFromExecPath, launchAgentPlist, LOGIN_FLAG } from "../electron/loginItem.mjs";
-import { CARD_FILESYSTEMS, isSafeNp3Name, looksLikeNikonCard, parseMacMounts, withTimeout } from "../electron/volumes.mjs";
+import { isSafeNp3Name, looksLikeNikonCard } from "../electron/cardRules.mjs";
+import { CARD_FILESYSTEMS, parseMacMounts, withTimeout } from "../electron/volumes.mjs";
 
 describe("mounted volume detection", () => {
   const MOUNT = `/dev/disk3s1s1 on / (apfs, sealed, local, read-only, journaled)

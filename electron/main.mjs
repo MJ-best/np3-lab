@@ -10,7 +10,8 @@ import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, shell } f
 import { LOGIN_FLAG, setMacLoginAgent } from "./loginItem.mjs";
 import { findLocalNp3 } from "./localNp3.mjs";
 import { exportRecipes } from "./exportFiles.mjs";
-import { CARD_FILESYSTEMS, isSafeNp3Name, looksLikeNikonCard, parseMacMounts, withTimeout } from "./volumes.mjs";
+import { isSafeNp3Name, looksLikeNikonCard } from "./cardRules.mjs";
+import { CARD_FILESYSTEMS, parseMacMounts, withTimeout } from "./volumes.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const DEV_URL = process.env.NIKONPCLAB_DEV_URL;

@@ -1,3 +1,5 @@
+import { createAndroidBridge, type AndroidExtras } from "./androidBridge";
+
 /** Card as reported by the desktop app's main process. */
 export interface NativeCard {
   id: string;
@@ -66,10 +68,18 @@ export interface NativeBridge {
   onCardsChanged(callback: (cards: NativeCard[]) => void): () => void;
 }
 
-export const native: NativeBridge | undefined =
-  typeof window !== "undefined" ? (window as Window & { nikonPcLab?: NativeBridge }).nikonPcLab : undefined;
+/** Mac app: injected by electron/preload.cjs. Android app: built on the SafFolders plugin. */
+const android = typeof window !== "undefined" ? createAndroidBridge() : undefined;
 
+export const native: NativeBridge | undefined =
+  typeof window !== "undefined" ? ((window as Window & { nikonPcLab?: NativeBridge }).nikonPcLab ?? android) : undefined;
+
+/** The app (Mac or Android), as opposed to the browser build. */
 export const isDesktop = native !== undefined;
+
+/** Android-only additions (picking the card folder); undefined elsewhere. */
+export const androidNative: AndroidExtras | undefined = android;
+export const isAndroid = android !== undefined;
 
 /** Turn "Error invoking remote method 'card:write': Error: exists:X" into "exists:X". */
 export function nativeErrorMessage(err: unknown): string {

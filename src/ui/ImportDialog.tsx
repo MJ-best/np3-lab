@@ -1,6 +1,6 @@
 import { useRef } from "preact/hooks";
 import { t, type MessageKey } from "../i18n";
-import { isDesktop } from "../native";
+import { isAndroid, isDesktop } from "../native";
 import { canUseCardFolder, pickCardFolder, readNp3Files } from "../pack/cardWriter";
 import { commitImport, importSession, openImport, showToast, updateImportEntry, type ImportEntry } from "../state";
 import { Overlay } from "./RecipeDetail";
@@ -37,7 +37,7 @@ function CloudGuide() {
         <li>{t("cloudStep1")}</li>
         <li>{t("cloudStep2")}</li>
         <li>{t("cloudStep3")}</li>
-        <li>{t(isDesktop ? "cloudStep4Desktop" : "cloudStep4")}</li>
+        <li>{t(isAndroid ? "cloudStep4Android" : isDesktop ? "cloudStep4Desktop" : "cloudStep4")}</li>
         <li>{t("cloudStep5")}</li>
       </ol>
       <p class="hint">{t("cloudNote")}</p>
