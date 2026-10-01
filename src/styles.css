@@ -218,6 +218,26 @@ code,
   padding: 5px 12px;
   font-size: 12.5px;
 }
+select.lang {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  background: var(--panel-2)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a3a3a3' stroke-width='1.5'/%3E%3C/svg%3E")
+    no-repeat right 10px center;
+  padding: 5px 26px 5px 12px;
+}
+select.lang:hover {
+  background-color: var(--panel-3);
+}
+/* Japanese glyphs (kanji shapes differ from Korean fonts). */
+html[lang="ja"] {
+  --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", sans-serif;
+}
 .content {
   flex: 1;
   width: 100%;
@@ -640,12 +660,13 @@ button.on:hover:not(:disabled) {
 .notes {
   margin: 0 0 10px;
   font-size: 13px;
+  display: grid;
+  /* The label column fits the longest label in any language. */
+  grid-template-columns: max-content 1fr;
+  gap: 4px 14px;
 }
 .notes div {
-  display: grid;
-  grid-template-columns: 76px 1fr;
-  gap: 8px;
-  padding: 2px 0;
+  display: contents;
 }
 .notes dt {
   color: var(--muted);

@@ -14,7 +14,7 @@ export type { ColorBlender, ColorBlenderValues, ColorGrading, ColorGradingValues
 /** Everything the NP3 file stores except its embedded name. */
 export type RecipeParams = Omit<FlexibleColorPictureControlOptions, "name">;
 
-export type LocalizedText = string | { ko?: string; en?: string };
+export type LocalizedText = string | { ko?: string; en?: string; ja?: string };
 
 export type RecipeSource = "builtin" | "mine" | "imported";
 

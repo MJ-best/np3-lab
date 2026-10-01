@@ -24,7 +24,7 @@ export function CommunityPanel() {
   const progressText = busy ? t("communityDownloading", { done: progress.done, total: progress.total }) : "";
 
   if (info) {
-    const date = new Date(info.fetchedAt).toLocaleDateString(lang.value === "ko" ? "ko-KR" : "en-US");
+    const date = new Date(info.fetchedAt).toLocaleDateString({ ko: "ko-KR", en: "en-US", ja: "ja-JP" }[lang.value]);
     const [before, after] = t("communitySource", { n: info.count, repo: "\u0000", date }).split("\u0000");
     return (
       <p class="community-credit">

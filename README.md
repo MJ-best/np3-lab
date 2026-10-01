@@ -4,7 +4,7 @@
 
 > ⚠️ **비공식 서드파티 도구입니다.** Nikon Corporation과 관련이 없고 Nikon의 보증이나 후원을 받지 않았습니다. Nikon, Nikon Z, Zf, Z8, Z9, Picture Control은 Nikon Corporation의 상표입니다. 자세한 내용은 [NOTICE.md](NOTICE.md)를 보세요.
 
-[English](#english) · [다운로드 (Releases)](https://github.com/MJ-best/np3-lab/releases) · [출처와 라이선스](NOTICE.md)
+[English](#english) · [日本語](#日本語) · [다운로드 (Releases)](https://github.com/MJ-best/np3-lab/releases) · [출처와 라이선스](NOTICE.md)
 
 ![카드를 꽂으면 카드 속 레시피가 보입니다](docs/screenshots/card.jpg)
 
@@ -138,3 +138,23 @@ npm run build      # dist/NP3-Lab.html 브라우저판
 **Tested on hardware:** on a Nikon Zf (firmware 3.01), NP3 files put on the card by this app register via Save/edit, and Zf JPEGs dropped on the window are filed under the recipe in their EXIF. If you've tried another model, please let us know in an issue.
 
 Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, references and trademarks.
+
+## 日本語
+
+**NP3 Lab**は、ニコンZシリーズの**フレキシブルカラーのピクチャーコントロール（.NP3）**を管理する非公式のMacアプリです。株式会社ニコンとは関係ありません。
+
+- **SDカードを挿すだけで自動で開きます。** `NIKON/CUSTOMPC`内のレシピをプレビュー付きで表示し、追加（`PICCON01.NP3`…と自動で番号付け）、カメラでの表示名の変更、ゴミ箱への削除（元に戻せます）、取り出しができます。メニューバーで待機し、ログイン時に起動します。
+- **自動バックアップ:** カード内のレシピをマイレシピに保存します。
+- **NX Studioから直接取り込み:** NX Studioなどでピクチャーコントロールを NP3 ファイルに書き出すと、保存先のフォルダに関係なくSpotlightで見つけ出します。
+- **すべてのレシピを書き出し:** 既存のファイルは上書きしません。同じ名前で内容が異なる場合は日付を付けて（`名前_20261001.NP3`）保存し、変更がなければスキップします。
+- **コミュニティレシピ260件以上:** Nikonクリエイター、Nikonカラーグレーディング、個人クリエイター、[SerbanJPG](https://serbanjpg.com)のレシピを、アプリ内で元のリポジトリから取得します。説明・コンセプト・おすすめのシーン付きです。
+- **自分だけのフィルターライブラリ:** レシピごとに撮った写真をギャラリーとして保存。ニコンのJPEGをドロップすると、Exifのピクチャーコントロール名でレシピに自動で整理します。
+- エディター、ビフォー/アフタープレビュー、テキスト（日本語・韓国語・英語の項目名）からの取り込み、機種別のカメラでの登録手順。
+
+**インストール:** [Releases](https://github.com/MJ-best/np3-lab/releases)からDMGをダウンロードし、アプリを「アプリケーション」フォルダにドラッグします。署名されていないため、初回は右クリック →［開く］、または `xattr -cr "/Applications/NP3 Lab.app"` を実行してください。
+
+**カメラでの登録:**
+- **Zf:** MENU → 静止画撮影メニュー → カスタムピクチャーコントロール → 編集と登録
+- **Z6III、Z5II、Z50II、ZR、Z8、Z9:** MENU → 静止画撮影メニュー → カスタムピクチャーコントロール → メモリーカードを使用 → カメラに登録
+
+メニュー名はニコンの日本語版オンラインマニュアル（Zf、Z8）とNX Studioのヘルプに合わせています。Nikon Zf（ファームウェア3.01）で動作を確認済みです。レシピの著作権はニコンと各クリエイターにあり、NP3 Labはレシピファイルを再配布しません。詳しくは[NOTICE.md](NOTICE.md)をご覧ください。

@@ -90,44 +90,44 @@ export function formatRecipeText(npName: string, params: RecipeParams): string {
 // Parser
 
 const NUM = String.raw`([+-]?\d+(?:\.\d+)?)`;
-/** Left boundary that works for both Latin and Hangul words. */
-const LB = String.raw`(?<![a-z가-힣])`;
-const SEP = String.raw`\s*[:=]?\s*`;
+/** Left boundary that works for Latin, Hangul and Japanese (kana/kanji) words. */
+const LB = String.raw`(?<![a-z가-힣ぁ-んァ-ヶー一-龯])`;
+const SEP = String.raw`\s*[:=：]?\s*`;
 
 const SCALAR_ALIASES: [ScalarKey, string[]][] = [
   // Order matters: longer / more specific phrases first; matches are blanked out.
-  ["midRangeSharpning", ["mid[- ]?range sharpening", "mid[- ]?range sharpness", "mid[- ]?range", "미드\\s?레인지\\s?샤프닝", "미드\\s?레인지"]],
-  ["sharpning", ["sharpening", "sharpness", "sharpen", "샤프닝", "윤곽\\s?강조", "선명도"]],
-  ["clarity", ["clarity", "명료도", "클래리티"]],
-  ["contrast", ["contrast", "콘트라스트", "대비"]],
-  ["whiteLevel", ["white level", "whites?", "화이트\\s?레벨", "화이트"]],
-  ["blackLevel", ["black level", "blacks?", "블랙\\s?레벨", "블랙"]],
-  ["highlights", ["highlights?", "하이라이트"]],
-  ["shadows", ["shadows?", "섀도우?", "쉐도우?", "그림자"]],
-  ["saturation", ["saturation", "채도"]],
+  ["midRangeSharpning", ["mid[- ]?range sharpening", "mid[- ]?range sharpness", "mid[- ]?range", "미드\\s?레인지\\s?샤프닝", "미드\\s?레인지", "ミドルレンジシャープ(?:ネス)?"]],
+  ["sharpning", ["sharpening", "sharpness", "sharpen", "샤프닝", "윤곽\\s?강조", "선명도", "輪郭強調", "シャープネス"]],
+  ["clarity", ["clarity", "명료도", "클래리티", "明瞭度"]],
+  ["contrast", ["contrast", "콘트라스트", "대비", "コントラスト"]],
+  ["whiteLevel", ["white level", "whites?", "화이트\\s?레벨", "화이트", "白レベル", "ホワイトレベル"]],
+  ["blackLevel", ["black level", "blacks?", "블랙\\s?레벨", "블랙", "黒レベル", "ブラックレベル"]],
+  ["highlights", ["highlights?", "하이라이트", "ハイライト"]],
+  ["shadows", ["shadows?", "섀도우?", "쉐도우?", "그림자", "シャド[ーウ]"]],
+  ["saturation", ["saturation", "채도", "色の濃さ(?:[（(]彩度[）)])?", "彩度"]],
 ];
 
 const COLOR_ALIASES: [BlenderColor, string[]][] = [
-  ["red", ["reds?", "레드", "빨강", "빨간색"]],
-  ["orange", ["oranges?", "오렌지", "주황", "주황색"]],
-  ["yellow", ["yellows?", "옐로우?", "노랑", "노란색"]],
-  ["green", ["greens?", "그린", "초록", "초록색", "녹색"]],
-  ["cyan", ["cyans?", "aqua", "시안", "청록"]],
-  ["blue", ["blues?", "블루", "파랑", "파란색"]],
-  ["purple", ["purples?", "violet", "퍼플", "보라", "보라색"]],
-  ["magenta", ["magentas?", "마젠타", "자홍"]],
+  ["red", ["reds?", "레드", "빨강", "빨간색", "レッド", "赤"]],
+  ["orange", ["oranges?", "오렌지", "주황", "주황색", "オレンジ"]],
+  ["yellow", ["yellows?", "옐로우?", "노랑", "노란색", "イエロー", "黄"]],
+  ["green", ["greens?", "그린", "초록", "초록색", "녹색", "グリーン", "緑"]],
+  ["cyan", ["cyans?", "aqua", "시안", "청록", "シアン"]],
+  ["blue", ["blues?", "블루", "파랑", "파란색", "ブルー", "青"]],
+  ["purple", ["purples?", "violet", "퍼플", "보라", "보라색", "パープル", "紫"]],
+  ["magenta", ["magentas?", "마젠타", "자홍", "マゼンタ"]],
 ];
 
 const RANGE_ALIASES: [GradingRange, string[]][] = [
-  ["highlights", ["highlights?", "하이라이트"]],
-  ["midTone", ["mid[- ]?tones?", "midtones?", "mid(?![- ]?range)", "중간\\s?톤", "미드\\s?톤"]],
-  ["shadows", ["shadows?", "섀도우?", "쉐도우?", "그림자"]],
+  ["highlights", ["highlights?", "하이라이트", "ハイライト"]],
+  ["midTone", ["mid[- ]?tones?", "midtones?", "mid(?![- ]?range)", "중간\\s?톤", "미드\\s?톤", "中間調", "ミッドトーン"]],
+  ["shadows", ["shadows?", "섀도우?", "쉐도우?", "그림자", "シャド[ーウ]"]],
 ];
 
 const SUB_ALIASES = {
-  hue: ["hue", "h", "색상", "색조"],
-  chroma: ["chroma", "saturation", "sat", "c", "s", "채도"],
-  brightness: ["brightness", "bright", "luminance", "lum", "b", "l", "밝기", "명도"],
+  hue: ["hue", "h", "색상", "색조", "色相"],
+  chroma: ["chroma", "saturation", "sat", "c", "s", "채도", "彩度"],
+  brightness: ["brightness", "bright", "luminance", "lum", "b", "l", "밝기", "명도", "明度"],
 } as const;
 
 const words = (aliases: readonly string[]) => `(?:${aliases.join("|")})`;
@@ -179,11 +179,11 @@ interface LineAnalysis {
   kind: "values" | "header" | "ignored" | "unrecognized";
 }
 
-const BLENDER_HEADER = /color\s*blender|컬러\s*블렌더|블렌더/;
-const GRADING_HEADER = /colou?r\s*grading|컬러\s*그레이딩|그레이딩/;
+const BLENDER_HEADER = /color\s*blender|컬러\s*블렌더|블렌더|カラーブレンダー/;
+const GRADING_HEADER = /colou?r\s*grading|컬러\s*그레이딩|그레이딩|カラーグレーディング/;
 /** Headings people put between groups of values; they belong to the same recipe. */
 const NEUTRAL_HEADER =
-  /^(?:tone|tones|detail|details|color|colour|basic|settings?|adjustments?|advanced|톤|디테일|컬러|색상|기본|설정)\s*:?$/;
+  /^(?:tone|tones|detail|details|color|colour|basic|settings?|adjustments?|advanced|톤|디테일|컬러|색상|기본|설정|トーン|詳細(?:調整)?|カラー|基本|設定)\s*[:：]?$/;
 
 /** Undo Markdown/Reddit formatting that would hide "Key: value" pairs. */
 function normalizeLine(line: string): string {
@@ -208,14 +208,14 @@ export function analyzeLine(rawLine: string, section: Section): LineAnalysis {
   if (!original) return { assignments, section, kind: "ignored" };
   let line = original.toLowerCase();
 
-  const nameMatch = /^(?:(?:name|이름|recipe name|레시피 이름)\s*[:=]|\[nikonpc lab\])\s*(.+)$/i.exec(original);
+  const nameMatch = /^(?:(?:name|이름|recipe name|레시피 이름|名前|レシピ名)\s*[:=：]|\[nikonpc lab\])\s*(.+)$/i.exec(original);
   if (nameMatch) return { assignments: [{ key: "name", value: nameMatch[1].trim() }], section, kind: "values" };
-  const commentMatch = /^(?:comment|memo|메모|코멘트)\s*[:=]\s*(.+)$/i.exec(original);
+  const commentMatch = /^(?:comment|memo|메모|코멘트|メモ|コメント)\s*[:=：]\s*(.+)$/i.exec(original);
   if (commentMatch) return { assignments: [{ key: "comment", value: commentMatch[1].trim() }], section, kind: "values" };
   if (/^(?:picture control|base|베이스|픽처\s?컨트롤)\s*[:=]/.test(line)) return { assignments, section, kind: "ignored" };
   if (NEUTRAL_HEADER.test(line)) return { assignments, section: "none", kind: "header" };
 
-  if (/tone\s*curve|톤\s*커브/.test(line)) {
+  if (/tone\s*curve|톤\s*커브|トーンカーブ/.test(line)) {
     const pts = [...line.matchAll(/(\d{1,3})\s*[,/]\s*(\d{1,3})/g)].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }));
     if (pts.length >= 2) return { assignments: [{ key: "curve", value: pts }], section: "none", kind: "values" };
     return { assignments, section: "none", kind: "unrecognized" };
@@ -254,9 +254,9 @@ export function analyzeLine(rawLine: string, section: Section): LineAnalysis {
     line = line.slice(0, m.index) + " ".repeat(m[0].length) + line.slice(m.index + m[0].length);
     return Number(m[1]);
   };
-  const blending = take(["blending", "blend", "블렌딩"]);
+  const blending = take(["blending", "blend", "블렌딩", "ブレンド"]);
   if (blending !== undefined) assignments.push({ key: "grading.blending", value: blending });
-  const balance = take(["balance", "밸런스"]);
+  const balance = take(["balance", "밸런스", "バランス"]);
   if (balance !== undefined) assignments.push({ key: "grading.balance", value: balance });
 
   // Scalar values, possibly several per line ("Contrast -15, Highlights -30").

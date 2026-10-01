@@ -48,7 +48,7 @@ export function Gallery() {
     if (filter.startsWith("tag:") && !r.tags.includes(filter.slice(4))) return false;
     if (!query.trim()) return true;
     const look = r.params ? lookOf(r.params, r.tags.includes("mono")).summary : undefined;
-    const hay = [tx(r.title), r.npName, r.author, ...r.tags.map(tagLabel), tx(r.description), tx(r.use), look?.ko, look?.en]
+    const hay = [tx(r.title), r.npName, r.author, ...r.tags.map(tagLabel), tx(r.description), tx(r.use), look?.ko, look?.en, look?.ja]
       .join(" ")
       .toLowerCase();
     return hay.includes(query.trim().toLowerCase());

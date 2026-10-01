@@ -30,6 +30,7 @@ Nikon, Nikon Z, Zf, Z8, Z9, Picture Control, NX Studio and Nikon Imaging Cloud a
 
 - [ssssota/nikon-flexible-color-picture-control](https://github.com/ssssota/nikon-flexible-color-picture-control) (MIT): NP3 파일 읽기/쓰기 라이브러리. Library used to read and write NP3 files.
 - [Nikon 온라인 매뉴얼 / Nikon online manuals](https://onlinemanual.nikonimglib.com/): 기종별 Picture Control 메뉴 경로와 메모리 카드 폴더 구조(`NIKON/CUSTOMPC`). Menu paths and the memory-card folder layout.
+- [NX Studio 일본어 도움말 / NX Studio Japanese help](https://nikonimglib.com/nxstdo/onlinehelp/ja/the_picture_controls_flexible_color_23.html): 일본어판 플렉시블 컬러 항목 이름. Japanese names of the Flexible Color settings.
 - [NX Studio 도움말 / NX Studio help](https://nikonimglib.com/nxstdo/onlinehelp/en/copy_custom_picture_controls_50.html): 카드당 NP3 99개(01–99) 규칙. The 99-files-per-card (01–99) rule.
 
 ## 사용한 오픈소스 / Third-party software

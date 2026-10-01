@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { autoBackup, setAutoBackup } from "../cards";
-import { lang, setLang, t } from "../i18n";
+import { lang, setLang, t, LANGS } from "../i18n";
 import { native, type NativeSettings } from "../native";
 import { Overlay } from "./RecipeDetail";
 
@@ -40,12 +40,11 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         </label>
         {s && !s.canUseLoginItem && <p class="hint">{t("setLoginDevNote")}</p>}
         <div class="segmented" role="radiogroup" aria-label="Language">
-          <button role="radio" aria-checked={lang.value === "ko"} class={lang.value === "ko" ? "active" : ""} onClick={() => setLang("ko")}>
-            한국어
-          </button>
-          <button role="radio" aria-checked={lang.value === "en"} class={lang.value === "en" ? "active" : ""} onClick={() => setLang("en")}>
-            English
-          </button>
+          {LANGS.map((l) => (
+            <button key={l.id} role="radio" aria-checked={lang.value === l.id} class={lang.value === l.id ? "active" : ""} onClick={() => setLang(l.id)}>
+              {l.label}
+            </button>
+          ))}
         </div>
       </div>
     </Overlay>

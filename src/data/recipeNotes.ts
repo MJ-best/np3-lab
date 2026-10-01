@@ -9,8 +9,8 @@ export interface RecipeNote {
   name: string;
   creator: string;
   released?: string;
-  style: { ko: string; en: string };
-  use?: { ko: string; en: string };
+  style: { ko: string; en: string; ja?: string };
+  use?: { ko: string; en: string; ja?: string };
   /** Where the note comes from, shown for credit. */
   credit?: string;
 }
@@ -100,10 +100,78 @@ const SERBAN: Record<string, Pick<RecipeNote, "style" | "creator">> = {
   "LUX-B-W-HC": s("라이카 룩에서 영감, 고대비 흑백", "Inspired by Leica Looks, high-contrast black & white"),
 };
 
+/** Japanese for the notes above: [style, recommended use]. */
+const NIKON_JA: Record<string, [string, string]> = {
+  "MovieG&O_InstantF": ["映画のようなグリーン/オレンジのコントラスト", "ショートフィルム · 街のスナップ · カバー写真"],
+  "24Look_24Frames": ["24fpsの映画のような雰囲気", "Vlog · ショートフィルム · オープニング"],
+  CINENigRed_Fuji: ["映画のようなディープレッド", "人物 · 夜景 · ショートフィルム"],
+  "MV Green Orange_Woo": ["映画のようなグリーン/オレンジのコントラスト", "街のスナップ · ショートフィルム"],
+  Negative_Cy_01a: ["シアン調のネガフィルム", "夜景 · 実験的な写真"],
+  ClrMode_TealOr_01b: ["ティール&オレンジのカラーグレーディング", "夜景 · ストリート"],
+  Golden_Grid_LKJ: ["ゴールド調 · 構造的なトーン", "建築 · 都市 · 幾何学的なシーン"],
+  GoldenBrownSiinapse: ["ゴールデンブラウン · ヴィンテージ", "人物 · ストリート · 思い出"],
+  Catgrain_yw: ["細かなグレイン · やわらかなヴィンテージ", "ペット · 日常"],
+  CafeCat_yw: ["カフェのような暖色系 · 生活感", "カフェ · 室内 · 日常"],
+  Yuragi_Hinami: ["ふんわりやわらかなトーン", "人物 · ボケ · エモーショナルな写真"],
+  VINTAGEFla_Fuji: ["ヴィンテージなフラッシュ撮影のフィルム", "パーティー · 夜の人物"],
+  VINTAGEPort_Fuji: ["香港風のヴィンテージポートレート", "人物 · 都市 · ストリート"],
+  FadedBlue_Hinami: ["色あせたブルー · やわらかな霞", "フィルム風の人物 · 思い出"],
+  VitalityFilm_Pmango: ["鮮やかで明るい躍動感", "スポーツ · 屋外 · 人物"],
+  Filmic_Fabio: ["バランスの取れたクラシックなフィルム", "旅行 · 日常 · オールラウンド"],
+  Japanesque_Arashida: ["落ち着いた上品な和の雰囲気", "建築 · 旅行 · 文化"],
+  VintageM_TSakai: ["ニュートラルで安定したヴィンテージ", "人物 · 旅行 · オールラウンド"],
+  "Pale Tale_Yuri": ["淡いパステル · 物語を感じるトーン", "和風の人物 · 日常"],
+  Heartwarming_YoheiS: ["温かくやわらかなトーン", "家族 · 子ども · ペット"],
+  MOSS_Nagisa: ["モスグリーン · 低彩度", "植物 · 雨の日 · 静物 · 風景"],
+  "Green Soul_Wong": ["澄んだ穏やかなグリーン", "森 · 公園 · 屋外"],
+  "Winter Hues_Eeva": ["すっきりした冬の寒色系", "雪景色 · 冬の人物"],
+  AirGreen_Gunji: ["空気感のある澄んだグリーン", "人物 · 自然 · 屋外"],
+  QUIET_Nagisa: ["抑えた低彩度 · 静けさ", "ミニマルな人物 · 静物"],
+  Vibrant_Lamoureux: ["鮮やかな高彩度 · 活気", "イベント · ストリート · SNS"],
+  Summertime_Zerletti: ["明るく軽やかな夏", "旅行 · 海 · 休暇"],
+  Hidamari_Haruka: ["陽だまりのような明るい和の雰囲気", "日常の人物 · 窓辺"],
+  Bluegrain_jyota: ["ブルー調 · フィルムグレイン", "ストリート · 夜景 · エモーショナルな写真"],
+  PinkWater_HYEYA: ["幻想的なピンクの水彩", "人物 · 春 · 夏"],
+  Cyanora_EyesOfBelga: ["幻想的なシアン/ブルーの寒色系", "夜景 · SF風 · 人物"],
+  CRYSClear_Eisuke: ["澄んだ透明感のある明るいトーン", "風景 · 静物 · 人物"],
+};
+
+const SERBAN_JA: Record<string, string> = {
+  "Kinochrome-S": "映画と80年代のアグファクローム・スライドへのオマージュ",
+  "Agfacolor-S": "アグファカラーのフィルム調（名前から）",
+  "Fujicolor-S": "フジカラーのフィルム調（名前から）",
+  "Kodacolor-S": "コダカラーのフィルム調（名前から）",
+  "PRO400H-Std": "富士フイルム PRO 400H ネガフィルム調（名前から）",
+  "PRO400H-Plus": "PRO 400H調の濃いめのバージョン（名前から）",
+  "Superia-Premium-400": "富士フイルム SUPERIA PREMIUM 400調（名前から）",
+  "Agfa-Optima-4": "アグファ Optima ネガフィルム調（名前から）",
+  "Agfa-RSX-II-1": "アグファ RSX II スライドフィルム調（名前から）",
+  "Agfa-Ultra": "アグファ Ultra フィルム調（名前から）",
+  "Agfa-XPS-160-4": "アグファ XPS 160 フィルム調（名前から）",
+  "Agfachrome-Expired": "期限切れのアグファクローム・スライド調（名前から）",
+  "Cinematic-Film-250D-1": "250D 映画用フィルム調（名前から）",
+  "Modern-Kodachrome": "コダクロームを現代的に解釈（名前から）",
+  "Modern-Chrome-Lo": "すっきりとしたノスタルジックなクローム、弱め",
+  "Modern-Chrome-Std": "すっきりとしたノスタルジックなクローム、標準",
+  "Modern-Chrome-Hi": "すっきりとしたノスタルジックなクローム、強め",
+  "LUX-Chrome": "ライカのルックから着想、クローム",
+  "LUX-Brass": "ライカのルックから着想、ブラス",
+  "LUX-Eternal": "ライカのルックから着想、エターナル",
+  "LUX-B-W-HC": "ライカのルックから着想、ハイコントラストのモノクロ",
+};
+
 export function noteFor(sourceId: string, stem: string): RecipeNote | undefined {
   if (sourceId === "shouryan01") {
     const note = NIKON[stem];
-    return note && { ...note, credit: "Nikon Imaging Cloud (via Timor88/NikonNP3)" };
+    const ja = NIKON_JA[stem];
+    return (
+      note && {
+        ...note,
+        style: { ...note.style, ja: ja?.[0] },
+        use: note.use && { ...note.use, ja: ja?.[1] },
+        credit: "Nikon Imaging Cloud (via Timor88/NikonNP3)",
+      }
+    );
   }
   if (sourceId === "serbanjpg") {
     const entry = SERBAN[stem];
@@ -111,8 +179,10 @@ export function noteFor(sourceId: string, stem: string): RecipeNote | undefined 
     return {
       name,
       creator: "SerbanJPG",
-      style: entry?.style ?? { ko: "SerbanJPG 필름 에뮬레이션", en: "SerbanJPG film emulation" },
-      use: { ko: "필름 느낌의 JPEG 촬영", en: "Film-style straight-out-of-camera JPEGs" },
+      style: entry
+        ? { ...entry.style, ja: SERBAN_JA[stem] }
+        : { ko: "SerbanJPG 필름 에뮬레이션", en: "SerbanJPG film emulation", ja: "SerbanJPGのフィルムエミュレーション" },
+      use: { ko: "필름 느낌의 JPEG 촬영", en: "Film-style straight-out-of-camera JPEGs", ja: "フィルム調の撮って出しJPEG" },
       credit: "serbanjpg.com",
     };
   }

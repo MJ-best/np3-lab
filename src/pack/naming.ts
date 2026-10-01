@@ -93,10 +93,10 @@ export function chunk<T>(items: readonly T[], size: number): T[][] {
   return out;
 }
 
-export function textIn(text: LocalizedText | undefined, lang: "ko" | "en"): string {
+export function textIn(text: LocalizedText | undefined, lang: "ko" | "en" | "ja"): string {
   if (!text) return "";
   if (typeof text === "string") return text;
-  return text[lang] ?? text.ko ?? text.en ?? "";
+  return text[lang] ?? text.ko ?? text.en ?? text.ja ?? "";
 }
 
 /** LIST.txt placed next to the files so people can tell PICCONnn apart in Finder. */

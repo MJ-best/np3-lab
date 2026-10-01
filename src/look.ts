@@ -8,10 +8,10 @@ import { BLENDER_COLORS, GRADING_RANGES, type RecipeParams } from "./np3/recipe"
 export interface Look {
   /** Look tags, drawn from the gallery's tag vocabulary. */
   tags: string[];
-  summary: { ko: string; en: string };
+  summary: { ko: string; en: string; ja: string };
 }
 
-type Phrase = [tag: string | null, ko: string, en: string];
+type Phrase = [tag: string | null, ko: string, en: string, ja: string];
 
 /** Tint of a colour-grading hue: warm (red/orange/yellow) or cool (cyan/blue), with a weight for green/magenta. */
 function tintOf(hue: number): { warm: number; cool: number; green: number; magenta: number } {
@@ -61,16 +61,16 @@ export function analyzeLook(p: RecipeParams, monoHint = false): Look {
   }
   const TINT_MIN = 12;
 
-  if (mono) phrases.push(["mono", "흑백", "black & white"]);
+  if (mono) phrases.push(["mono", "흑백", "black & white", "モノクロ"]);
   else {
-    if (tint.warm >= TINT_MIN && tint.cool >= TINT_MIN) phrases.push([null, "웜/쿨 스플릿 톤", "warm/cool split tone"]);
-    else if (tint.warm >= TINT_MIN) phrases.push(["warm", "웜톤", "warm"]);
-    else if (tint.cool >= TINT_MIN) phrases.push(["cool", "쿨톤", "cool"]);
-    if (tint.green >= TINT_MIN) phrases.push([null, "그린 틴트", "green tint"]);
-    if (tint.magenta >= TINT_MIN) phrases.push([null, "마젠타 틴트", "magenta tint"]);
+    if (tint.warm >= TINT_MIN && tint.cool >= TINT_MIN) phrases.push([null, "웜/쿨 스플릿 톤", "warm/cool split tone", "暖色/寒色のスプリットトーン"]);
+    else if (tint.warm >= TINT_MIN) phrases.push(["warm", "웜톤", "warm", "暖色系"]);
+    else if (tint.cool >= TINT_MIN) phrases.push(["cool", "쿨톤", "cool", "寒色系"]);
+    if (tint.green >= TINT_MIN) phrases.push([null, "그린 틴트", "green tint", "グリーン寄り"]);
+    if (tint.magenta >= TINT_MIN) phrases.push([null, "마젠타 틴트", "magenta tint", "マゼンタ寄り"]);
 
-    if (sat >= 30) phrases.push(["vivid", "비비드", "vivid"]);
-    else if (sat <= -20) phrases.push(["muted", "저채도", "muted"]);
+    if (sat >= 30) phrases.push(["vivid", "비비드", "vivid", "ビビッド"]);
+    else if (sat <= -20) phrases.push(["muted", "저채도", "muted", "低彩度"]);
 
     // A strongly pushed colour in the blender is usually the point of the recipe.
     let boosted: string | null = null;
@@ -83,17 +83,18 @@ export function analyzeLook(p: RecipeParams, monoHint = false): Look {
       }
     }
     if (boosted) {
-      const names: Record<string, [string, string]> = {
-        red: ["레드", "red"],
-        orange: ["오렌지", "orange"],
-        yellow: ["옐로", "yellow"],
-        green: ["그린", "green"],
-        cyan: ["시안", "cyan"],
-        blue: ["블루", "blue"],
-        purple: ["퍼플", "purple"],
-        magenta: ["마젠타", "magenta"],
+      const names: Record<string, [string, string, string]> = {
+        red: ["레드", "red", "レッド"],
+        orange: ["오렌지", "orange", "オレンジ"],
+        yellow: ["옐로", "yellow", "イエロー"],
+        green: ["그린", "green", "グリーン"],
+        cyan: ["시안", "cyan", "シアン"],
+        blue: ["블루", "blue", "ブルー"],
+        purple: ["퍼플", "purple", "パープル"],
+        magenta: ["마젠타", "magenta", "マゼンタ"],
       };
-      phrases.push([null, `${names[boosted][0]} 강조`, `${names[boosted][1]} pop`]);
+      const [ko, en, ja] = names[boosted];
+      phrases.push([null, `${ko} 강조`, `${en} pop`, `${ja}を強調`]);
     }
   }
 
@@ -104,26 +105,27 @@ export function analyzeLook(p: RecipeParams, monoHint = false): Look {
     const lift = curve[0] / max;
     const roll = 1 - curve[256] / max;
     const slope = (curve[192] - curve[64]) / (max * 0.5);
-    if (lift >= 0.05) phrases.push(["film", "블랙을 띄운 매트 필름 톤", "matte, lifted blacks"]);
-    else if (roll >= 0.06) phrases.push(["film", "하이라이트를 누른 필름 톤", "rolled-off highlights"]);
-    if (slope >= 1.4) phrases.push(["contrasty", "강한 대비", "punchy contrast"]);
-    else if (slope <= 1.05) phrases.push(["soft", "부드러운 대비", "gentle contrast"]);
+    if (lift >= 0.05) phrases.push(["film", "블랙을 띄운 매트 필름 톤", "matte, lifted blacks", "黒を浮かせたマットなフィルム調"]);
+    else if (roll >= 0.06) phrases.push(["film", "하이라이트를 누른 필름 톤", "rolled-off highlights", "ハイライトを抑えたフィルム調"]);
+    if (slope >= 1.4) phrases.push(["contrasty", "강한 대비", "punchy contrast", "強いコントラスト"]);
+    else if (slope <= 1.05) phrases.push(["soft", "부드러운 대비", "gentle contrast", "やわらかいコントラスト"]);
   } else {
     const contrast = p.contrast ?? 0;
-    if (contrast >= 50) phrases.push(["contrasty", "강한 대비", "punchy contrast"]);
-    else if (contrast <= -15) phrases.push(["soft", "부드러운 대비", "gentle contrast"]);
-    if ((p.blackLevel ?? 0) >= 15 || (p.shadows ?? 0) >= 40) phrases.push(["film", "밝게 띄운 섀도", "lifted shadows"]);
+    if (contrast >= 50) phrases.push(["contrasty", "강한 대비", "punchy contrast", "強いコントラスト"]);
+    else if (contrast <= -15) phrases.push(["soft", "부드러운 대비", "gentle contrast", "やわらかいコントラスト"]);
+    if ((p.blackLevel ?? 0) >= 15 || (p.shadows ?? 0) >= 40) phrases.push(["film", "밝게 띄운 섀도", "lifted shadows", "シャドーを持ち上げた階調"]);
   }
-  if ((p.clarity ?? 0) <= -1.5) phrases.push(["soft", "은은한 글로우", "soft glow"]);
-  else if ((p.clarity ?? 0) >= 2) phrases.push([null, "선명한 질감", "crisp texture"]);
+  if ((p.clarity ?? 0) <= -1.5) phrases.push(["soft", "은은한 글로우", "soft glow", "ほのかなグロー"]);
+  else if ((p.clarity ?? 0) >= 2) phrases.push([null, "선명한 질감", "crisp texture", "くっきりした質感"]);
 
-  if (phrases.length === 0) phrases.push([null, "자연스러운 기본 톤", "natural, close to standard"]);
+  if (phrases.length === 0) phrases.push([null, "자연스러운 기본 톤", "natural, close to standard", "標準に近い自然な仕上がり"]);
 
   return {
     tags: [...new Set(phrases.map(([tag]) => tag).filter((t): t is string => t !== null))],
     summary: {
       ko: phrases.map(([, ko]) => ko).join(" · "),
       en: phrases.map(([, , en]) => en).join(" · "),
+      ja: phrases.map(([, , , ja]) => ja).join(" · "),
     },
   };
 }
