@@ -125,7 +125,7 @@ function RecipePicker({ onClose, source }: { onClose: () => void; source: Prepar
           </button>
         </div>
         <div class="picker-bar">
-          <input type="search" placeholder={t("search")} value={query} onInput={(e) => setQuery(e.currentTarget.value)} autoFocus />
+          <input type="search" placeholder={t("search")} value={query} onInput={(e) => setQuery(e.currentTarget.value)} autoFocus={!isAndroid} />
           <span class="muted small">{t("slotsLeft", { n: slots - picked.length })}</span>
         </div>
         {allRecipes.value.length === 0 && <p class="empty small-empty">{t("pickerEmpty")}</p>}

@@ -1,10 +1,10 @@
 # NP3 Lab
 
-**니콘 Z 플렉시블 컬러 레시피(.NP3)를 SD카드에서 바로 관리하는 Mac 앱**입니다. 카드를 꽂으면 앱이 저절로 열리고, 카드 속 레시피를 보여주고, 원하는 레시피를 한 번에 넣고 뺍니다.
+**니콘 Z 플렉시블 컬러 레시피(.NP3)를 SD카드에서 바로 관리하는 Mac·안드로이드 앱**입니다. 카드를 꽂으면 앱이 저절로 열리고, 카드 속 레시피를 보여주고, 원하는 레시피를 한 번에 넣고 뺍니다.
 
 > ⚠️ **비공식 서드파티 도구입니다.** Nikon Corporation과 관련이 없고 Nikon의 보증이나 후원을 받지 않았습니다. Nikon, Nikon Z, Zf, Z8, Z9, Picture Control은 Nikon Corporation의 상표입니다. 자세한 내용은 [NOTICE.md](NOTICE.md)를 보세요.
 
-[English](#english) · [日本語](#日本語) · [다운로드 (Releases)](https://github.com/MJ-best/np3-lab/releases) · [출처와 라이선스](NOTICE.md)
+[English](#english) · [日本語](#日本語) · [안드로이드판](#안드로이드판) · [다운로드 (Releases)](https://github.com/MJ-best/np3-lab/releases) · [출처와 라이선스](NOTICE.md)
 
 ![카드를 꽂으면 카드 속 레시피가 보입니다](docs/screenshots/card.jpg)
 
@@ -82,15 +82,52 @@ xattr -cr "/Applications/NP3 Lab.app"
 
 ## 안드로이드판
 
-Android 7.0 이상 휴대폰·태블릿에서 Mac 앱과 같은 카드 중심 화면을 씁니다. 아직 실험 단계입니다.
+Android 7.0 이상 휴대폰·태블릿에서 Mac 앱과 같은 카드 중심 화면을 씁니다. 아직 실험 단계입니다. 준비물은 **USB OTG 카드리더**(휴대폰 단자에 맞는 USB-C SD카드 리더)입니다.
 
-1. USB OTG 카드리더에 SD카드를 꽂아 기기에 연결합니다.
-2. **SD카드 선택**을 누르고 카드(또는 그 안의 `NIKON` 폴더)를 고릅니다. 처음 한 번만 고르면 다음부터는 꽂기만 해도 읽습니다.
-3. 레시피 넣기·빼기·이름 바꾸기·자동 백업은 Mac 앱과 같습니다. 단, 빼기는 휴지통이 없어 바로 지워지고 **되돌리기**로 다시 씁니다.
-4. 꺼낼 때는 알림창의 USB 저장소 알림에서 **꺼내기**를 누른 뒤 카드리더를 뽑으세요.
+### 1. 카드 연결 (처음 한 번)
 
-- NP3·ZIP·백업 저장은 시스템 저장 창으로, 전체 내보내기는 고른 폴더로 저장합니다.
-- 카드 자동 실행, 로그인 시 실행, NX Studio 파일 찾기는 Android판에 없습니다.
+<table>
+<tr>
+<td valign="top"><img width="260" src="docs/screenshots/android/01-connect.jpg" alt="카드 연결 화면"><br><sub>① 카드리더에 SD카드를 꽂아 연결하고 <b>SD카드 선택</b>을 누릅니다.</sub></td>
+<td valign="top"><img width="260" src="docs/screenshots/android/02-pick-folder.jpg" alt="폴더 선택"><br><sub>② 왼쪽 위 ☰에서 SD카드를 고르고 <b>NIKON</b> 폴더를 연 다음 <b>이 폴더 사용</b> → <b>허용</b>.</sub></td>
+<td valign="top"><img width="260" src="docs/screenshots/android/04-card.jpg" alt="카드 화면"><br><sub>③ 카드 속 레시피가 보입니다. 다음부터는 카드를 꽂기만 하면 저절로 읽습니다.</sub></td>
+</tr>
+</table>
+
+> 안드로이드는 SD카드의 맨 위 폴더를 고를 수 없게 막아 두었습니다. 그래서 `NIKON` 폴더를 고릅니다. 폴더가 없으면 폴더 선택 화면에서 **새 폴더 만들기**로 `NIKON`을 만드세요.
+
+### 2. 레시피 넣기 · 고르기 · 만들기
+
+<table>
+<tr>
+<td valign="top"><img width="260" src="docs/screenshots/android/03-add.jpg" alt="레시피 넣기"><br><sub><b>＋ 레시피 넣기</b>로 여러 개를 골라 한 번에 넣습니다. 파일 이름(PICCON01.NP3…)은 자동으로 매깁니다.</sub></td>
+<td valign="top"><img width="260" src="docs/screenshots/android/05-recipes.jpg" alt="레시피 탭"><br><sub><b>레시피</b> 탭: 커뮤니티 레시피 260여 개를 받아 검색·필터로 찾습니다.</sub></td>
+<td valign="top"><img width="260" src="docs/screenshots/android/06-detail.jpg" alt="레시피 상세"><br><sub>레시피를 누르면 원본/적용을 슬라이더로 비교합니다. 장면을 바꾸거나 내 사진으로도 볼 수 있습니다.</sub></td>
+</tr>
+</table>
+<table>
+<tr>
+<td valign="top"><img width="260" src="docs/screenshots/android/07-detail-actions.jpg" alt="레시피 설정값"><br><sub>카드에 넣기, 복제해서 편집, NP3 저장, 텍스트 복사와 전체 설정값.</sub></td>
+<td valign="top"><img width="260" src="docs/screenshots/android/08-editor.jpg" alt="에디터"><br><sub><b>에디터</b> 탭에서 나만의 레시피를 만듭니다.</sub></td>
+<td valign="top"><img width="260" src="docs/screenshots/android/09-editor-color.jpg" alt="컬러 블렌더와 컬러 그레이딩"><br><sub>컬러 블렌더 8색, 컬러 그레이딩 3구간, 톤 커브까지 조절합니다.</sub></td>
+</tr>
+</table>
+
+### 3. 카메라에서 불러오기
+
+<table>
+<tr>
+<td valign="top"><img width="260" src="docs/screenshots/android/10-camera-guide.jpg" alt="카메라 안내"><br><sub>카드 화면 아래 <b>카메라에서 레시피 불러오기</b>에 기종별 메뉴 경로가 나옵니다.</sub></td>
+</tr>
+</table>
+
+꺼낼 때는 알림창의 USB 저장소 알림에서 **꺼내기**를 누른 뒤 카드리더를 뽑으세요.
+
+### Mac 앱과 다른 점
+
+- 레시피 빼기는 휴지통이 없어 바로 지워집니다. 대신 바로 뜨는 **되돌리기**로 다시 넣을 수 있습니다.
+- NP3·백업 저장은 시스템 저장 창으로, 전체 내보내기는 고른 폴더로 저장합니다.
+- 카드 자동 실행, 로그인 시 실행, NX Studio 파일 찾기는 없습니다.
 
 ## 개발
 
@@ -144,6 +181,8 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 - **Editor, before/after preview, Reddit/text import, per-model camera instructions** (Zf, Z6III, Z5II, Z50II, ZR, Z8, Z9).
 
 **Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repositories have no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).
+
+**Android (experimental):** the same card-first app on Android 7.0+ phones and tablets, with a USB OTG card reader. Tap **Choose SD card**, pick the card's `NIKON` folder (Android doesn't allow choosing the card's top folder) and allow access; after that the card is read whenever it's plugged in. Screenshots: [안드로이드판](#안드로이드판).
 
 **Install:** download the DMG from [Releases](https://github.com/MJ-best/np3-lab/releases) and drag the app to Applications. It's unsigned, so right-click → Open the first time, or run `xattr -cr "/Applications/NP3 Lab.app"`.
 
