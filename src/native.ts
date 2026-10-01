@@ -13,6 +13,14 @@ export interface NativeCardFile {
   bytes: Uint8Array;
 }
 
+/** An NP3 file found elsewhere on the computer (e.g. exported from NX Studio). */
+export interface LocalNp3File {
+  name: string;
+  path: string;
+  mtimeMs: number;
+  bytes: Uint8Array;
+}
+
 export interface NativeSettings {
   openOnCard: boolean;
   openAtLogin: boolean;
@@ -29,6 +37,8 @@ export interface NativeBridge {
   trashFile(cardPath: string, fileName: string): Promise<boolean>;
   eject(cardPath: string): Promise<boolean>;
   reveal(cardPath: string): Promise<boolean>;
+  /** NP3 files on this computer, newest first; only those modified after `sinceMs` if given. */
+  findLocalNp3(sinceMs?: number): Promise<LocalNp3File[]>;
   getSettings(): Promise<NativeSettings>;
   setSettings(patch: Partial<Pick<NativeSettings, "openOnCard" | "openAtLogin">>): Promise<NativeSettings>;
   onCardsChanged(callback: (cards: NativeCard[]) => void): () => void;

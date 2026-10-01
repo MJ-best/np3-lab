@@ -4,7 +4,8 @@ import { lang, setLang, t, type MessageKey } from "./i18n";
 import { isDesktop } from "./native";
 import { webglAvailable } from "./render/renderer";
 import { addPhotos, loadPhotoIndex, matchRecipeByExif } from "./photos";
-import { addUserPhoto, allRecipes, cart, dismissToast, importSession, openImport, route, showToast, toasts, type Route } from "./state";
+import { checkForNewLocalNp3 } from "./localNp3";
+import { addUserPhoto, allRecipes, builtinsReady, cart, dismissToast, importSession, openImport, route, showToast, toasts, type Route } from "./state";
 import { Cart } from "./ui/Cart";
 import { CardView } from "./ui/CardView";
 import { Editor } from "./ui/Editor";
@@ -92,6 +93,11 @@ export function App() {
     if (isDesktop) {
       document.documentElement.classList.add("desktop");
       startCardSync();
+      // NP3 files exported from NX Studio (or saved anywhere) since we last looked.
+      void builtinsReady.then(checkForNewLocalNp3);
+      const onFocus = () => void checkForNewLocalNp3();
+      window.addEventListener("focus", onFocus);
+      return () => window.removeEventListener("focus", onFocus);
     }
   }, []);
   useEffect(() => window.scrollTo(0, 0), [route.value]);

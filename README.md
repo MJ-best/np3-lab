@@ -29,6 +29,7 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 | **커뮤니티 레시피 260여 개** | Nikon 크리에이터 · Nikon 컬러 그레이딩 · 독립 크리에이터 · SerbanJPG 필름 레시피를 원본 저장소에서 바로 받습니다. 업데이트할 때는 바뀐 파일만 받습니다. 레시피마다 크리에이터·원본 링크와 함께 **설명·컨셉·추천 장면**이 표시되고 검색됩니다. |
 | **미리보기 비교** | 풍경·피부톤·야경·컬러 차트나 내 사진 위에서 원본/적용을 슬라이더로 비교합니다. 레시피 수치로 계산한 근사치입니다. |
 | **플렉시블 에디터** | 샤프닝, 명료도, 톤, 채도, 컬러 블렌더 8색, 컬러 그레이딩 3구간, 톤 커브(최대 20점)를 조절해 나만의 `.NP3`를 만듭니다. |
+| **NX Studio에서 바로 가져오기** | NX Studio 등에서 NP3를 파일로 내보내면 어느 폴더에 저장했든 Spotlight로 찾아냅니다. 앱을 앞으로 가져오면 "새 NP3 n개 발견 · 가져오기" 알림이 뜨고, 가져오기 메뉴의 **이 Mac에서 NP3 찾기**로 최신 파일부터 볼 수도 있습니다. |
 | **Reddit·텍스트 가져오기** | 커뮤니티에 글로 공유된 수치를 붙여넣으면 레시피 여러 개를 자동으로 나눠 가져옵니다(한국어·영어). |
 | **기종별 불러오기 안내** | 카드를 뽑으면 Zf·Z6III·Z5II·Z50II·ZR·Z8·Z9별 메뉴 경로와 필요한 펌웨어를 보여줍니다. |
 
@@ -121,6 +122,7 @@ npm run build      # dist/NP3-Lab.html 브라우저판
 - **Automatic backup:** recipes found on a card are saved to My recipes.
 - **Your own filter library:** keep the photos you shot with each recipe as its gallery. Drop Nikon JPEGs on the window and they're filed under the recipe named in their EXIF automatically.
 - **260+ community recipes:** Nikon creators, Nikon color grading presets, independent creators and [SerbanJPG](https://serbanjpg.com) film recipes, downloaded in the app from [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes) and [vanlong20it/recipe-note](https://github.com/vanlong20it/recipe-note). Updates only fetch changed files. Each recipe shows its creator, a link to the original file, and a searchable description, concept and recommended use (notes based on [Timor88/NikonNP3](https://github.com/Timor88/NikonNP3)).
+- **Straight from NX Studio:** export a Picture Control to an NP3 file anywhere and NP3 Lab finds it with Spotlight. Bring the app forward to get a "new NP3 found · Import" prompt, or use Import → Find NP3 files on this Mac (newest first).
 - **Editor, before/after preview, Reddit/text import, per-model camera instructions** (Zf, Z6III, Z5II, Z50II, ZR, Z8, Z9).
 
 **Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repositories have no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).

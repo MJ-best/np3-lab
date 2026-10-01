@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, shell } from "electron";
 import { LOGIN_FLAG, setMacLoginAgent } from "./loginItem.mjs";
+import { findLocalNp3 } from "./localNp3.mjs";
 import { CARD_FILESYSTEMS, isSafeNp3Name, looksLikeNikonCard, parseMacMounts, withTimeout } from "./volumes.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -294,6 +295,11 @@ ipcMain.handle("card:reveal", async (_e, cardPath) => {
   await shell.openPath(dir ?? cardPath);
   return true;
 });
+
+// NP3 files elsewhere on this Mac (e.g. exported from NX Studio), newest first.
+ipcMain.handle("np3:find-local", async (_e, sinceMs) =>
+  findLocalNp3({ sinceMs: Number.isFinite(sinceMs) ? sinceMs : 0, exclude: [app.getPath("userData")] }),
+);
 
 ipcMain.handle("settings:get", () => ({ ...settings, canUseLoginItem: canUseLoginItem() }));
 ipcMain.handle("settings:set", (_e, patch) => {

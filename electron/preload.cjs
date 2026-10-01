@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("nikonPcLab", {
   trashFile: (cardPath, fileName) => ipcRenderer.invoke("card:trash", cardPath, fileName),
   eject: (cardPath) => ipcRenderer.invoke("card:eject", cardPath),
   reveal: (cardPath) => ipcRenderer.invoke("card:reveal", cardPath),
+  findLocalNp3: (sinceMs) => ipcRenderer.invoke("np3:find-local", sinceMs),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   setSettings: (patch) => ipcRenderer.invoke("settings:set", patch),
   onCardsChanged: (callback) => {

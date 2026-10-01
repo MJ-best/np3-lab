@@ -16,6 +16,7 @@ import {
 } from "../state";
 import { communityInfo } from "../community";
 import { lookOf } from "../look";
+import { importFromThisMac } from "../localNp3";
 import { photosByRecipe } from "../photos";
 import { CommunityPanel } from "./CommunityPanel";
 import { usePreparedSample } from "./hooks";
@@ -67,6 +68,7 @@ export function Gallery() {
             <div class="menu-list" onClick={() => menuRef.current?.removeAttribute("open")}>
               <button onClick={() => (pasteOpen.value = true)}>{t("pasteText")}</button>
               <button onClick={() => openImport("imaging-cloud")}>{t("importCloud")}</button>
+              {isDesktop && <button onClick={() => void importFromThisMac()}>{t("localNp3Search")}</button>}
               <button onClick={() => np3Input.current?.click()}>{t("importNp3")}</button>
               {!isDesktop && canUseCardFolder() && <button onClick={importFromCard}>{t("importFromCard")}</button>}
             </div>
