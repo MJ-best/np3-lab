@@ -1,25 +1,7 @@
 // Exports recipes to a folder without ever overwriting a file that's already there.
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-
-/** 2026-10-01 → "20261001" (local time). */
-export function dateTag(date = new Date()) {
-  const p = (n) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}${p(date.getMonth() + 1)}${p(date.getDate())}`;
-}
-
-/** A single safe path segment: no separators, no "..", nothing Finder or FAT would reject. */
-export function safeSegment(name) {
-  const s = String(name)
-    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, "_")
-    .replace(/^\.+/, "")
-    .trim()
-    .slice(0, 80);
-  return s || "_";
-}
-
-const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const sameBytes = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+import { dateTag, exportNames, safeSegment, sameBytes } from "./cardRules.mjs";
 
 /**
  * Write `bytes` as `<base><ext>` in `dir`, keeping every existing file:
@@ -34,7 +16,7 @@ const sameBytes = (a, b) => a.length === b.length && a.every((v, i) => v === b[i
  */
 export async function writeWithoutOverwrite(dir, base, bytes, { ext = ".NP3", tag = dateTag() } = {}) {
   await mkdir(dir, { recursive: true });
-  const family = new RegExp(`^${escapeRe(base)}(?:_\\d{8}(?:-\\d+)?)?${escapeRe(ext)}$`, "i");
+  const { family, candidates } = exportNames(base, ext, tag);
   const names = await readdir(dir);
   const taken = new Set(names.map((n) => n.toLowerCase()));
   for (const name of names.filter((n) => family.test(n))) {
@@ -44,8 +26,6 @@ export async function writeWithoutOverwrite(dir, base, bytes, { ext = ".NP3", ta
       /* unreadable: treat as different */
     }
   }
-  const candidates = [`${base}${ext}`, `${base}_${tag}${ext}`];
-  for (let n = 2; n < 1000; n++) candidates.push(`${base}_${tag}-${n}${ext}`);
   for (const name of candidates) {
     if (taken.has(name.toLowerCase())) continue;
     try {

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "preact/hooks";
+import { handleAndroidBack } from "./androidBack";
 import { activeCard, startCardSync } from "./cards";
 import { lang, t, type MessageKey } from "./i18n";
-import { isDesktop } from "./native";
+import { isAndroid, isDesktop } from "./native";
 import { webglAvailable } from "./render/renderer";
 import { addPhotos, loadPhotoIndex, matchRecipeByExif } from "./photos";
 import { checkForNewLocalNp3 } from "./localNp3";
@@ -92,7 +93,12 @@ export function App() {
     void loadPhotoIndex();
     if (isDesktop) {
       document.documentElement.classList.add("desktop");
+      if (isAndroid) document.documentElement.classList.add("android");
       startCardSync();
+      if (isAndroid) {
+        handleAndroidBack();
+        return;
+      }
       // NP3 files exported from NX Studio (or saved anywhere) since we last looked.
       void builtinsReady.then(checkForNewLocalNp3);
       const onFocus = () => void checkForNewLocalNp3();

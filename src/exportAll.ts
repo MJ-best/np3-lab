@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import { communitySourceOf, isCommunityRecipe } from "./community";
 import { t } from "./i18n";
-import { native, nativeErrorMessage, type ExportFile } from "./native";
+import { isAndroid, native, nativeErrorMessage, type ExportFile } from "./native";
 import { recipeToBytes, type Recipe } from "./np3/recipe";
 import { downloadBytes } from "./pack/download";
 import { fileBaseFor } from "./pack/naming";
@@ -75,7 +75,8 @@ export async function exportAllRecipes(): Promise<void> {
         (r.failed > 0 ? ` ${t("exportFailedSome", { n: r.failed })}` : ""),
       r.failed > 0 ? "warn" : "ok",
       8000,
-      { label: t("revealInFinder"), run: () => void native!.revealExport(folder) },
+      // Android has no file manager to open a folder in.
+      isAndroid ? undefined : { label: t("revealInFinder"), run: () => void native!.revealExport(folder) },
     );
   } catch (err) {
     showToast(t("exportFailed", { msg: nativeErrorMessage(err) }), "error");

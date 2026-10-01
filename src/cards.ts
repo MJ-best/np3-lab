@@ -1,6 +1,6 @@
 import { computed, signal } from "@preact/signals";
 import { t } from "./i18n";
-import { native, nativeErrorMessage, type NativeCard } from "./native";
+import { androidNative, isAndroid, native, nativeErrorMessage, type NativeCard } from "./native";
 import { newId, parseNp3, recipeToBytes, sameBytes, withNpName, type Recipe } from "./np3/recipe";
 import { planCardFiles } from "./pack/naming";
 import { readStore, writeStore } from "./storage";
@@ -152,6 +152,7 @@ export function startCardSync() {
   void native.listCards().then(applyCards);
   // Files may have been changed in Finder while the app was in the background.
   window.addEventListener("focus", () => void refreshActiveCard());
+  if (isAndroid) document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && void refreshActiveCard());
 }
 
 function fail(err: unknown) {
@@ -253,9 +254,25 @@ export async function renameOnActiveCard(item: CardItem, name: string) {
   }
 }
 
+/** Android: let the user choose the SD card folder (once per card). */
+export async function pickAndroidCard() {
+  if (!androidNative) return;
+  try {
+    const r = await androidNative.pickCard();
+    if ("notACard" in r) showToast(t("notANikonCard", { name: r.notACard }), "warn", 8000);
+    else if ("card" in r) applyCards(await native!.listCards());
+  } catch (err) {
+    fail(err);
+  }
+}
+
 export async function ejectActiveCard() {
   const card = activeCard.value;
   if (!native || !card) return;
+  if (isAndroid) {
+    showToast(t("ejectAndroid"), "info", 8000);
+    return;
+  }
   try {
     await native.eject(card.path);
     showToast(t("ejected", { name: card.name }), "ok", 6000);

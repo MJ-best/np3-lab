@@ -13,6 +13,8 @@ function renameOutput(): Plugin {
     name: "np3-lab:rename-output",
     apply: "build",
     closeBundle() {
+      // The Android build keeps index.html: Capacitor loads it from dist/.
+      if (process.env.CAP_BUILD) return;
       const from = resolve(import.meta.dirname, "dist/index.html");
       if (!existsSync(from)) return;
       renameSync(from, resolve(import.meta.dirname, "dist", OUTPUT_NAME));

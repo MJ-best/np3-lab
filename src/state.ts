@@ -433,5 +433,4 @@ export function saveDraft(asNew = false): Recipe | null {
   return recipe;
 }
 
-export const toneKeysDisabled = computed(() => draft.value.toneMode === "curve");
 export { TONE_KEYS };

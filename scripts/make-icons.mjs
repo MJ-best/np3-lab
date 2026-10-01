@@ -111,6 +111,27 @@ function cameraSdf(px, py) {
 
 const over = (dst, src, a) => dst.map((c, i) => c + (src[i] - c) * a);
 
+/** Draw the camera (shadow, body, stripe, lens) over `rgb` at design point (px, py). */
+function paintCamera(rgb, px, py, k) {
+  // Camera: drop shadow, body with a slight top highlight.
+  const camD = cameraSdf(px, py);
+  rgb = over(rgb, [60, 50, 35], 0.22 * (1 - smooth(-6, 30, cameraSdf(px, py - 16))));
+  const bodyShade = 26 - 16 * smooth(BODY.y0 - 110, BODY.y1, py);
+  rgb = over(rgb, [bodyShade, bodyShade, bodyShade], cover(camD, k));
+
+  // Red accent stripe on the grip.
+  rgb = over(rgb, [210, 44, 36], cover(roundBox(px, py, STRIPE.x0, STRIPE.y0, STRIPE.x1, STRIPE.y1, STRIPE.r), k));
+
+  // Lens: white ring, dark glass, highlight arc and glint.
+  const d = circle(px, py, LENS.cx, LENS.cy, LENS.r - LENS.ring / 2);
+  rgb = over(rgb, [244, 244, 240], cover(Math.abs(d) - LENS.ring / 2, k));
+  rgb = over(rgb, [10, 10, 10], cover(circle(px, py, LENS.cx, LENS.cy, LENS.r - LENS.ring), k));
+  const ang = (Math.atan2(py - LENS.cy, px - LENS.cx) * 180) / Math.PI; // -180..180, 0 = right, -90 = up
+  const arcA = cover(Math.abs(circle(px, py, LENS.cx, LENS.cy, 88)) - 6, k) * smooth(-172, -160, ang) * (1 - smooth(-112, -100, ang));
+  rgb = over(rgb, [236, 236, 232], arcA);
+  return rgb;
+}
+
 function appIcon(size) {
   const k = 1024 / size;
   const TILE = { x0: 100, y0: 100, x1: 924, y1: 924, r: 185 };
@@ -130,22 +151,7 @@ function appIcon(size) {
     }
     if (tileA === 0) return [0, 0, 0, Math.round(alpha * 255)];
 
-    // Camera: drop shadow, body with a slight top highlight.
-    const camD = cameraSdf(px, py);
-    rgb = over(rgb, [60, 50, 35], 0.22 * (1 - smooth(-6, 30, cameraSdf(px, py - 16))));
-    const bodyShade = 26 - 16 * smooth(BODY.y0 - 110, BODY.y1, py);
-    rgb = over(rgb, [bodyShade, bodyShade, bodyShade], cover(camD, k));
-
-    // Red accent stripe on the grip.
-    rgb = over(rgb, [210, 44, 36], cover(roundBox(px, py, STRIPE.x0, STRIPE.y0, STRIPE.x1, STRIPE.y1, STRIPE.r), k));
-
-    // Lens: white ring, dark glass, highlight arc and glint.
-    const d = circle(px, py, LENS.cx, LENS.cy, LENS.r - LENS.ring / 2);
-    rgb = over(rgb, [244, 244, 240], cover(Math.abs(d) - LENS.ring / 2, k));
-    rgb = over(rgb, [10, 10, 10], cover(circle(px, py, LENS.cx, LENS.cy, LENS.r - LENS.ring), k));
-    const ang = (Math.atan2(py - LENS.cy, px - LENS.cx) * 180) / Math.PI; // -180..180, 0 = right, -90 = up
-    const arcA = cover(Math.abs(circle(px, py, LENS.cx, LENS.cy, 88)) - 6, k) * smooth(-172, -160, ang) * (1 - smooth(-112, -100, ang));
-    rgb = over(rgb, [236, 236, 232], arcA);
+    rgb = paintCamera(rgb, px, py, k);
     return [...rgb.map(Math.round), Math.round(alpha * 255)];
   });
 }
@@ -171,6 +177,42 @@ const out = (rel, buf) => {
   writeFileSync(p, buf);
   console.log("wrote", rel);
 };
+// Android: flat cream behind the camera (adaptive icon background, legacy round icon).
+const CREAM = [242, 238, 228];
+
+/**
+ * Camera only, on transparency, `width` of the canvas wide. The colours are un-premultiplied
+ * against CREAM so that, laid over it, the result matches the Mac icon (shadow included).
+ */
+function cameraOnly(size, width, tile) {
+  const k = 640 / (width * size); // the camera is 640 design units wide (x 192–832)
+  return png(size, (x, y) => {
+    const px = 512 + (x - size / 2) * k;
+    const py = 539 + (y - size / 2) * k; // vertical centre of hump + body (y 318–760)
+    const body = cover(cameraSdf(px, py), k);
+    const shadow = 0.22 * (1 - smooth(-6, 30, cameraSdf(px, py - 16)));
+    const target = paintCamera(CREAM, px, py, k);
+    if (tile) {
+      const a = cover(Math.hypot(x - size / 2, y - size / 2) - size * 0.46, 1);
+      return [...target.map(Math.round), Math.round(a * 255)];
+    }
+    const a = body + shadow * (1 - body);
+    if (a <= 0) return [0, 0, 0, 0];
+    const rgb = target.map((c, i) => Math.min(255, Math.max(0, (c - CREAM[i] * (1 - a)) / a)));
+    return [...rgb.map(Math.round), Math.round(a * 255)];
+  });
+}
+
 out("build/icon.png", appIcon(1024));
 out("electron/assets/trayTemplate.png", trayIcon(18));
 out("electron/assets/trayTemplate@2x.png", trayIcon(36));
+
+const RES = "android/app/src/main/res";
+const DENSITIES = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
+for (const [name, scale] of Object.entries(DENSITIES)) {
+  // Legacy icons (Android 7) are 48dp; the adaptive foreground is 108dp with a 72dp visible area.
+  out(`${RES}/mipmap-${name}/ic_launcher.png`, appIcon(48 * scale));
+  out(`${RES}/mipmap-${name}/ic_launcher_round.png`, cameraOnly(48 * scale, 0.6, true));
+  // 0.5 of 108dp keeps the camera inside the 66dp safe circle of any launcher mask.
+  out(`${RES}/mipmap-${name}/ic_launcher_foreground.png`, cameraOnly(108 * scale, 0.5, false));
+}

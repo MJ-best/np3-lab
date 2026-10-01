@@ -1,7 +1,7 @@
 import { useEffect } from "preact/hooks";
 import { activeCard, addToActiveCard } from "../cards";
 import { t } from "../i18n";
-import { isDesktop } from "../native";
+import { isAndroid, isDesktop } from "../native";
 import { NP_NAME_MAX, RANGES, TONE_KEYS, isValidNpName, paramsToBytes, type ScalarKey } from "../np3/recipe";
 import { formatRecipeText } from "../np3/textFormat";
 import { downloadBytes } from "../pack/download";
@@ -98,7 +98,7 @@ export function Editor() {
           <div class="editor-status">
             <span class={`badge${d.editingId ? "" : " accent"}`}>{d.editingId ? t("editingExisting") : t("editingNew")}</span>
             {d.dirty && <span class="badge warn">{t("unsaved")}</span>}
-            <span class="hint right">{t("shortcutSave")}</span>
+            {!isAndroid && <span class="hint right">{t("shortcutSave")}</span>}
           </div>
           <label class="field">
             <span>{t("titleField")}</span>

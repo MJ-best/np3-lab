@@ -152,4 +152,3 @@ export async function matchRecipeByExif(file: File, recipes: Recipe[]): Promise<
   return best;
 }
 
-export const photoCount = (recipeId: string) => photosByRecipe.value[recipeId]?.length ?? 0;
