@@ -4,7 +4,7 @@ import { deletePhoto, fullPhotoUrl, photosByRecipe, type PhotoThumb } from "../p
 import { importPhotos } from "../photoImport";
 import { PHOTO_ACCEPT } from "../raw";
 
-function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThumb[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
+export function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThumb[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
   const photo = photos[index];
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -56,8 +56,12 @@ function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThumb[]; i
   );
 }
 
-/** "Photos taken with this recipe" — the user's own examples, added by hand or by drag & drop. */
-export function RecipePhotos({ recipeId }: { recipeId: string }) {
+/**
+ * "Photos taken with this recipe" — the user's own examples, added by hand or by drag & drop.
+ * `wall` is the full gallery (photos keep their shape, portrait or landscape); `compact`
+ * is the invitation shown under the preview while a recipe has no photos yet.
+ */
+export function RecipePhotos({ recipeId, layout = "compact" }: { recipeId: string; layout?: "wall" | "compact" }) {
   const photos = photosByRecipe.value[recipeId] ?? [];
   const [open, setOpen] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -74,7 +78,7 @@ export function RecipePhotos({ recipeId }: { recipeId: string }) {
 
   return (
     <section
-      class={`recipe-photos${over ? " over" : ""}`}
+      class={`recipe-photos ${layout}${over ? " over" : ""}`}
       onDragOver={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -112,7 +116,7 @@ export function RecipePhotos({ recipeId }: { recipeId: string }) {
       {photos.length === 0 ? (
         <p class="hint">{t("myPhotosEmpty")}</p>
       ) : (
-        <div class="photo-grid">
+        <div class={layout === "wall" ? "photo-wall" : "photo-grid"}>
           {photos.map((p, i) => (
             <button key={p.id} class="photo-tile" onClick={() => setOpen(i)} aria-label={p.name}>
               <img src={p.thumbUrl} alt="" loading="lazy" draggable={false} />

@@ -18,6 +18,7 @@ import { fileBaseFor } from "../pack/naming";
 import {
   activeSample,
   allSamples,
+  detailTab,
   deleteMine,
   detailId,
   openInEditor,
@@ -33,6 +34,7 @@ import { badgeClass, sourceBadge } from "./RecipeCard";
 import { cardRecipeById } from "../cards";
 import { CardButton } from "./CardButton";
 import { RecipePhotos } from "./RecipePhotos";
+import { photosByRecipe } from "../photos";
 import { SceneChips } from "./SceneChips";
 import { formatValue } from "./Slider";
 
@@ -203,6 +205,18 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
   const source = usePreparedSample(activeSample.value);
   const editable = recipe.source === "mine" && !recipe.raw;
   const inLibrary = !recipe.id.startsWith("card:");
+  const photoCount = inLibrary ? (photosByRecipe.value[recipe.id]?.length ?? 0) : 0;
+  const hasPhotos = photoCount > 0;
+  const [view, setView] = useState<"photos" | "preview">(() => detailTab.value ?? (hasPhotos ? "photos" : "preview"));
+  useEffect(() => {
+    detailTab.value = null;
+  }, []);
+  // The first photos added from the empty state: show them where they went.
+  const hadPhotos = useRef(hasPhotos);
+  useEffect(() => {
+    if (hasPhotos && !hadPhotos.current) setView("photos");
+    hadPhotos.current = hasPhotos;
+  }, [hasPhotos]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -219,14 +233,31 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
   return (
     <div class="detail" role="dialog" aria-modal="true" aria-label={tx(recipe.title)}>
       <div class="detail-media">
-        <SceneChips />
-        {recipe.params ? (
-          <CompareSlider source={source} params={recipe.params} maxHeight={620} />
-        ) : (
-          <div class="no-preview">{t("noPreview")}</div>
+        {hasPhotos && (
+          <div class="segmented media-tabs" role="tablist">
+            <button role="tab" aria-selected={view === "photos"} class={view === "photos" ? "active" : ""} onClick={() => setView("photos")}>
+              📷 {t("myPhotosTab", { n: photoCount })}
+            </button>
+            <button role="tab" aria-selected={view === "preview"} class={view === "preview" ? "active" : ""} onClick={() => setView("preview")}>
+              {t("previewTab")}
+            </button>
+          </div>
         )}
-        <p class="hint">{t("approxPreview")}</p>
-        {inLibrary && <RecipePhotos recipeId={recipe.id} />}
+        {hasPhotos && view === "photos" ? (
+          // Real photos shot with the recipe come first: they show it better than any simulation.
+          <RecipePhotos recipeId={recipe.id} layout="wall" />
+        ) : (
+          <>
+            <SceneChips />
+            {recipe.params ? (
+              <CompareSlider source={source} params={recipe.params} maxHeight={620} />
+            ) : (
+              <div class="no-preview">{t("noPreview")}</div>
+            )}
+            <p class="hint">{t("approxPreview")}</p>
+            {inLibrary && !hasPhotos && <RecipePhotos recipeId={recipe.id} />}
+          </>
+        )}
       </div>
       <aside class="detail-info">
         <div class="detail-head">

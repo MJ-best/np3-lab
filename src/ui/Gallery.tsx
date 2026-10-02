@@ -11,8 +11,10 @@ import {
   openImport,
   pasteOpen,
   resetDraft,
+  galleryFilter,
   route,
   showToast,
+  type GalleryFilter,
 } from "../state";
 import { communityInfo } from "../community";
 import { lookOf } from "../look";
@@ -24,14 +26,14 @@ import { photosByRecipe } from "../photos";
 import { CommunityPanel } from "./CommunityPanel";
 import { usePreparedSample } from "./hooks";
 import { np3FromCard, np3FromFiles } from "./ImportDialog";
+import { PhotoLibrary } from "./PhotoLibrary";
 import { RecipeCard } from "./RecipeCard";
 import { SceneChips } from "./SceneChips";
 
-type Filter = "all" | "photos" | "mine" | "reddit" | "imaging-cloud" | `tag:${string}`;
-
 export function Gallery() {
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
+  const filter = galleryFilter.value;
+  const setFilter = (f: GalleryFilter) => (galleryFilter.value = f);
   const np3Input = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
   const backupInput = useRef<HTMLInputElement>(null);
@@ -149,13 +151,18 @@ export function Gallery() {
         ))}
       </div>
 
-      <div class="scene-row">
-        <span class="label">{t("scene")}</span>
-        <SceneChips showHint />
-      </div>
+      {filter !== "photos" && (
+        <div class="scene-row">
+          <span class="label">{t("scene")}</span>
+          <SceneChips showHint />
+        </div>
+      )}
 
       {visible.length === 0 ? (
         <p class="empty">{recipes.length === 0 ? t("libraryEmpty") : t("noResults")}</p>
+      ) : filter === "photos" ? (
+        // My photos: the photos themselves, grouped by recipe.
+        <PhotoLibrary recipes={visible} />
       ) : (
         <div class="grid">
           {visible.map((r) => (

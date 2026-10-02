@@ -1,7 +1,7 @@
 import { t } from "./i18n";
 import { addPhotos, matchRecipeByExif } from "./photos";
 import { isPhotoFile, toViewablePhoto } from "./raw";
-import { addUserPhoto, allRecipes, showToast } from "./state";
+import { addUserPhoto, allRecipes, detailId, galleryFilter, openRecipePhotos, route, showToast } from "./state";
 
 /*
  * One rule for every way a photo comes in (window drop, "Add photos" on a recipe,
@@ -34,7 +34,7 @@ export async function importPhotos(files: File[], opts: { into?: string } = {}):
   const result: PhotoImportResult = { filed: 0, recipes: 0, intoFallback: 0, scenes: 0 };
   let toThis = 0;
   let elsewhere = 0;
-  let elsewhereRecipes = 0;
+  const elsewhereIds: string[] = [];
   for (const [id, list] of byRecipe) {
     const n = await addPhotos(id, list);
     if (n === 0) continue;
@@ -43,7 +43,7 @@ export async function importPhotos(files: File[], opts: { into?: string } = {}):
     if (id === opts.into) toThis += n;
     else {
       elsewhere += n;
-      elsewhereRecipes++;
+      elsewhereIds.push(id);
     }
   }
   if (opts.into) {
@@ -61,6 +61,19 @@ export async function importPhotos(files: File[], opts: { into?: string } = {}):
 
   // Say where things went, especially photos that landed in another recipe than the one on screen.
   if (toThis > 0) showToast(t("photosAdded", { n: toThis }), "ok");
-  if (elsewhere > 0) showToast(t("photosFiled", { n: elsewhere, m: elsewhereRecipes }), "ok", 6000);
+  if (elsewhere > 0) {
+    showToast(t("photosFiled", { n: elsewhere, m: elsewhereIds.length }), "ok", 8000, {
+      label: t("viewPhotos"),
+      run: () => {
+        // One recipe: open its gallery. Several: the My photos view, grouped by recipe.
+        if (elsewhereIds.length === 1) openRecipePhotos(elsewhereIds[0]);
+        else {
+          detailId.value = null;
+          galleryFilter.value = "photos";
+          route.value = "gallery";
+        }
+      },
+    });
+  }
   return result;
 }

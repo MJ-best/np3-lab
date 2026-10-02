@@ -28,6 +28,18 @@ import { base64ToBytes, bytesToBase64, readStore, writeStore } from "./storage";
 export type Route = "gallery" | "editor" | "card";
 export const route = signal<Route>(isDesktop ? "card" : "gallery");
 export const detailId = signal<string | null>(null);
+/** Which side of the recipe dialog to open on; null lets it decide (photos first when there are any). */
+export const detailTab = signal<"photos" | "preview" | null>(null);
+
+export type GalleryFilter = "all" | "photos" | "mine" | "reddit" | "imaging-cloud" | `tag:${string}`;
+/** Recipes-tab filter, shared so other parts of the app can open "My photos". */
+export const galleryFilter = signal<GalleryFilter>("all");
+
+/** Open a recipe on its "Shot with this recipe" gallery. */
+export function openRecipePhotos(id: string) {
+  detailTab.value = "photos";
+  detailId.value = id;
+}
 export const pasteOpen = signal(false);
 
 export interface Toast {

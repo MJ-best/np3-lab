@@ -1872,3 +1872,82 @@ html.desktop .topbar input {
   align-items: center;
   gap: 10px;
 }
+
+/* "Shot with this recipe" as a gallery: photos keep their shape (portrait or landscape). */
+.media-tabs {
+  align-self: flex-start;
+  margin-bottom: 0;
+}
+.recipe-photos.wall {
+  margin-top: 0;
+  border-style: solid;
+  border-color: transparent;
+  padding: 0;
+}
+.recipe-photos.wall.over {
+  border-style: dashed;
+  border-color: var(--accent);
+  padding: 8px;
+}
+.photo-wall {
+  columns: 3 220px;
+  column-gap: 10px;
+}
+.photo-wall.small {
+  columns: 6 150px;
+  column-gap: 8px;
+}
+.photo-wall .photo-tile {
+  display: block;
+  width: 100%;
+  aspect-ratio: auto;
+  margin: 0 0 10px;
+  break-inside: avoid;
+}
+.photo-wall.small .photo-tile {
+  margin-bottom: 8px;
+}
+.photo-wall .photo-tile img {
+  height: auto;
+}
+.photo-tile.more {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 18px;
+  border: 1px dashed var(--line);
+}
+
+/* My photos: every recipe's photos, grouped. */
+.photo-library {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.photo-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0 0 10px;
+  text-align: left;
+}
+.photo-group-head:hover:not(:disabled) {
+  background: none;
+}
+.photo-group-title {
+  font-size: 17px;
+  font-weight: 650;
+}
+.photo-group-open {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 13px;
+}
+.photo-group-head:hover .photo-group-title,
+.photo-group-head:hover .photo-group-open {
+  color: var(--accent);
+}
