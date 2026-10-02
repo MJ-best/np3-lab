@@ -1,4 +1,5 @@
 import { useRef } from "preact/hooks";
+import { PHOTO_ACCEPT, toViewablePhoto } from "../raw";
 import { lang, t } from "../i18n";
 import { hasBundledPhotos } from "../render/samples";
 import { activeSampleId, addUserPhoto, allSamples, setActiveSample } from "../state";
@@ -27,12 +28,15 @@ export function SceneChips({ showHint = false }: { showHint?: boolean }) {
         <input
           ref={fileRef}
           type="file"
-          accept="image/*"
+          accept={PHOTO_ACCEPT}
           multiple
           hidden
           onChange={async (e) => {
             const input = e.currentTarget;
-            for (const f of Array.from(input.files ?? [])) await addUserPhoto(f);
+            for (const f of Array.from(input.files ?? [])) {
+              const viewable = await toViewablePhoto(f);
+              if (viewable) await addUserPhoto(viewable);
+            }
             input.value = "";
           }}
         />

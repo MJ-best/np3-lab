@@ -1,5 +1,6 @@
 import { signal } from "@preact/signals";
 import type { Recipe } from "./np3/recipe";
+import { isPhotoFile, isRawFile, toViewablePhoto } from "./raw";
 
 /*
  * Photos taken with each recipe — the personal filter library. Stored in
@@ -97,12 +98,15 @@ async function downscale(file: Blob, edge: number, quality: number): Promise<Blo
 export async function addPhotos(recipeId: string, files: File[]): Promise<number> {
   let added = 0;
   const current = Object.values(photosByRecipe.value).flat();
-  for (const file of files.filter((f) => f.type.startsWith("image/"))) {
+  for (const original of files.filter(isPhotoFile)) {
     try {
+      // RAW files are stored as the JPEG the camera embedded (with the recipe applied).
+      const file = await toViewablePhoto(original);
+      if (!file) continue;
       const record: PhotoRecord = {
         id: `ph-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
         recipeId,
-        name: file.name,
+        name: original.name,
         createdAt: Date.now() + added,
         full: await downscale(file, FULL_EDGE, 0.88),
         thumb: await downscale(file, THUMB_EDGE, 0.82),
@@ -111,7 +115,7 @@ export async function addPhotos(recipeId: string, files: File[]): Promise<number
       current.push(toThumb(record));
       added++;
     } catch (err) {
-      console.warn("[NP3 Lab] could not add photo", file.name, err);
+      console.warn("[NP3 Lab] could not add photo", original.name, err);
     }
   }
   setIndex(current);
@@ -137,11 +141,13 @@ export async function fullPhotoUrl(id: string): Promise<string | null> {
  * Find the recipe whose camera name appears there (longest match wins).
  */
 export async function matchRecipeByExif(file: File, recipes: Recipe[]): Promise<Recipe | null> {
-  if (!/jpe?g$/i.test(file.type) && !/\.jpe?g$/i.test(file.name)) return null;
-  const head = new Uint8Array(await file.slice(0, 256 * 1024).arrayBuffer());
+  const raw = isRawFile(file);
+  if (!raw && !/jpe?g$/i.test(file.type) && !/\.jpe?g$/i.test(file.name)) return null;
+  // In a NEF the maker note sits a little further in than in a JPEG's EXIF block.
+  const head = new Uint8Array(await file.slice(0, (raw ? 512 : 256) * 1024).arrayBuffer());
   let text = "";
   for (let i = 0; i < head.length; i++) text += String.fromCharCode(head[i]);
-  if (!text.includes("Exif") || !text.includes("Nikon")) return null;
+  if ((!raw && !text.includes("Exif")) || !text.includes("Nikon")) return null;
   let best: Recipe | null = null;
   for (const r of recipes) {
     const name = r.npName.trim();

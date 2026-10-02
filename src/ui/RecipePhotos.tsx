@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { t } from "../i18n";
 import { addPhotos, deletePhoto, fullPhotoUrl, photosByRecipe, type PhotoThumb } from "../photos";
 import { showToast } from "../state";
+import { PHOTO_ACCEPT } from "../raw";
 
 function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThumb[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
   const photo = photos[index];
@@ -98,7 +99,7 @@ export function RecipePhotos({ recipeId }: { recipeId: string }) {
         <input
           ref={input}
           type="file"
-          accept="image/*"
+          accept={PHOTO_ACCEPT}
           multiple
           hidden
           onChange={(e) => {
