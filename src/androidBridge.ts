@@ -1,5 +1,5 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
-import { dateTag, exportNames, isSafeNp3Name, looksLikeNikonCard, safeSegment, sameBytes } from "../electron/cardRules.mjs";
+import { MAX_NP3_BYTES, dateTag, exportNames, isNp3Bytes, isSafeNp3Name, looksLikeNikonCard, safeSegment, sameBytes } from "../electron/cardRules.mjs";
 import type { ExportFile, ExportResult, NativeBridge, NativeCard, NativeCardFile, NativeSettings } from "./native";
 
 /*
@@ -44,7 +44,6 @@ interface SafFoldersPlugin {
 const Saf = registerPlugin<SafFoldersPlugin>("SafFolders");
 
 const NP3_RE = /\.np3$/i;
-const MAX_NP3_BYTES = 64 * 1024;
 
 function toBase64(bytes: Uint8Array): string {
   let s = "";
@@ -191,7 +190,9 @@ export function createAndroidBridge(): (NativeBridge & AndroidExtras) | undefine
       const path = requireCard(uri);
       const out: NativeCardFile[] = [];
       for (const name of (await np3Names(uri, path)).sort()) {
-        out.push({ fileName: name, bytes: fromBase64((await Saf.readFile({ uri, path, name })).data) });
+        const bytes = fromBase64((await Saf.readFile({ uri, path, name })).data);
+        // Skip anything dressed up as .NP3 that is far too large to be one.
+        if (bytes.length <= MAX_NP3_BYTES) out.push({ fileName: name, bytes });
       }
       return out;
     },
@@ -203,7 +204,8 @@ export function createAndroidBridge(): (NativeBridge & AndroidExtras) | undefine
       const batch = new Set<string>();
       for (const f of files) {
         if (!isSafeNp3Name(f?.fileName)) throw new Error("invalid-file-name");
-        if (!(f.bytes instanceof Uint8Array) || f.bytes.length > MAX_NP3_BYTES) throw new Error("invalid-bytes");
+        // Whatever reaches the camera must at least look like an NP3 (same rule as the Mac app).
+        if (!isNp3Bytes(f.bytes)) throw new Error("invalid-bytes");
         const key = f.fileName.toUpperCase();
         if (existing.has(key) && !f.overwrite) throw new Error(`exists:${f.fileName}`);
         if (batch.has(key)) throw new Error(`duplicate:${f.fileName}`);
@@ -241,7 +243,7 @@ export function createAndroidBridge(): (NativeBridge & AndroidExtras) | undefine
     async exportRecipes(uri, files: ExportFile[]): Promise<ExportResult> {
       const result: ExportResult = { written: 0, renamed: 0, unchanged: 0, failed: 0 };
       const tag = dateTag();
-      for (const f of files) {
+      for (const f of files.filter((f) => isNp3Bytes(f?.bytes))) {
         const path = String(f.dir).split("/").filter(Boolean).map(safeSegment);
         try {
           result[await writeWithoutOverwrite(uri, path, safeSegment(f.base), f.bytes, tag)]++;
