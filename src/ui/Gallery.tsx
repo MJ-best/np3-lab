@@ -18,6 +18,8 @@ import { communityInfo } from "../community";
 import { lookOf } from "../look";
 import { importFromThisMac } from "../localNp3";
 import { exportAllRecipes } from "../exportAll";
+import { importPhotos } from "../photoImport";
+import { PHOTO_ACCEPT } from "../raw";
 import { photosByRecipe } from "../photos";
 import { CommunityPanel } from "./CommunityPanel";
 import { usePreparedSample } from "./hooks";
@@ -31,6 +33,7 @@ export function Gallery() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const np3Input = useRef<HTMLInputElement>(null);
+  const photoInput = useRef<HTMLInputElement>(null);
   const backupInput = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDetailsElement>(null);
   const source = usePreparedSample(activeSample.value);
@@ -67,6 +70,7 @@ export function Gallery() {
           <details class="menu" ref={menuRef}>
             <summary>{t("importMore")} ▾</summary>
             <div class="menu-list" onClick={() => menuRef.current?.removeAttribute("open")}>
+              <button onClick={() => photoInput.current?.click()}>{t("importPhotos")}</button>
               <button onClick={() => (pasteOpen.value = true)}>{t("pasteText")}</button>
               <button onClick={() => openImport("imaging-cloud")}>{t("importCloud")}</button>
               {isDesktop && !isAndroid && <button onClick={() => void importFromThisMac()}>{t("localNp3Search")}</button>}
@@ -84,6 +88,19 @@ export function Gallery() {
             ＋ {t("newRecipe")}
           </button>
         </div>
+        <input
+          ref={photoInput}
+          type="file"
+          accept={PHOTO_ACCEPT}
+          multiple
+          hidden
+          onChange={async (e) => {
+            const input = e.currentTarget;
+            const files = Array.from(input.files ?? []);
+            input.value = "";
+            await importPhotos(files);
+          }}
+        />
         <input
           ref={np3Input}
           type="file"

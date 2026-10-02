@@ -4,10 +4,10 @@ import { activeCard, startCardSync } from "./cards";
 import { lang, t, type MessageKey } from "./i18n";
 import { isAndroid, isDesktop } from "./native";
 import { webglAvailable } from "./render/renderer";
-import { addPhotos, loadPhotoIndex, matchRecipeByExif } from "./photos";
-import { isPhotoFile, toViewablePhoto } from "./raw";
+import { loadPhotoIndex } from "./photos";
+import { importPhotos } from "./photoImport";
 import { checkForNewLocalNp3 } from "./localNp3";
-import { addUserPhoto, allRecipes, builtinsReady, cart, dismissToast, importSession, openImport, route, showToast, toasts, type Route } from "./state";
+import { builtinsReady, cart, dismissToast, importSession, openImport, route, toasts, type Route } from "./state";
 import { Cart } from "./ui/Cart";
 import { CardView } from "./ui/CardView";
 import { Editor } from "./ui/Editor";
@@ -57,22 +57,8 @@ function useWindowDrop() {
       const files = Array.from(e.dataTransfer?.files ?? []);
       const np3 = await np3FromFiles(files);
       if (np3.length > 0) openImport(importSession.value?.mode ?? "file", np3);
-      const images = files.filter(isPhotoFile);
-      const unmatched: File[] = [];
-      const matched = new Map<string, File[]>();
-      for (const f of images) {
-        const recipe = await matchRecipeByExif(f, allRecipes.value);
-        if (recipe) matched.set(recipe.id, [...(matched.get(recipe.id) ?? []), f]);
-        else unmatched.push(f);
-      }
-      let filed = 0;
-      for (const [id, list] of matched) filed += await addPhotos(id, list);
-      if (filed > 0) showToast(t("photosFiled", { n: filed, m: matched.size }), "ok", 6000);
-      // Anything we can't place becomes a preview scene, as before (RAW as its embedded JPEG).
-      for (const f of unmatched) {
-        const viewable = await toViewablePhoto(f);
-        if (viewable) await addUserPhoto(viewable);
-      }
+      // Photos go to the recipe in their EXIF; the rest become preview scenes.
+      await importPhotos(files);
     };
     window.addEventListener("dragenter", enter);
     window.addEventListener("dragleave", leave);

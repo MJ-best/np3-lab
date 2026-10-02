@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { t } from "../i18n";
-import { addPhotos, deletePhoto, fullPhotoUrl, photosByRecipe, type PhotoThumb } from "../photos";
-import { showToast } from "../state";
+import { deletePhoto, fullPhotoUrl, photosByRecipe, type PhotoThumb } from "../photos";
+import { importPhotos } from "../photoImport";
 import { PHOTO_ACCEPT } from "../raw";
 
 function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThumb[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
@@ -67,9 +67,9 @@ export function RecipePhotos({ recipeId }: { recipeId: string }) {
   const add = async (files: File[]) => {
     if (files.length === 0) return;
     setBusy(true);
-    const n = await addPhotos(recipeId, files);
+    // Each photo goes to the recipe it was shot with; ones without that info stay here.
+    await importPhotos(files, { into: recipeId });
     setBusy(false);
-    if (n > 0) showToast(t("photosAdded", { n }), "ok");
   };
 
   return (

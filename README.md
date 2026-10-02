@@ -24,7 +24,7 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 | --- | --- |
 | **카드 자동 인식** | 카드를 꽂으면 메뉴 막대에서 기다리던 앱이 열리고 `NIKON/CUSTOMPC` 속 레시피를 미리보기와 함께 보여줍니다. 다른 브랜드 카드와 네트워크 드라이브는 무시합니다. |
 | **넣기·빼기·이름 바꾸기** | **＋ 레시피 넣기**로 여러 개를 한 번에 넣습니다. 번호(`PICCON01.NP3`…)는 자동으로 매기고 겹치지 않게 합니다. 카메라에 보일 이름을 바꿀 수 있고, 빼기는 휴지통으로 옮겨서 **되돌리기**가 됩니다. |
-| **나만의 필터 라이브러리** | 레시피마다 그 레시피로 찍은 내 사진을 모아 갤러리로 봅니다. 니콘 사진(JPEG·RAW NEF)을 창에 끌어다 놓으면 사진 정보에 기록된 Picture Control 이름으로 레시피를 찾아 **자동으로 정리**합니다. 사진이 있는 레시피는 대표 사진으로 표시되고 **📷 내 사진** 필터로 모아 볼 수 있습니다. |
+| **나만의 필터 라이브러리** | 레시피마다 그 레시피로 찍은 내 사진을 모아 갤러리로 봅니다. 니콘 사진(JPEG·RAW NEF)을 어디서 추가하든(창에 끌어다 놓기, 가져오기 › 사진, 레시피의 사진 추가) 사진 정보에 기록된 Picture Control 이름으로 레시피를 찾아 **자동으로 정리**합니다. 레시피 정보가 없는 사진만 보고 있던 레시피에 들어갑니다. 사진이 있는 레시피는 대표 사진으로 표시되고 **📷 내 사진** 필터로 모아 볼 수 있습니다. |
 | **자동 백업** | 카드에서 처음 보는 레시피는 내 레시피에 자동으로 보관합니다. 카드를 포맷해도 레시피가 남습니다. |
 | **커뮤니티 레시피 260여 개** | Nikon 크리에이터 · Nikon 컬러 그레이딩 · 독립 크리에이터 · SerbanJPG 필름 레시피를 원본 저장소에서 바로 받습니다. 업데이트할 때는 바뀐 파일만 받습니다. 레시피마다 크리에이터·원본 링크와 함께 **설명·컨셉·추천 장면**이 표시되고 검색됩니다. |
 | **미리보기 비교** | 풍경·피부톤·야경·컬러 차트나 내 사진 위에서 원본/적용을 슬라이더로 비교합니다. 레시피 수치로 계산한 근사치입니다. |
@@ -175,7 +175,7 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 
 - **Insert the SD card and it opens by itself.** You see the recipes in `NIKON/CUSTOMPC` with previews. You can add recipes (numbered `PICCON01.NP3`… automatically), rename them (the name shown on the camera), remove them to the Trash with Undo, and eject. The app waits in the menu bar and starts at login.
 - **Automatic backup:** recipes found on a card are saved to My recipes.
-- **Your own filter library:** keep the photos you shot with each recipe as its gallery. Drop Nikon JPEGs or RAW (NEF) files on the window and they're filed under the recipe named in their EXIF automatically.
+- **Your own filter library:** keep the photos you shot with each recipe as its gallery. Nikon JPEGs and RAW (NEF) files are filed under the recipe named in their EXIF automatically, however you add them (drop on the window, Import → Photos, or Add photos on a recipe).
 - **260+ community recipes:** Nikon creators, Nikon color grading presets, independent creators and [SerbanJPG](https://serbanjpg.com) film recipes, downloaded in the app from [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes) and [vanlong20it/recipe-note](https://github.com/vanlong20it/recipe-note). Updates only fetch changed files. Each recipe shows its creator, a link to the original file, and a searchable description, concept and recommended use (notes based on [Timor88/NikonNP3](https://github.com/Timor88/NikonNP3)).
 - **Straight from NX Studio:** export a Picture Control to an NP3 file anywhere and NP3 Lab finds it with Spotlight. Bring the app forward to get a "new NP3 found · Import" prompt, or use Import → Find NP3 files on this Mac (newest first).
 - **Export all recipes** as NP3 files into a folder (`My Recipes/`, `Community/<collection>/`). Existing files are never overwritten: a different file with the same name gets the date appended (`Name_20261001.NP3`), and unchanged recipes are skipped.
@@ -204,7 +204,7 @@ Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, ref
 - **NX Studioから直接取り込み:** NX Studioなどでピクチャーコントロールを NP3 ファイルに書き出すと、保存先のフォルダに関係なくSpotlightで見つけ出します。
 - **すべてのレシピを書き出し:** 既存のファイルは上書きしません。同じ名前で内容が異なる場合は日付を付けて（`名前_20261001.NP3`）保存し、変更がなければスキップします。
 - **コミュニティレシピ260件以上:** Nikonクリエイター、Nikonカラーグレーディング、個人クリエイター、[SerbanJPG](https://serbanjpg.com)のレシピを、アプリ内で元のリポジトリから取得します。説明・コンセプト・おすすめのシーン付きです。
-- **自分だけのフィルターライブラリ:** レシピごとに撮った写真をギャラリーとして保存。ニコンのJPEGやRAW（NEF）をドロップすると、Exifのピクチャーコントロール名でレシピに自動で整理します。
+- **自分だけのフィルターライブラリ:** レシピごとに撮った写真をギャラリーとして保存。ニコンのJPEGやRAW（NEF）は、どこから追加しても（ウインドウへのドロップ、取り込み › 写真、レシピの写真を追加）Exifのピクチャーコントロール名でレシピに自動で整理します。
 - エディター、ビフォー/アフタープレビュー、テキスト（日本語・韓国語・英語の項目名）からの取り込み、機種別のカメラでの登録手順。
 
 **インストール:** [Releases](https://github.com/MJ-best/np3-lab/releases)からDMGをダウンロードし、アプリを「アプリケーション」フォルダにドラッグします。公証を受けていないため、まずリリースの `SHA256SUMS.txt` で `shasum -a 256 -c SHA256SUMS.txt --ignore-missing` を実行し、`OK` と表示されることを確認してください。初回は右クリック →［開く］、または `xattr -cr "/Applications/NP3 Lab.app"` を実行してください。詳しくは[SECURITY.md](SECURITY.md)をご覧ください。
