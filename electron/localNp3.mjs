@@ -92,7 +92,8 @@ export async function findLocalNp3({ sinceMs = 0, exclude = [] } = {}) {
     try {
       const bytes = new Uint8Array(await readFile(c.path));
       if (!looksLikeNp3(bytes)) continue;
-      out.push({ name: c.path.split(sep).pop(), path: c.path, mtimeMs: c.mtimeMs, bytes });
+      // The page gets the file name only; it has no use for where things live on disk.
+      out.push({ name: c.path.split(sep).pop(), mtimeMs: c.mtimeMs, bytes });
     } catch {
       /* unreadable */
     }

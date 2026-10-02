@@ -34,6 +34,27 @@ export function isSafeNp3Name(name) {
   );
 }
 
+/** NP3 files are about 1 KB; nothing larger is accepted from or written to a card. */
+export const MAX_NP3_BYTES = 64 * 1024;
+
+/**
+ * Bytes that start like a Picture Control file ("NCP\0" + version) and have a sane size.
+ * Whatever reaches the camera must at least pass this.
+ * @param {unknown} bytes
+ * @returns {bytes is Uint8Array}
+ */
+export function isNp3Bytes(bytes) {
+  return (
+    bytes instanceof Uint8Array &&
+    bytes.length >= 32 &&
+    bytes.length <= MAX_NP3_BYTES &&
+    bytes[0] === 0x4e &&
+    bytes[1] === 0x43 &&
+    bytes[2] === 0x50 &&
+    bytes[3] === 0x00
+  );
+}
+
 /** 2026-10-01 → "20261001" (local time). */
 export function dateTag(date = new Date()) {
   const p = (n) => String(n).padStart(2, "0");

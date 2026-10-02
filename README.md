@@ -42,7 +42,8 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 
 1. [Releases](https://github.com/MJ-best/np3-lab/releases)에서 `NP3-Lab-x.y.z-arm64.dmg`를 받아 엽니다. Apple Silicon Mac, macOS 12 이상이 필요합니다.
 2. **NP3 Lab**을 **응용 프로그램** 폴더로 끌어다 놓습니다.
-3. 개인 프로젝트라 Apple 서명·공증을 받지 않았습니다. 처음 열 때 경고가 나오면 앱을 **우클릭 → 열기**를 누르거나, **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**를 누르세요.
+3. 개인 프로젝트라 Apple 서명·공증을 받지 않았습니다. 그래서 공식 릴리스에서 받은 파일이 맞는지 직접 확인하는 것을 권합니다. 릴리스의 `SHA256SUMS.txt`도 함께 받아 같은 폴더에서 `shasum -a 256 -c SHA256SUMS.txt --ignore-missing`을 실행하면 `OK`가 나와야 합니다. 자세한 내용은 [SECURITY.md](SECURITY.md)를 보세요.
+4. 처음 열 때 경고가 나오면 앱을 **우클릭 → 열기**를 누르거나, **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**를 누르세요.
    - "손상되었기 때문에 열 수 없습니다"라고 나오면 터미널에서 아래 명령을 한 번 실행하세요.
 
 ```bash
@@ -184,7 +185,7 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 
 **Android (experimental):** the same card-first app on Android 7.0+ phones and tablets, with a USB OTG card reader. Tap **Choose SD card**, pick the card's `NIKON` folder (Android doesn't allow choosing the card's top folder) and allow access; after that the card is read whenever it's plugged in. Screenshots: [안드로이드판](#안드로이드판).
 
-**Install:** download the DMG from [Releases](https://github.com/MJ-best/np3-lab/releases) and drag the app to Applications. It's unsigned, so right-click → Open the first time, or run `xattr -cr "/Applications/NP3 Lab.app"`.
+**Install:** download the DMG from [Releases](https://github.com/MJ-best/np3-lab/releases) and drag the app to Applications. It isn't notarized, so first check the download against the release's `SHA256SUMS.txt` (`shasum -a 256 -c SHA256SUMS.txt --ignore-missing` should print `OK`), then right-click → Open the first time, or run `xattr -cr "/Applications/NP3 Lab.app"`. See [SECURITY.md](SECURITY.md).
 
 **Loading on the camera:**
 - **Zf:** MENU → Photo shooting menu → Manage Picture Control → Save/edit
@@ -206,7 +207,7 @@ Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, ref
 - **自分だけのフィルターライブラリ:** レシピごとに撮った写真をギャラリーとして保存。ニコンのJPEGをドロップすると、Exifのピクチャーコントロール名でレシピに自動で整理します。
 - エディター、ビフォー/アフタープレビュー、テキスト（日本語・韓国語・英語の項目名）からの取り込み、機種別のカメラでの登録手順。
 
-**インストール:** [Releases](https://github.com/MJ-best/np3-lab/releases)からDMGをダウンロードし、アプリを「アプリケーション」フォルダにドラッグします。署名されていないため、初回は右クリック →［開く］、または `xattr -cr "/Applications/NP3 Lab.app"` を実行してください。
+**インストール:** [Releases](https://github.com/MJ-best/np3-lab/releases)からDMGをダウンロードし、アプリを「アプリケーション」フォルダにドラッグします。公証を受けていないため、まずリリースの `SHA256SUMS.txt` で `shasum -a 256 -c SHA256SUMS.txt --ignore-missing` を実行し、`OK` と表示されることを確認してください。初回は右クリック →［開く］、または `xattr -cr "/Applications/NP3 Lab.app"` を実行してください。詳しくは[SECURITY.md](SECURITY.md)をご覧ください。
 
 **カメラでの登録:**
 - **Zf:** MENU → 静止画撮影メニュー → カスタムピクチャーコントロール → 編集と登録

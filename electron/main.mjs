@@ -2,24 +2,30 @@
 // validated file API (NIKON/CUSTOMPC only) to the renderer.
 import { execFile } from "node:child_process";
 import { existsSync, readFileSync, renameSync, watch, writeFileSync } from "node:fs";
-import { mkdir, readdir, readFile, statfs, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readdir, readFile, statfs, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, shell } from "electron";
+import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, session, shell } from "electron";
 import { LOGIN_FLAG, setMacLoginAgent } from "./loginItem.mjs";
 import { findLocalNp3 } from "./localNp3.mjs";
 import { exportRecipes } from "./exportFiles.mjs";
-import { isSafeNp3Name, looksLikeNikonCard } from "./cardRules.mjs";
+import { MAX_NP3_BYTES, isNp3Bytes, isSafeNp3Name, looksLikeNikonCard } from "./cardRules.mjs";
 import { CARD_FILESYSTEMS, parseMacMounts, withTimeout } from "./volumes.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const DEV_URL = process.env.NIKONPCLAB_DEV_URL;
+
+// An installed copy never takes development switches: a debugger port, a page URL or a
+// profile path handed in from outside could otherwise drive the card and file APIs.
+if (app.isPackaged && ["remote-debugging-port", "remote-debugging-pipe", "inspect", "inspect-brk"].some((s) => app.commandLine.hasSwitch(s))) {
+  app.exit(1);
+}
+const DEV_URL = app.isPackaged ? undefined : process.env.NIKONPCLAB_DEV_URL;
 const INDEX_HTML = join(here, "..", "dist", "NP3-Lab.html");
 const run = promisify(execFile);
 
 // NP3LAB_USER_DATA points a development/test run at a separate profile.
-if (process.env.NP3LAB_USER_DATA) {
+if (!app.isPackaged && process.env.NP3LAB_USER_DATA) {
   app.setPath("userData", process.env.NP3LAB_USER_DATA);
 } else {
   // The app used to be called "NikonPC Lab". Move its data folder (settings, My recipes)
@@ -251,6 +257,9 @@ ipcMain.handle("card:read", async (_e, cardPath) => {
   const files = [];
   for (const name of (await childNames(dir)).sort()) {
     if (!NP3_RE.test(name) || name.startsWith("._")) continue;
+    // Only plain, NP3-sized files: no links, folders or huge files dressed up as .NP3.
+    const s = await lstat(join(dir, name)).catch(() => null);
+    if (!s?.isFile() || s.size > MAX_NP3_BYTES) continue;
     files.push({ fileName: name, bytes: new Uint8Array(await readFile(join(dir, name))) });
   }
   return files;
@@ -264,7 +273,8 @@ ipcMain.handle("card:write", async (_e, cardPath, files) => {
   const batch = new Set();
   for (const f of files) {
     const name = requireFileName(f?.fileName);
-    if (!(f.bytes instanceof Uint8Array) || f.bytes.length > 64 * 1024) throw new Error("invalid-bytes");
+    // Whatever reaches the camera must at least look like an NP3.
+    if (!isNp3Bytes(f.bytes)) throw new Error("invalid-bytes");
     if (existing.has(name.toUpperCase()) && !f.overwrite) throw new Error(`exists:${name}`);
     if (batch.has(name.toUpperCase())) throw new Error(`duplicate:${name}`);
     batch.add(name.toUpperCase());
@@ -316,7 +326,7 @@ ipcMain.handle("export:write", async (_e, folder, files) => {
   if (!exportFolders.has(folder)) throw new Error("folder-not-chosen");
   if (!Array.isArray(files)) throw new Error("invalid-files");
   const valid = files.filter(
-    (f) => f && typeof f.dir === "string" && typeof f.base === "string" && f.bytes instanceof Uint8Array && f.bytes.length <= 64 * 1024,
+    (f) => f && typeof f.dir === "string" && typeof f.base === "string" && isNp3Bytes(f.bytes),
   );
   return exportRecipes(folder, valid);
 });
@@ -383,6 +393,7 @@ function createWindow(showOnReady = true) {
   win.webContents.on("will-navigate", (e, url) => {
     if (url !== win?.webContents.getURL()) e.preventDefault();
   });
+  win.webContents.on("will-attach-webview", (e) => e.preventDefault());
 
   // If the window does get destroyed, a new one is created the next time it's needed.
   win.on("closed", () => {
@@ -475,6 +486,11 @@ if (!app.requestSingleInstanceLock()) {
   app.on("activate", showWindow);
 
   app.whenReady().then(async () => {
+    // The page needs no camera, microphone, location or notifications; only clipboard writes ("Copy as text").
+    const allowed = new Set(["clipboard-sanitized-write"]);
+    session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => callback(allowed.has(permission)));
+    session.defaultSession.setPermissionCheckHandler((_wc, permission) => allowed.has(permission));
+
     settings = loadSettings();
     await offerMoveToApplications();
     if (!settings.firstRunDone) saveSettings({ firstRunDone: true });

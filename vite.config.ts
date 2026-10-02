@@ -1,13 +1,14 @@
 /// <reference types="vitest/config" />
-import { renameSync, existsSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import preact from "@preact/preset-vite";
 import { defineConfig, type Plugin } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
+import { withCsp } from "./scripts/csp.mjs";
 
 const OUTPUT_NAME = "NP3-Lab.html";
 
-/** Rename dist/index.html so the single-file build has a self-explanatory name. */
+/** Add the CSP, then rename dist/index.html so the single-file build has a self-explanatory name. */
 function renameOutput(): Plugin {
   return {
     name: "np3-lab:rename-output",
@@ -17,6 +18,7 @@ function renameOutput(): Plugin {
       if (process.env.CAP_BUILD) return;
       const from = resolve(import.meta.dirname, "dist/index.html");
       if (!existsSync(from)) return;
+      writeFileSync(from, withCsp(readFileSync(from, "utf8")));
       renameSync(from, resolve(import.meta.dirname, "dist", OUTPUT_NAME));
       console.log(`\n→ dist/${OUTPUT_NAME}  (open this file in Chrome / Safari)\n`);
     },

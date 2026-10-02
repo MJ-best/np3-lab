@@ -1,5 +1,6 @@
 import { computed, signal } from "@preact/signals";
 import { BUILTIN_RECIPES, loadBundledNp3 } from "./builtinRecipes";
+import { recipeFromBackup } from "./backup";
 import { downloadCommunityRecipes, isCommunityRecipe, storedCommunityRecipes } from "./community";
 import { t, tx } from "./i18n";
 import { isDesktop } from "./native";
@@ -244,9 +245,9 @@ export function exportBackup(): string {
 }
 
 export function importBackup(text: string): number {
-  const data = JSON.parse(text) as { app?: string; recipes?: StoredRecipe[] };
+  const data = JSON.parse(text) as { app?: string; recipes?: unknown[] };
   if (!["np3-lab", "nikon-pc-lab"].includes(data.app ?? "") || !Array.isArray(data.recipes)) throw new Error("invalid backup");
-  const incoming = data.recipes.map((r) => ({ ...r, raw: r.raw ? base64ToBytes(r.raw) : undefined }));
+  const incoming = data.recipes.slice(0, 5000).map(recipeFromBackup).filter((r): r is Recipe => r !== null);
   const ids = new Set(incoming.map((r) => r.id));
   myRecipes.value = [...incoming, ...myRecipes.value.filter((r) => !ids.has(r.id))];
   persistMine();

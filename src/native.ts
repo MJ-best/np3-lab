@@ -35,7 +35,6 @@ export interface ExportResult {
 /** An NP3 file found elsewhere on the computer (e.g. exported from NX Studio). */
 export interface LocalNp3File {
   name: string;
-  path: string;
   mtimeMs: number;
   bytes: Uint8Array;
 }

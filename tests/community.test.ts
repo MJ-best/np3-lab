@@ -24,8 +24,8 @@ async function hashOf(bytes: Uint8Array) {
   return sha256Base64(bytes);
 }
 
-/** Fake GitHub commit API, jsDelivr listing and raw GitHub; records file downloads. */
-function serve(repos: Record<string, Repo>) {
+/** Fake GitHub commit API, jsDelivr listing and raw GitHub; records file downloads. `tamper` serves other bytes than listed. */
+function serve(repos: Record<string, Repo>, tamper: Record<string, Uint8Array> = {}) {
   const downloads: string[] = [];
   vi.stubGlobal("fetch", async (url: string) => {
     let m = url.match(/api\.github\.com\/repos\/(.+?)\/commits\/main/);
@@ -40,7 +40,7 @@ function serve(repos: Record<string, Repo>) {
     if (m) {
       const path = m[3].split("/").map(decodeURIComponent).join("/");
       downloads.push(path);
-      const bytes = repos[m[1]].files[path];
+      const bytes = tamper[path] ?? repos[m[1]].files[path];
       return bytes ? new Response(bytes as Uint8Array<ArrayBuffer>) : new Response("", { status: 404 });
     }
     return new Response("", { status: 404 });
@@ -135,6 +135,19 @@ describe("community downloads", () => {
     const community = await import("../src/community");
     expect(community.storedCommunityRecipes).toHaveLength(2);
     expect(community.communityInfo.value!.sources.map((s) => s.count)).toEqual([1, 1]);
+  });
+
+  it("rejects files whose bytes don't match the listed hash", async () => {
+    serve(
+      {
+        "shouryan01/Nikon-Recipes": { commit: "5".repeat(40), files: { "NikonPC/Good.NP3": np3("Good"), "NikonPC/Swapped.NP3": np3("Swapped") } },
+        "vanlong20it/recipe-note": { commit: "6".repeat(40), files: {} },
+      },
+      { "NikonPC/Swapped.NP3": np3("Evil", 80) },
+    );
+    const community = await import("../src/community");
+    const recipes = await community.downloadCommunityRecipes();
+    expect(recipes!.map((r) => r.id)).toEqual(["community:NikonPC/Good.NP3"]);
   });
 
   it("keeps a source it couldn't reach", async () => {

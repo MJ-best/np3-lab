@@ -27,7 +27,7 @@
     "@preact/preset-vite": "^2.10.6",
     "@preact/signals": "^2.11.2",
     "@types/node": "^26.6.3",
-    "electron": "^44.4.5",
+    "electron": "^44.5.0",
     "electron-builder": "^26.15.3",
     "jszip": "^3.10.2",
     "nikon-flexible-color-picture-control": "1.0.0",
@@ -64,7 +64,15 @@
     "dmg": {
       "title": "NP3 Lab"
     },
-    "artifactName": "NP3-Lab-${version}-${arch}.${ext}"
+    "artifactName": "NP3-Lab-${version}-${arch}.${ext}",
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    }
   },
   "license": "MIT",
   "repository": {

@@ -215,7 +215,14 @@ export async function listSource(source: CommunitySource, commit: string): Promi
 
 const encodePath = (path: string) => path.split("/").map(encodeURIComponent).join("/");
 
-async function fetchBytes(repo: string, commit: string, path: string): Promise<Uint8Array | null> {
+/** Community NP3 files are about 1 KB; anything much larger is not a recipe. */
+const MAX_COMMUNITY_BYTES = 8 * 1024;
+
+/**
+ * Fetch a file and accept it only if its SHA-256 matches the listing, so a mirror can't
+ * hand over different bytes than the repository commit holds.
+ */
+async function fetchVerified(repo: string, commit: string, path: string, hash: string): Promise<Uint8Array | null> {
   const urls = [
     // GitHub first: jsDelivr takes a few seconds per file it hasn't cached yet.
     `https://raw.githubusercontent.com/${repo}/${commit}/${encodePath(path)}`,
@@ -224,7 +231,9 @@ async function fetchBytes(repo: string, commit: string, path: string): Promise<U
   for (const url of urls) {
     try {
       const res = await fetch(url);
-      if (res.ok) return new Uint8Array(await res.arrayBuffer());
+      if (!res.ok) continue;
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      if (bytes.length <= MAX_COMMUNITY_BYTES && (await sha256Base64(bytes)) === hash) return bytes;
     } catch {
       /* try the next mirror */
     }
@@ -283,7 +292,7 @@ export async function downloadCommunityRecipes(force = false): Promise<Recipe[] 
   const worker = async () => {
     for (let item = queue.shift(); item; item = queue.shift()) {
       try {
-        const raw = await fetchBytes(item.repo, item.commit, item.path);
+        const raw = await fetchVerified(item.repo, item.commit, item.path, item.hash);
         if (raw && isFlexibleColor(raw)) blobs[item.hash] = bytesToBase64(raw);
       } finally {
         communityProgress.value = { done: ++done, total: missing.length };
