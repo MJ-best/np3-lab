@@ -19,7 +19,7 @@
     "apk:release": "npm run build:android && cd android && ./gradlew assembleRelease"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
+    "@babel/core": "^8.0.6",
     "@capacitor/android": "^8.5.2",
     "@capacitor/app": "^8.1.1",
     "@capacitor/cli": "^8.5.2",
@@ -35,7 +35,7 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vite-plugin-singlefile": "^2.3.3",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.2"
   },
   "productName": "NP3 Lab",
   "author": "Min Jun (MJ-best)",
