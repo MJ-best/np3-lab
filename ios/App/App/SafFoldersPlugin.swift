@@ -83,11 +83,12 @@ public class SafFoldersPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDele
 
     /// id, display name, whether it's reachable now (card inserted), free space.
     private func describe(_ id: String, _ url: URL) -> [String: Any] {
-        let values = try? url.resourceValues(forKeys: [.volumeNameKey, .volumeAvailableCapacityKey])
+        let values = try? url.resourceValues(forKeys: [.volumeNameKey, .volumeIsInternalKey, .volumeAvailableCapacityKey])
         var d: [String: Any] = [
             "uri": id,
             "folderName": url.lastPathComponent,
-            "volumeName": values?.volumeName ?? "",
+            // The device's own storage is called "Data"; a folder there goes by its own name.
+            "volumeName": values?.volumeIsInternal == true ? "" : values?.volumeName ?? "",
             "available": true,
         ]
         if let free = values?.volumeAvailableCapacity { d["freeBytes"] = free }
