@@ -78,7 +78,10 @@ export const isDesktop = native !== undefined;
 
 /** Android-only additions (picking the card folder); undefined elsewhere. */
 export const androidNative: AndroidExtras | undefined = android;
+/** The phone/tablet app (Android or iOS): same card bridge and touch UI. */
 export const isAndroid = android !== undefined;
+/** iOS only, for wording that differs from Android (Files picker, no eject). */
+export const isIos = android?.platform === "ios";
 
 /** Turn "Error invoking remote method 'card:write': Error: exists:X" into "exists:X". */
 export function nativeErrorMessage(err: unknown): string {

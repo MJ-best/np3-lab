@@ -1,6 +1,6 @@
 import { computed, signal } from "@preact/signals";
 import { t } from "./i18n";
-import { androidNative, isAndroid, native, nativeErrorMessage, type NativeCard } from "./native";
+import { androidNative, isAndroid, isIos, native, nativeErrorMessage, type NativeCard } from "./native";
 import { newId, parseNp3, recipeToBytes, sameBytes, withNpName, type Recipe } from "./np3/recipe";
 import { planCardFiles } from "./pack/naming";
 import { readStore, writeStore } from "./storage";
@@ -270,7 +270,7 @@ export async function ejectActiveCard() {
   const card = activeCard.value;
   if (!native || !card) return;
   if (isAndroid) {
-    showToast(t("ejectAndroid"), "info", 8000);
+    showToast(t(isIos ? "ejectIos" : "ejectAndroid"), "info", 8000);
     return;
   }
   try {

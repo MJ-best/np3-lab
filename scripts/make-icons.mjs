@@ -28,25 +28,22 @@ function chunk(type, data) {
   crc.writeUInt32BE(crc32(body));
   return Buffer.concat([len, body, crc]);
 }
-/** `pixel(x, y)` returns straight (non-premultiplied) RGBA 0..255. */
-function png(size, pixel) {
-  const raw = Buffer.alloc(size * (size * 4 + 1));
+/** `pixel(x, y)` returns straight (non-premultiplied) RGBA 0..255. `opaque` drops alpha (RGB PNG). */
+function png(size, pixel, opaque = false) {
+  const n = opaque ? 3 : 4;
+  const raw = Buffer.alloc(size * (size * n + 1));
   for (let y = 0; y < size; y++) {
-    raw[y * (size * 4 + 1)] = 0;
+    raw[y * (size * n + 1)] = 0;
     for (let x = 0; x < size; x++) {
-      const [r, g, b, a] = pixel(x + 0.5, y + 0.5);
-      const o = y * (size * 4 + 1) + 1 + x * 4;
-      raw[o] = r;
-      raw[o + 1] = g;
-      raw[o + 2] = b;
-      raw[o + 3] = a;
+      const px = pixel(x + 0.5, y + 0.5);
+      px.slice(0, n).forEach((v, i) => (raw[y * (size * n + 1) + 1 + x * n + i] = v));
     }
   }
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(size, 0);
   ihdr.writeUInt32BE(size, 4);
   ihdr[8] = 8;
-  ihdr[9] = 6;
+  ihdr[9] = opaque ? 2 : 6;
   return Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     chunk("IHDR", ihdr),
@@ -216,3 +213,15 @@ for (const [name, scale] of Object.entries(DENSITIES)) {
   // 0.5 of 108dp keeps the camera inside the 66dp safe circle of any launcher mask.
   out(`${RES}/mipmap-${name}/ic_launcher_foreground.png`, cameraOnly(108 * scale, 0.5, false));
 }
+
+// iOS: one 1024 px icon, square and opaque (iOS rounds the corners; the App Store rejects alpha).
+out(
+  "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+  png(1024, (x, y) => {
+    const k = 640 / (0.62 * 1024);
+    const px = 512 + (x - 512) * k;
+    const py = 539 + (y - 512) * k;
+    const shadow = 0.22 * (1 - smooth(-6, 30, cameraSdf(px, py - 16)));
+    return [...paintCamera(over(CREAM, [0, 0, 0], shadow), px, py, k).map(Math.round), 255];
+  }, true),
+);
