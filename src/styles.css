@@ -1423,6 +1423,11 @@ html.android body,
 html.ios body {
   padding-bottom: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
 }
+/* An app, not a web page: double-tap doesn't zoom (pinch still works, for accessibility). */
+html.android,
+html.ios {
+  touch-action: manipulation;
+}
 /* iOS zooms the page into any focused field under 16px and doesn't zoom back. */
 html.ios input,
 html.ios textarea,
