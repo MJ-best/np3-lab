@@ -2,6 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import { handleAndroidBack } from "./androidBack";
 import { activeCard, startCardSync } from "./cards";
 import { lang, t, type MessageKey } from "./i18n";
+import { Capacitor } from "@capacitor/core";
 import { isAndroid, isDesktop } from "./native";
 import { webglAvailable } from "./render/renderer";
 import { loadPhotoIndex } from "./photos";
@@ -80,6 +81,7 @@ export function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
     document.documentElement.lang = lang.value;
+    if (Capacitor.getPlatform() === "ios") document.documentElement.classList.add("ios");
     void loadPhotoIndex();
     if (isDesktop) {
       document.documentElement.classList.add("desktop");

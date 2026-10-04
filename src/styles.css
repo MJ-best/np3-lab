@@ -1408,12 +1408,14 @@ html.desktop .topbar {
   -webkit-app-region: drag;
   user-select: none;
 }
-/* Android app: no traffic lights; keep clear of the status and navigation bars (edge-to-edge). */
-html.android .topbar {
+/* Android and iOS apps: no traffic lights; keep clear of the status and navigation bars (edge-to-edge). */
+html.android .topbar,
+html.ios .topbar {
   padding: calc(10px + max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px))) calc(20px + max(env(safe-area-inset-right), var(--safe-area-inset-right, 0px))) 10px calc(20px + max(env(safe-area-inset-left), var(--safe-area-inset-left, 0px)));
   -webkit-app-region: no-drag;
 }
-html.android body {
+html.android body,
+html.ios body {
   padding-bottom: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
 }
 html.desktop .topbar button,
