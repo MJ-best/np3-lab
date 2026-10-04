@@ -3,8 +3,8 @@ import { MAX_NP3_BYTES, dateTag, exportNames, isNp3Bytes, isSafeNp3Name, looksLi
 import type { ExportFile, ExportResult, NativeBridge, NativeCard, NativeCardFile, NativeSettings } from "./native";
 
 /*
- * Android: the same NativeBridge the Mac app gets from electron/preload.cjs, built on
- * the SafFolders plugin (android/.../SafFoldersPlugin.java). The SD card sits in a USB
+ * Android and iOS: the same NativeBridge the Mac app gets from electron/preload.cjs, built on
+ * the SafFolders plugin (android/.../SafFoldersPlugin.java, ios/App/App/SafFoldersPlugin.swift). The SD card sits in a USB
  * reader; the user picks it once and Android keeps the permission, so it's recognised
  * again on every later insert. Card rules follow electron/main.mjs: only NIKON/CUSTOMPC
  * is read or written, names are validated, nothing is overwritten unless asked.
@@ -157,10 +157,11 @@ export interface AndroidExtras {
 }
 
 export function createAndroidBridge(): (NativeBridge & AndroidExtras) | undefined {
-  if (Capacitor.getPlatform() !== "android") return undefined;
+  const platform = Capacitor.getPlatform();
+  if (platform !== "android" && platform !== "ios") return undefined;
 
   return {
-    platform: "android",
+    platform,
     listCards,
 
     async pickCard() {

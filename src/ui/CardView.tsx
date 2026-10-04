@@ -16,7 +16,7 @@ import {
   type CardItem,
 } from "../cards";
 import { lang, t, tagLabel, tx } from "../i18n";
-import { isAndroid } from "../native";
+import { isAndroid, isIos } from "../native";
 import { NP_NAME_MAX, type Recipe } from "../np3/recipe";
 import { MAX_PER_CARD } from "../pack/naming";
 import { renderThumbnail, type PreparedSource } from "../render/renderer";
@@ -188,13 +188,13 @@ export function CardView() {
         {isAndroid ? (
           <>
             <h2>{t("noCardTitleAndroid")}</h2>
-            <p>{t("noCardBodyAndroid")}</p>
+            <p>{t(isIos ? "noCardBodyIos" : "noCardBodyAndroid")}</p>
             <p>
               <button class="primary" onClick={() => void pickAndroidCard()}>
                 💾 {t("connectCard")}
               </button>
             </p>
-            <p class="hint">{t("pickCardHint")}</p>
+            <p class="hint">{t(isIos ? "pickCardHintIos" : "pickCardHint")}</p>
           </>
         ) : (
           <>
