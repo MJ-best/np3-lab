@@ -1428,6 +1428,16 @@ html.android,
 html.ios {
   touch-action: manipulation;
 }
+/* Dialogs and the recipe detail stay clear of the status bar / Dynamic Island and the home bar. */
+html.android .overlay,
+html.ios .overlay {
+  padding-top: calc(24px + max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px)));
+  padding-bottom: calc(24px + max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px)));
+}
+html.android .detail,
+html.ios .detail {
+  max-height: calc(100vh - 48px - max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px)) - max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px)));
+}
 /* iOS zooms the page into any focused field under 16px and doesn't zoom back. */
 html.ios input,
 html.ios textarea,
