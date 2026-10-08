@@ -6,6 +6,8 @@
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Saves framed photos you choose to save to your photo library.</string>
 	<key>CFBundleDisplayName</key>
         <string>NP3 Lab</string>
 	<key>CFBundleExecutable</key>
