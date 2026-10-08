@@ -1902,13 +1902,65 @@ html.desktop .topbar input {
   align-items: center;
   gap: 10px;
 }
+.lightbox.frame-view {
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+.frame-preview {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
 .frame-view img {
-  max-height: calc(100vh - 170px);
+  max-height: 58vh;
   border-radius: 2px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
-.frame-themes {
-  margin-bottom: 0;
+.frame-controls {
+  width: min(720px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.frame-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.frame-label {
+  flex: none;
+  width: 60px;
+  color: var(--muted);
+  font-size: 12px;
+}
+/* Nine layouts: one scrolling row rather than three lines of chips on a phone. */
+.frame-chips {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.frame-chips .chip {
+  flex: none;
+}
+.tone-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  vertical-align: -1px;
+}
+.tone-dot.light {
+  background: #fff;
+}
+.tone-dot.cream {
+  background: #f3eee3;
+}
+.tone-dot.dark {
+  background: #111;
 }
 .frame-loading {
   color: var(--muted);

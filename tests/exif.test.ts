@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { cameraName, dateText, readExif, settingsParts } from "../src/exif";
+import { fitRatio } from "../src/frame";
 
 /** A little-endian TIFF block with IFD0 (make, model, EXIF pointer) and an EXIF IFD. */
 function tiff(): Uint8Array {
@@ -74,5 +75,24 @@ describe("readExif", () => {
     const broken = tiff();
     new DataView(broken.buffer).setUint32(4, 0xfffffff0, true);
     expect(readExif(broken)).toBeNull();
+  });
+});
+
+describe("fitRatio", () => {
+  it("keeps the frame as is for the original ratio", () => {
+    expect(fitRatio(1000, 1500, "auto")).toEqual({ W: 1000, H: 1500, x: 0, y: 0 });
+  });
+
+  it("pads a frame out to the chosen ratio, centred", () => {
+    for (const [ratio, r] of [["1:1", 1], ["4:5", 0.8], ["9:16", 9 / 16]] as const) {
+      for (const [w, h] of [[1000, 1500], [1500, 1000]]) {
+        const f = fitRatio(w, h, ratio);
+        expect(Math.abs(f.W / f.H - r)).toBeLessThan(0.01);
+        expect(f.W).toBeGreaterThanOrEqual(w);
+        expect(f.H).toBeGreaterThanOrEqual(h);
+        expect(Math.abs(f.x - (f.W - w) / 2)).toBeLessThanOrEqual(1);
+        expect(Math.abs(f.y - (f.H - h) / 2)).toBeLessThanOrEqual(1);
+      }
+    }
   });
 });
