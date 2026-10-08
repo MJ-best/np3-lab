@@ -1430,7 +1430,9 @@ html.ios {
 }
 /* Dialogs and the recipe detail stay clear of the status bar / Dynamic Island and the home bar. */
 html.android .overlay,
-html.ios .overlay {
+html.ios .overlay,
+html.android .lightbox,
+html.ios .lightbox {
   padding-top: calc(24px + max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px)));
   padding-bottom: calc(24px + max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px)));
 }
@@ -1899,6 +1901,22 @@ html.desktop .topbar input {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.frame-view img {
+  max-height: calc(100vh - 170px);
+  border-radius: 2px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+.frame-themes {
+  margin-bottom: 0;
+}
+.frame-loading {
+  color: var(--muted);
+}
+.frame-note {
+  max-width: 520px;
+  margin: 0;
+  text-align: center;
 }
 
 /* "Shot with this recipe" as a gallery: photos keep their shape (portrait or landscape). */
