@@ -107,11 +107,29 @@ public class SafFoldersPlugin extends Plugin {
         call.resolve(describe(uri));
     }
 
+    /**
+     * Bytes for the next saveFile, sent ahead in their own call: the call that opens the
+     * "Save as" screen is kept in the activity's saved state, and a large file there (a framed
+     * photo, a backup) is more than Android allows, which crashes the app.
+     */
+    private byte[] pendingSave;
+
+    @PluginMethod
+    public void stageSave(PluginCall call) {
+        String data = call.getString("data");
+        if (data == null) {
+            call.reject("missing-file");
+            return;
+        }
+        pendingSave = Base64.decode(data, Base64.DEFAULT);
+        call.resolve();
+    }
+
     /** "Save as" for one file (NP3, ZIP, backup JSON): WebViews ignore <a download>. Resolves { saved }. */
     @PluginMethod
     public void saveFile(PluginCall call) {
         String name = call.getString("name");
-        if (name == null || name.isEmpty() || call.getString("data") == null) {
+        if (name == null || name.isEmpty() || pendingSave == null) {
             call.reject("missing-file");
             return;
         }
@@ -128,11 +146,17 @@ public class SafFoldersPlugin extends Plugin {
         Intent data = result.getData();
         JSObject ret = new JSObject();
         if (result.getResultCode() != Activity.RESULT_OK || data == null || data.getData() == null) {
+            pendingSave = null;
             ret.put("saved", false);
             call.resolve(ret);
             return;
         }
-        byte[] bytes = Base64.decode(call.getString("data", ""), Base64.DEFAULT);
+        byte[] bytes = pendingSave;
+        pendingSave = null;
+        if (bytes == null) {
+            call.reject("missing-file");
+            return;
+        }
         try (OutputStream out = getContext().getContentResolver().openOutputStream(data.getData(), "wt")) {
             if (out == null) throw new Exception("cannot-write");
             out.write(bytes);

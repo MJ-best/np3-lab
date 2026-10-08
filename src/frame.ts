@@ -72,7 +72,8 @@ export async function renderFrame(photo: Blob, info: FrameInfo, theme: FrameThem
     // Recipe and camera on the left, settings on the right; a small Nikon-yellow mark leads the recipe name.
     const left = 4 * u;
     const right = W - 4 * u;
-    const line1 = barTop + 5 * u;
+    // Without shooting details the name sits alone, centred in the bar.
+    const line1 = camera || settings.length ? barTop + 5 * u : barTop + 6.3 * u;
     const line2 = barTop + 8.2 * u;
     ctx.fillStyle = NIKON_YELLOW;
     ctx.fillRect(left, line1 - 2.1 * u, 0.6 * u, 2.4 * u);

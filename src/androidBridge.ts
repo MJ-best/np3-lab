@@ -37,7 +37,9 @@ interface SafFoldersPlugin {
   readFile(opts: PathArgs & { name: string }): Promise<{ data: string }>;
   writeFile(opts: PathArgs & { name: string; data: string; overwrite?: boolean }): Promise<void>;
   deleteFile(opts: PathArgs & { name: string }): Promise<void>;
-  saveFile(opts: { name: string; mime: string; data: string }): Promise<{ saved: boolean }>;
+  /** Android: the bytes go ahead in their own call (see SafFoldersPlugin.stageSave). */
+  stageSave(opts: { data: string }): Promise<void>;
+  saveFile(opts: { name: string; mime: string; data?: string }): Promise<{ saved: boolean }>;
   addListener(event: "foldersChanged", cb: () => void): Promise<PluginListenerHandle>;
 }
 
@@ -184,7 +186,9 @@ export function createAndroidBridge(): (NativeBridge & AndroidExtras) | undefine
     },
 
     async saveFile(bytes, fileName, mime) {
-      return (await Saf.saveFile({ name: fileName, mime, data: toBase64(bytes) })).saved;
+      if (platform === "ios") return (await Saf.saveFile({ name: fileName, mime, data: toBase64(bytes) })).saved;
+      await Saf.stageSave({ data: toBase64(bytes) });
+      return (await Saf.saveFile({ name: fileName, mime })).saved;
     },
 
     async readCard(uri): Promise<NativeCardFile[]> {

@@ -112,9 +112,22 @@ export async function addPhotos(recipeId: string, files: File[]): Promise<number
   const already = new Set(inRecipe.flatMap((p) => (p.sourceKey ? [p.sourceKey] : [])));
   // Photos added before keys existed can only be recognised by name.
   const legacyNames = new Set(inRecipe.filter((p) => !p.sourceKey).map((p) => p.name));
+  const readOriginalExif = async (f: File) => readExif(new Uint8Array(await f.slice(0, 1024 * 1024).arrayBuffer())) ?? undefined;
   for (const original of files.filter(isPhotoFile)) {
-    // The same file added twice (or dropped again later) stays one photo.
-    if (already.has(sourceKey(original)) || legacyNames.has(original.name)) continue;
+    // The same file added twice (or dropped again later) stays one photo; one added before
+    // shooting details were kept gets them now.
+    const same = inRecipe.find((p) => p.sourceKey === sourceKey(original) || (!p.sourceKey && p.name === original.name));
+    if (same || already.has(sourceKey(original)) || legacyNames.has(original.name)) {
+      if (same && !same.exif) {
+        const r = await tx<PhotoRecord | undefined>("readonly", (st) => st.get(same.id));
+        const exif = r && (await readOriginalExif(original));
+        if (r && exif) {
+          await tx("readwrite", (st) => st.put({ ...r, exif }));
+          same.exif = exif;
+        }
+      }
+      continue;
+    }
     try {
       // RAW files are stored as the JPEG the camera embedded (with the recipe applied).
       const file = await toViewablePhoto(original);
@@ -126,7 +139,7 @@ export async function addPhotos(recipeId: string, files: File[]): Promise<number
         sourceKey: sourceKey(original),
         createdAt: Date.now() + added,
         // Read from the original: re-encoding below drops the EXIF.
-        exif: readExif(new Uint8Array(await original.slice(0, 1024 * 1024).arrayBuffer())) ?? undefined,
+        exif: await readOriginalExif(original),
         full: await downscale(file, FULL_EDGE, 0.88),
         thumb: await downscale(file, THUMB_EDGE, 0.82),
       };
