@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { t } from "../i18n";
-import { deletePhoto, fullPhotoUrl, photosByRecipe, type PhotoThumb } from "../photos";
+import { FRAME_THEMES, canvasToJpeg, renderFrame, type FrameTheme } from "../frame";
+import { t, tx } from "../i18n";
+import { downloadBytes } from "../pack/download";
+import { deletePhoto, fullPhoto, fullPhotoUrl, photosByRecipe, type PhotoThumb } from "../photos";
+import { recipeById } from "../state";
 import { importPhotos } from "../photoImport";
 import { PHOTO_ACCEPT } from "../raw";
 
@@ -33,6 +36,8 @@ export function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThu
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
   }, [index, photos.length]);
+  const [theme, setTheme] = useState<FrameTheme | null>(null);
+  if (theme) return <FrameView photo={photo} theme={theme} onTheme={setTheme} onBack={() => setTheme(null)} />;
   return (
     <div class="lightbox" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <img src={url ?? photo.thumbUrl} alt={photo.name} />
@@ -50,7 +55,72 @@ export function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThu
         >
           {t("deletePhoto")}
         </button>
+        <button class="primary" onClick={() => setTheme("strap")}>
+          {t("frameBtn")}
+        </button>
         <button onClick={onClose}>{t("close")}</button>
+      </div>
+    </div>
+  );
+}
+
+const THEME_LABEL = { strap: "frameStrap", film: "frameFilm", gallery: "frameGallery" } as const;
+
+/** The photo framed with its recipe name and shooting details, ready to save and share. */
+function FrameView({ photo, theme, onTheme, onBack }: { photo: PhotoThumb; theme: FrameTheme; onTheme: (t: FrameTheme) => void; onBack: () => void }) {
+  const recipe = recipeById.value.get(photo.recipeId);
+  const [frame, setFrame] = useState<{ url: string; blob: Blob } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    let made: string | null = null;
+    void (async () => {
+      const full = await fullPhoto(photo.id);
+      if (!full || !alive) return;
+      const title = recipe ? tx(recipe.title) : "";
+      const canvas = await renderFrame(full, { title, npName: recipe?.npName ?? title, exif: photo.exif }, theme);
+      const blob = await canvasToJpeg(canvas);
+      if (!alive) return;
+      made = URL.createObjectURL(blob);
+      setFrame({ url: made, blob });
+    })();
+    return () => {
+      alive = false;
+      if (made) URL.revokeObjectURL(made);
+    };
+  }, [photo.id, theme]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopImmediatePropagation();
+      onBack();
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, []);
+  // iOS (and Safari/Chrome on phones): the share sheet saves to Photos or posts straight to an app.
+  const canShare = typeof navigator.canShare === "function" && navigator.canShare({ files: [new File([], "x.jpg", { type: "image/jpeg" })] });
+  const fileName = `${photo.name.replace(/\.[^.]+$/, "")}-${recipe?.npName ?? "frame"}.jpg`.replace(/[^\w.\-]+/g, "_");
+  return (
+    <div class="lightbox frame-view">
+      <div class="segmented frame-themes" role="radiogroup">
+        {FRAME_THEMES.map((th) => (
+          <button key={th} role="radio" aria-checked={th === theme} class={th === theme ? "active" : ""} onClick={() => onTheme(th)}>
+            {t(THEME_LABEL[th])}
+          </button>
+        ))}
+      </div>
+      {frame ? <img src={frame.url} alt={photo.name} /> : <div class="frame-loading">…</div>}
+      {!photo.exif && <p class="muted small frame-note">{t("frameNoExif")}</p>}
+      <div class="lightbox-bar">
+        <button onClick={onBack}>{t("frameBack")}</button>
+        {canShare && (
+          <button disabled={!frame} onClick={() => frame && void navigator.share({ files: [new File([frame.blob], fileName, { type: "image/jpeg" })] }).catch(() => undefined)}>
+            {t("frameShare")}
+          </button>
+        )}
+        <button class="primary" disabled={!frame} onClick={() => frame && downloadBytes(frame.blob, fileName, "image/jpeg")}>
+          {t("frameSave")}
+        </button>
       </div>
     </div>
   );

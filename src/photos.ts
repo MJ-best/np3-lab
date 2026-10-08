@@ -1,4 +1,5 @@
 import { signal } from "@preact/signals";
+import { readExif, type PhotoExif } from "./exif";
 import type { Recipe } from "./np3/recipe";
 import { isPhotoFile, isRawFile, toViewablePhoto } from "./raw";
 
@@ -16,6 +17,8 @@ export interface PhotoThumb {
   /** Identifies the original file (name, size, date) so adding it again is skipped. */
   sourceKey?: string;
   createdAt: number;
+  /** Shooting details for frames; absent for photos added before 0.6.3 or without EXIF. */
+  exif?: PhotoExif;
 }
 
 interface PhotoRecord {
@@ -24,6 +27,7 @@ interface PhotoRecord {
   name: string;
   sourceKey?: string;
   createdAt: number;
+  exif?: PhotoExif;
   full: Blob;
   thumb: Blob;
 }
@@ -67,6 +71,7 @@ const toThumb = (r: PhotoRecord): PhotoThumb => ({
   name: r.name,
   sourceKey: r.sourceKey,
   createdAt: r.createdAt,
+  exif: r.exif,
   thumbUrl: URL.createObjectURL(r.thumb),
 });
 
@@ -120,6 +125,8 @@ export async function addPhotos(recipeId: string, files: File[]): Promise<number
         name: original.name,
         sourceKey: sourceKey(original),
         createdAt: Date.now() + added,
+        // Read from the original: re-encoding below drops the EXIF.
+        exif: readExif(new Uint8Array(await original.slice(0, 1024 * 1024).arrayBuffer())) ?? undefined,
         full: await downscale(file, FULL_EDGE, 0.88),
         thumb: await downscale(file, THUMB_EDGE, 0.82),
       };
@@ -143,10 +150,14 @@ export async function deletePhoto(id: string) {
   setIndex(all.filter((p) => p.id !== id));
 }
 
+export async function fullPhoto(id: string): Promise<Blob | null> {
+  return (await tx<PhotoRecord | undefined>("readonly", (s) => s.get(id)))?.full ?? null;
+}
+
 /** Object URL of the full-size photo (caller revokes it). */
 export async function fullPhotoUrl(id: string): Promise<string | null> {
-  const r = await tx<PhotoRecord | undefined>("readonly", (s) => s.get(id));
-  return r ? URL.createObjectURL(r.full) : null;
+  const full = await fullPhoto(id);
+  return full ? URL.createObjectURL(full) : null;
 }
 
 /**
