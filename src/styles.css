@@ -1138,7 +1138,21 @@ input[type="range"].custom-track::-moz-range-thumb {
     display: none;
   }
   .tabs button {
-    padding: 6px 12px;
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+  /* Four tabs: the name stays on one line, a little smaller. */
+  .brand strong {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .topbar {
+    gap: 8px;
+  }
+  html.android .topbar,
+  html.ios .topbar {
+    padding-left: calc(14px + max(env(safe-area-inset-left), var(--safe-area-inset-left, 0px)));
+    padding-right: calc(14px + max(env(safe-area-inset-right), var(--safe-area-inset-right, 0px)));
   }
   /* Recipes: search and buttons on one line, chip rows scroll sideways, two cards per row. */
   .toolbar,

@@ -13,6 +13,7 @@ import { CardView } from "./ui/CardView";
 import { Editor } from "./ui/Editor";
 import { Gallery } from "./ui/Gallery";
 import { ImportDialog, np3FromFiles } from "./ui/ImportDialog";
+import { PhotoGallery } from "./ui/PhotoGallery";
 import { RecipeDetail } from "./ui/RecipeDetail";
 import { SettingsDialog } from "./ui/SettingsDialog";
 import { TextImportDialog } from "./ui/TextImportDialog";
@@ -22,10 +23,12 @@ const TABS: { id: Route; key: MessageKey }[] = isDesktop
   ? [
       { id: "card", key: "tabCard" },
       { id: "gallery", key: "tabLibrary" },
+      { id: "photos", key: "tabPhotos" },
       { id: "editor", key: "tabEditor" },
     ]
   : [
-      { id: "gallery", key: "tabGallery" },
+      { id: "gallery", key: "tabLibrary" },
+      { id: "photos", key: "tabPhotos" },
       { id: "editor", key: "tabEditor" },
       { id: "card", key: "tabCard" },
     ];
@@ -143,6 +146,7 @@ export function App() {
 
       <main class="content">
         {route.value === "gallery" && <Gallery />}
+        {route.value === "photos" && <PhotoGallery />}
         {route.value === "editor" && <Editor />}
         {route.value === "card" && (isDesktop ? <CardView /> : <Cart />)}
       </main>
