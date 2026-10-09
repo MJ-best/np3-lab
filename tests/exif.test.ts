@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { brandName, cameraName, dateText, modelName, readExif, settingsParts } from "../src/exif";
-import { cropWindow, fitRatio, NO_CROP } from "../src/frame";
+import { canvasScale, cropWindow, fitRatio, NO_CROP } from "../src/frame";
 
 /** A little-endian TIFF block with IFD0 (make, model, EXIF pointer) and an EXIF IFD. */
 function tiff(): Uint8Array {
@@ -141,5 +141,14 @@ describe("cropWindow", () => {
             inside(3000, 2000, cropWindow(3000, 2000, { ratio, zoom, cx, cy, angle }));
             inside(2000, 3000, cropWindow(2000, 3000, { ratio, zoom, cx, cy, angle }));
           }
+  });
+});
+
+describe("canvasScale", () => {
+  it("leaves canvases that phones can draw alone and shrinks the rest under the limit", () => {
+    expect(canvasScale(4096, 3000)).toBe(1);
+    const k = canvasScale(4342, 7719);
+    expect(k).toBeLessThan(1);
+    expect(4342 * k * 7719 * k).toBeLessThanOrEqual(16_000_001);
   });
 });
