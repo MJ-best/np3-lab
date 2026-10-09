@@ -101,6 +101,20 @@ export function cameraName(e: PhotoExif): string | undefined {
   return brand && !model.toLowerCase().startsWith(brand.toLowerCase()) ? `${brand[0]}${brand.slice(1).toLowerCase()} ${model}` : model;
 }
 
+/** The maker as a wordmark: "NIKON CORPORATION" → "NIKON", "FUJIFILM" → "FUJIFILM". */
+export function brandName(e: PhotoExif): string | undefined {
+  const word = (e.make ?? e.model)?.trim().split(/\s+/)[0];
+  return word ? word.toUpperCase() : undefined;
+}
+
+/** The model without the maker: "NIKON Z f" → "Z f". */
+export function modelName(e: PhotoExif): string | undefined {
+  const model = e.model?.trim();
+  const brand = brandName(e);
+  if (!model) return undefined;
+  return brand && model.toUpperCase().startsWith(`${brand} `) ? model.slice(brand.length + 1).trim() : model;
+}
+
 const trim = (n: number) => String(Number(n.toFixed(1)));
 
 export function shutterText(s: number): string {

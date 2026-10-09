@@ -1,16 +1,46 @@
-import { cameraName, dateText, settingsParts, type PhotoExif } from "./exif";
+import { brandName, cameraName, dateText, modelName, settingsParts, type PhotoExif } from "./exif";
 
 /*
  * Frames for sharing a photo: the picture with its recipe name and shooting details
  * set around it. Drawn on a canvas at the photo's own resolution.
  *
- * Layouts follow what EXIF-frame apps commonly offer (bottom bar, Polaroid, film strip,
- * cinematic letterbox, poster, minimal border, text over the photo), plus a recipe card
- * that lists the recipe's own settings.
+ * Layouts follow what EXIF-frame apps commonly offer (bottom bar, brand watermark, "Shot on",
+ * Polaroid, film strip, cinematic letterbox, poster, camera monitor, minimal border, text over
+ * the photo), plus a recipe card that lists the recipe's own settings. The camera brand is set
+ * as a wordmark in our own type, not the maker's logo.
  */
 
-export type FrameLayout = "strap" | "polaroid" | "gallery" | "minimal" | "poster" | "recipe" | "film" | "cinema" | "overlay";
-export const FRAME_LAYOUTS: FrameLayout[] = ["strap", "polaroid", "gallery", "minimal", "poster", "recipe", "film", "cinema", "overlay"];
+export type FrameLayout =
+  | "strap"
+  | "brand"
+  | "shotOn"
+  | "centered"
+  | "oneLine"
+  | "polaroid"
+  | "gallery"
+  | "minimal"
+  | "poster"
+  | "recipe"
+  | "film"
+  | "cinema"
+  | "monitor"
+  | "overlay";
+export const FRAME_LAYOUTS: FrameLayout[] = [
+  "strap",
+  "brand",
+  "shotOn",
+  "centered",
+  "oneLine",
+  "polaroid",
+  "gallery",
+  "minimal",
+  "poster",
+  "recipe",
+  "film",
+  "cinema",
+  "monitor",
+  "overlay",
+];
 
 export type FrameTone = "light" | "cream" | "dark";
 export const FRAME_TONES: FrameTone[] = ["light", "cream", "dark"];
@@ -33,7 +63,7 @@ export interface FrameOptions {
 export const DEFAULT_FRAME: FrameOptions = { layout: "strap", tone: "light", ratio: "auto", showSettings: true, showGear: true, showDate: true };
 
 /** Layouts with their own colours: the tone choice doesn't apply. */
-export const FIXED_TONE: FrameLayout[] = ["film", "cinema", "overlay"];
+export const FIXED_TONE: FrameLayout[] = ["film", "cinema", "monitor", "overlay"];
 
 export interface FrameInfo {
   /** The recipe's name as shown in the app. */
@@ -120,6 +150,8 @@ function layoutBlock(bmp: ImageBitmap, info: FrameInfo, o: FrameOptions): Block 
   const lens = o.showGear ? (e.lens ?? "") : "";
   const date = o.showDate ? (dateText(e) ?? "") : "";
   const gear = [camera, lens].filter(Boolean).join("  ·  ");
+  const brand = o.showGear ? (brandName(e) ?? "") : "";
+  const model = o.showGear ? (modelName(e) ?? "") : "";
   const t = TONES[o.tone];
   const photo = (ctx: Ctx, x: number, y: number) => ctx.drawImage(bmp, x, y);
   const join = (parts: string[], sep = "   ·   ") => parts.filter(Boolean).join(sep);
@@ -144,6 +176,136 @@ function layoutBlock(bmp: ImageBitmap, info: FrameInfo, o: FrameOptions): Block 
           text(ctx, camera, 5.5 * u, y2, { size: 1.7 * u, color: t.sub, weight: "500", max: half });
           text(ctx, settings.join("   "), w - 4 * u, y1, { size: 2.1 * u, color: t.ink, weight: "600", align: "right", max: half });
           text(ctx, join([lens, date], "  ·  "), w - 4 * u, y2, { size: 1.6 * u, color: t.sub, align: "right", max: half });
+        },
+      };
+    }
+    case "brand": {
+      // A watermark bar: model and lens on the left; the brand, a rule, then settings and recipe on the right.
+      const bar = 12 * u;
+      return {
+        w,
+        h: h + bar,
+        bg: t.bg,
+        draw(ctx) {
+          photo(ctx, 0, 0);
+          const y1 = h + 5.2 * u;
+          const y2 = h + 8.6 * u;
+          const left = 4 * u;
+          const right = w - 4 * u;
+          text(ctx, model || info.title, left, y1, { size: 2.6 * u, color: t.ink, weight: "700", max: w * 0.38 });
+          text(ctx, model ? lens : camera, left, y2, { size: 1.6 * u, color: t.sub, max: w * 0.38 });
+          const s1 = settings.join("  ");
+          const s2 = join([info.title, date], "  ·  ");
+          ctx.font = `600 ${2 * u}px ${SANS}`;
+          const w1 = ctx.measureText(s1).width;
+          ctx.font = `400 ${1.6 * u}px ${SANS}`;
+          const textW = Math.min(w * 0.36, Math.max(w1, ctx.measureText(s2).width));
+          text(ctx, s1, right - textW, y1, { size: 2 * u, color: t.ink, weight: "600", max: textW });
+          text(ctx, s2, right - textW, y2, { size: 1.6 * u, color: t.sub, max: textW });
+          if (brand) {
+            const rule = right - textW - 2.4 * u;
+            ctx.fillStyle = t.line;
+            ctx.fillRect(rule, h + 3 * u, Math.max(1, 0.18 * u), 6.4 * u);
+            text(ctx, brand, rule - 2.4 * u, h + 7.3 * u, { size: 3.2 * u, color: t.ink, weight: "900", align: "right", max: w * 0.24, track: 0.12 * u });
+          }
+        },
+      };
+    }
+    case "shotOn": {
+      // "Shot on NIKON Z f" with the recipe underneath; settings on the right.
+      const bar = 11 * u;
+      return {
+        w,
+        h: h + bar,
+        bg: t.bg,
+        draw(ctx) {
+          photo(ctx, 0, 0);
+          const y1 = h + 5 * u;
+          const y2 = h + 8.3 * u;
+          const left = 4 * u;
+          const half = w / 2 - 5 * u;
+          let x = left;
+          if (brand || model) {
+            const lead = "Shot on ";
+            ctx.font = `300 ${2.4 * u}px ${SANS}`;
+            text(ctx, lead, x, y1, { size: 2.4 * u, color: t.ink, weight: "300", max: half });
+            x += ctx.measureText(lead).width;
+          }
+          text(ctx, join([brand, model], " "), x, y1, { size: 2.4 * u, color: t.ink, weight: "700", max: half - (x - left) });
+          ctx.fillStyle = NIKON_YELLOW;
+          ctx.fillRect(left, y2 - 1.2 * u, 0.9 * u, 0.9 * u);
+          text(ctx, info.title, left + 1.6 * u, y2, { size: 1.7 * u, color: t.sub, weight: "500", max: half });
+          text(ctx, settings.join("   "), w - 4 * u, y1, { size: 2 * u, color: t.ink, weight: "300", align: "right", max: half });
+          text(ctx, join([lens, date], "  ·  "), w - 4 * u, y2, { size: 1.6 * u, color: t.sub, align: "right", max: half });
+        },
+      };
+    }
+    case "centered": {
+      // Everything centred under the photo: brand and model, settings, then the recipe.
+      const side = 5 * u;
+      const bottom = 23 * u;
+      return {
+        w: w + 2 * side,
+        h: h + side + bottom,
+        bg: t.bg,
+        draw(ctx) {
+          photo(ctx, side, side);
+          const cx = side + w / 2;
+          const y = side + h;
+          // Brand bold, model light, measured so the pair is centred together.
+          const size = 3 * u;
+          ctx.font = `800 ${size}px ${SANS}`;
+          const bw = brand ? ctx.measureText(`${brand} `).width : 0;
+          ctx.font = `300 ${size}px ${SANS}`;
+          const mw = ctx.measureText(model).width;
+          const x0 = cx - Math.min(bw + mw, w) / 2;
+          text(ctx, brand, x0, y + 8 * u, { size, color: t.ink, weight: "800", max: w / 2 });
+          text(ctx, model, x0 + bw, y + 8 * u, { size, color: t.ink, weight: "300", max: w / 2 });
+          text(ctx, settings.join("  ∙  "), cx, y + 12.4 * u, { size: 1.7 * u, color: t.sub, align: "center", max: w });
+          text(ctx, info.title, cx, y + 16.8 * u, { size: 1.9 * u, color: t.ink, family: SERIF, style: "italic", align: "center", max: w });
+          text(ctx, date, cx, y + 19.8 * u, { size: 1.3 * u, color: t.sub, family: MONO, align: "center", max: w });
+        },
+      };
+    }
+    case "oneLine": {
+      // One row under the photo: settings, the recipe in the middle, camera and date.
+      const side = 2.5 * u;
+      const bottom = 8 * u;
+      return {
+        w: w + 2 * side,
+        h: h + side + bottom,
+        bg: t.bg,
+        draw(ctx) {
+          photo(ctx, side, side);
+          const y = side + h + 5.2 * u;
+          const third = w / 3 - 1.5 * u;
+          text(ctx, settings.join("  "), side, y, { size: 1.5 * u, color: t.sub, max: third });
+          text(ctx, info.title, side + w / 2, y, { size: 1.8 * u, color: t.ink, weight: "600", align: "center", max: third });
+          text(ctx, join([camera, date], "  ·  "), side + w, y, { size: 1.5 * u, color: t.sub, align: "right", max: third });
+        },
+      };
+    }
+    case "monitor": {
+      // A camera's info display: the values spread evenly in a monospaced readout.
+      const bar = 12 * u;
+      const parts = [
+        e.fNumber && o.showSettings ? `F${Number(e.fNumber.toFixed(1))}` : "",
+        settings.find((s) => s.endsWith("s") && s !== "") ?? "",
+        settings.find((s) => s.startsWith("ISO")) ?? "",
+        settings.find((s) => s.endsWith("mm")) ?? "",
+      ].filter(Boolean);
+      return {
+        w,
+        h: h + bar,
+        bg: "#050505",
+        draw(ctx) {
+          photo(ctx, 0, 0);
+          parts.forEach((p, i) => {
+            text(ctx, p, (w * (i + 1)) / (parts.length + 1), h + 5.4 * u, { size: 2.4 * u, color: "#f2f2f2", family: MONO, weight: "500", align: "center", max: w / (parts.length + 1) });
+          });
+          const amber = "#f2a33a";
+          text(ctx, `● ${info.npName.toUpperCase()}`, 4 * u, h + 9.4 * u, { size: 1.4 * u, color: amber, family: MONO, weight: "600", max: w * 0.55 });
+          text(ctx, join([brand, model, date], "  "), w - 4 * u, h + 9.4 * u, { size: 1.4 * u, color: "#8a8a8a", family: MONO, align: "right", max: w * 0.4 });
         },
       };
     }
