@@ -628,16 +628,28 @@ function applyCrop(img: ImageBitmap, crop: Crop): CanvasImageSource & { width: n
   return canvas;
 }
 
+/**
+ * Scale for a W×H canvas so it stays within what phones can draw (iOS refuses canvases over
+ * about 16.7 million pixels and leaves them blank). 1 when it already fits.
+ */
+export function canvasScale(W: number, H: number, limit = 16_000_000): number {
+  return Math.min(1, Math.sqrt(limit / (W * H)));
+}
+
 /** Render the framed photo; `photo` is any decodable image. */
 export async function renderFrame(photo: Blob, info: FrameInfo, o: FrameOptions, crop: Crop = NO_CROP): Promise<HTMLCanvasElement> {
   const whole = await createImageBitmap(photo);
   try {
     const block = layoutBlock(applyCrop(whole, crop), info, o);
     const { W, H, x, y } = fitRatio(block.w, block.h, o.ratio);
+    // A 4096 px photo padded out to 9:16 can pass the limit: draw it a little smaller instead.
+    const k = canvasScale(W, H);
     const canvas = document.createElement("canvas");
-    canvas.width = Math.round(W);
-    canvas.height = Math.round(H);
+    canvas.width = Math.round(W * k);
+    canvas.height = Math.round(H * k);
     const ctx = canvas.getContext("2d")!;
+    ctx.scale(k, k);
+    ctx.imageSmoothingQuality = "high";
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = block.bg;
     ctx.fillRect(0, 0, W, H);

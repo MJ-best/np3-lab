@@ -29,12 +29,15 @@ interface PhotoRecord {
   createdAt: number;
   exif?: PhotoExif;
   full: Blob;
+  /** Long edge the full copy was made at; absent for photos added at 2048 px (before 0.6.4). */
+  fullEdge?: number;
   thumb: Blob;
 }
 
 const DB_NAME = "np3lab";
 const STORE = "photos";
-const FULL_EDGE = 2048;
+/** Large enough to crop into for a frame and still post a sharp picture. */
+const FULL_EDGE = 4096;
 const THUMB_EDGE = 960;
 
 /** recipeId → photos (newest first). */
@@ -118,12 +121,23 @@ export async function addPhotos(recipeId: string, files: File[]): Promise<number
     // shooting details were kept gets them now.
     const same = inRecipe.find((p) => p.sourceKey === sourceKey(original) || (!p.sourceKey && p.name === original.name));
     if (same || already.has(sourceKey(original)) || legacyNames.has(original.name)) {
-      if (same && !same.exif) {
-        const r = await tx<PhotoRecord | undefined>("readonly", (st) => st.get(same.id));
-        const exif = r && (await readOriginalExif(original));
-        if (r && exif) {
-          await tx("readwrite", (st) => st.put({ ...r, exif }));
-          same.exif = exif;
+      // A photo added before shooting details were kept, or at a smaller size, is brought up to date.
+      if (same) {
+        try {
+          const r = await tx<PhotoRecord | undefined>("readonly", (st) => st.get(same.id));
+          if (r && (!r.exif || (r.fullEdge ?? 2048) < FULL_EDGE)) {
+            const next = { ...r };
+            if (!r.exif) next.exif = await readOriginalExif(original);
+            const file = (r.fullEdge ?? 2048) < FULL_EDGE ? await toViewablePhoto(original) : null;
+            if (file) {
+              next.full = await downscale(file, FULL_EDGE, 0.88);
+              next.fullEdge = FULL_EDGE;
+            }
+            await tx("readwrite", (st) => st.put(next));
+            same.exif = next.exif;
+          }
+        } catch (err) {
+          console.warn("[NP3 Lab] could not update photo", original.name, err);
         }
       }
       continue;
@@ -141,6 +155,7 @@ export async function addPhotos(recipeId: string, files: File[]): Promise<number
         // Read from the original: re-encoding below drops the EXIF.
         exif: await readOriginalExif(original),
         full: await downscale(file, FULL_EDGE, 0.88),
+        fullEdge: FULL_EDGE,
         thumb: await downscale(file, THUMB_EDGE, 0.82),
       };
       await tx("readwrite", (s) => s.put(record));
