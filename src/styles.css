@@ -1944,27 +1944,40 @@ html.desktop .topbar input {
   position: relative;
   overflow: hidden;
   touch-action: none;
-  cursor: move;
+  cursor: grab;
   user-select: none;
   line-height: 0;
+  background: #000;
+  outline: 2px solid var(--accent);
 }
-.crop-stage img {
-  max-height: 52vh;
-  max-width: 100%;
+.crop-stage:active {
+  cursor: grabbing;
+}
+.lightbox .crop-stage img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: none;
+  max-height: none;
   border-radius: 0;
   box-shadow: none;
-}
-.crop-box {
-  position: absolute;
-  border: 2px solid var(--accent);
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+  transform-origin: 0 0;
   pointer-events: none;
+}
+/* Rule-of-thirds lines. */
+.crop-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, transparent calc(33.333% - 0.5px), rgba(255, 255, 255, 0.55) calc(33.333% - 0.5px), rgba(255, 255, 255, 0.55) calc(33.333% + 0.5px), transparent calc(33.333% + 0.5px), transparent calc(66.666% - 0.5px), rgba(255, 255, 255, 0.55) calc(66.666% - 0.5px), rgba(255, 255, 255, 0.55) calc(66.666% + 0.5px), transparent calc(66.666% + 0.5px)),
+    linear-gradient(to bottom, transparent calc(33.333% - 0.5px), rgba(255, 255, 255, 0.55) calc(33.333% - 0.5px), rgba(255, 255, 255, 0.55) calc(33.333% + 0.5px), transparent calc(33.333% + 0.5px), transparent calc(66.666% - 0.5px), rgba(255, 255, 255, 0.55) calc(66.666% - 0.5px), rgba(255, 255, 255, 0.55) calc(66.666% + 0.5px), transparent calc(66.666% + 0.5px));
 }
 .crop-foot {
   display: flex;
   align-items: center;
   gap: 12px;
-  width: min(360px, 100%);
+  width: min(480px, 100%);
   justify-content: space-between;
 }
 .crop-foot p {
@@ -1974,7 +1987,7 @@ html.desktop .topbar input {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: min(360px, 100%);
+  width: min(480px, 100%);
   font-size: 12px;
   color: var(--muted);
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { brandName, cameraName, dateText, modelName, readExif, settingsParts } from "../src/exif";
-import { cropRect, fitRatio, NO_CROP } from "../src/frame";
+import { cropWindow, fitRatio, NO_CROP } from "../src/frame";
 
 /** A little-endian TIFF block with IFD0 (make, model, EXIF pointer) and an EXIF IFD. */
 function tiff(): Uint8Array {
@@ -106,23 +106,40 @@ describe("fitRatio", () => {
   });
 });
 
-describe("cropRect", () => {
-  it("keeps the whole photo without a crop", () => {
-    expect(cropRect(3000, 2000, NO_CROP)).toEqual({ sx: 0, sy: 0, sw: 3000, sh: 2000 });
-  });
-
-  it("takes the largest centred crop of the shape, smaller when zoomed in", () => {
-    expect(cropRect(3000, 2000, { ratio: "1:1", zoom: 1, cx: 0.5, cy: 0.5 })).toEqual({ sx: 500, sy: 0, sw: 2000, sh: 2000 });
-    expect(cropRect(2000, 3000, { ratio: "16:9", zoom: 2, cx: 0.5, cy: 0.5 })).toEqual({ sx: 500, sy: 1219, sw: 1000, sh: 563 });
-  });
-
-  it("stays inside the photo however far the centre is moved", () => {
-    for (const [cx, cy] of [[0, 0], [1, 1], [-3, 4]]) {
-      const r = cropRect(3000, 2000, { ratio: "4:5", zoom: 1.5, cx, cy });
-      expect(r.sx).toBeGreaterThanOrEqual(0);
-      expect(r.sy).toBeGreaterThanOrEqual(0);
-      expect(r.sx + r.sw).toBeLessThanOrEqual(3000);
-      expect(r.sy + r.sh).toBeLessThanOrEqual(2000);
+describe("cropWindow", () => {
+  const inside = (w: number, h: number, win: ReturnType<typeof cropWindow>) => {
+    const rad = (win.angle * Math.PI) / 180;
+    for (const [x, y] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      // Corners of the window, turned back into photo coordinates.
+      const dx = (x * win.sw) / 2;
+      const dy = (y * win.sh) / 2;
+      const px = win.cx * w + dx * Math.cos(rad) + dy * Math.sin(rad);
+      const py = win.cy * h - dx * Math.sin(rad) + dy * Math.cos(rad);
+      expect(px).toBeGreaterThanOrEqual(-0.5);
+      expect(py).toBeGreaterThanOrEqual(-0.5);
+      expect(px).toBeLessThanOrEqual(w + 0.5);
+      expect(py).toBeLessThanOrEqual(h + 0.5);
     }
+  };
+
+  it("keeps the whole photo without a crop", () => {
+    expect(cropWindow(3000, 2000, NO_CROP)).toEqual({ sw: 3000, sh: 2000, cx: 0.5, cy: 0.5, angle: 0 });
+  });
+
+  it("takes the largest window of the shape, smaller when zoomed in", () => {
+    const sq = cropWindow(3000, 2000, { ...NO_CROP, ratio: "1:1" });
+    expect([sq.sw, sq.sh, sq.cx]).toEqual([2000, 2000, 0.5]);
+    const orig = cropWindow(3000, 2000, { ...NO_CROP, ratio: "original", zoom: 2 });
+    expect([orig.sw, orig.sh]).toEqual([1500, 1000]);
+  });
+
+  it("stays inside the photo however it's moved, zoomed or turned", () => {
+    for (const angle of [0, 7, -20, 45])
+      for (const zoom of [1, 1.7, 6])
+        for (const [cx, cy] of [[0, 0], [1, 1], [0.5, 0.5], [-3, 4]])
+          for (const ratio of ["1:1", "4:5", "16:9", "original"] as const) {
+            inside(3000, 2000, cropWindow(3000, 2000, { ratio, zoom, cx, cy, angle }));
+            inside(2000, 3000, cropWindow(2000, 3000, { ratio, zoom, cx, cy, angle }));
+          }
   });
 });
