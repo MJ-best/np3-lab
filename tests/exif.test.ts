@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { cameraName, dateText, readExif, settingsParts } from "../src/exif";
-import { fitRatio } from "../src/frame";
+import { cropRect, fitRatio, NO_CROP } from "../src/frame";
 
 /** A little-endian TIFF block with IFD0 (make, model, EXIF pointer) and an EXIF IFD. */
 function tiff(): Uint8Array {
@@ -93,6 +93,27 @@ describe("fitRatio", () => {
         expect(Math.abs(f.x - (f.W - w) / 2)).toBeLessThanOrEqual(1);
         expect(Math.abs(f.y - (f.H - h) / 2)).toBeLessThanOrEqual(1);
       }
+    }
+  });
+});
+
+describe("cropRect", () => {
+  it("keeps the whole photo without a crop", () => {
+    expect(cropRect(3000, 2000, NO_CROP)).toEqual({ sx: 0, sy: 0, sw: 3000, sh: 2000 });
+  });
+
+  it("takes the largest centred crop of the shape, smaller when zoomed in", () => {
+    expect(cropRect(3000, 2000, { ratio: "1:1", zoom: 1, cx: 0.5, cy: 0.5 })).toEqual({ sx: 500, sy: 0, sw: 2000, sh: 2000 });
+    expect(cropRect(2000, 3000, { ratio: "16:9", zoom: 2, cx: 0.5, cy: 0.5 })).toEqual({ sx: 500, sy: 1219, sw: 1000, sh: 563 });
+  });
+
+  it("stays inside the photo however far the centre is moved", () => {
+    for (const [cx, cy] of [[0, 0], [1, 1], [-3, 4]]) {
+      const r = cropRect(3000, 2000, { ratio: "4:5", zoom: 1.5, cx, cy });
+      expect(r.sx).toBeGreaterThanOrEqual(0);
+      expect(r.sy).toBeGreaterThanOrEqual(0);
+      expect(r.sx + r.sw).toBeLessThanOrEqual(3000);
+      expect(r.sy + r.sh).toBeLessThanOrEqual(2000);
     }
   });
 });

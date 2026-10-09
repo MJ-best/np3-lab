@@ -360,9 +360,46 @@ export function fitRatio(w: number, h: number, ratio: FrameRatio): { W: number; 
   return { W, H, x: Math.round((W - w) / 2), y: Math.round((H - h) / 2) };
 }
 
+/** Cropping the photo itself (before it's framed): a shape, how far in, and where. */
+export type CropRatio = "none" | "1:1" | "4:5" | "3:2" | "16:9" | "9:16";
+export const CROP_RATIOS: CropRatio[] = ["none", "1:1", "4:5", "3:2", "16:9", "9:16"];
+
+export interface Crop {
+  ratio: CropRatio;
+  /** 1 = the largest crop of that shape; 2 = half as wide. */
+  zoom: number;
+  /** Centre of the crop, 0..1 across and down the photo. */
+  cx: number;
+  cy: number;
+}
+
+export const NO_CROP: Crop = { ratio: "none", zoom: 1, cx: 0.5, cy: 0.5 };
+export const MAX_CROP_ZOOM = 4;
+
+/** The part of a w×h photo that `crop` keeps, in pixels, always inside the photo. */
+export function cropRect(w: number, h: number, crop: Crop): { sx: number; sy: number; sw: number; sh: number } {
+  if (crop.ratio === "none") return { sx: 0, sy: 0, sw: w, sh: h };
+  const [a, b] = crop.ratio.split(":").map(Number);
+  const r = a / b;
+  const zoom = Math.min(MAX_CROP_ZOOM, Math.max(1, crop.zoom));
+  let sw = w / r > h ? h * r : w;
+  sw /= zoom;
+  const sh = sw / r;
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const sx = clamp(crop.cx * w - sw / 2, 0, w - sw);
+  const sy = clamp(crop.cy * h - sh / 2, 0, h - sh);
+  return { sx: Math.round(sx), sy: Math.round(sy), sw: Math.round(sw), sh: Math.round(sh) };
+}
+
 /** Render the framed photo; `photo` is any decodable image. */
-export async function renderFrame(photo: Blob, info: FrameInfo, o: FrameOptions): Promise<HTMLCanvasElement> {
-  const bmp = await createImageBitmap(photo);
+export async function renderFrame(photo: Blob, info: FrameInfo, o: FrameOptions, crop: Crop = NO_CROP): Promise<HTMLCanvasElement> {
+  const whole = await createImageBitmap(photo);
+  let bmp = whole;
+  if (crop.ratio !== "none") {
+    const { sx, sy, sw, sh } = cropRect(whole.width, whole.height, crop);
+    bmp = await createImageBitmap(whole, sx, sy, sw, sh);
+    whole.close();
+  }
   try {
     const block = layoutBlock(bmp, info, o);
     const { W, H, x, y } = fitRatio(block.w, block.h, o.ratio);
