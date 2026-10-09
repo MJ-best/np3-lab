@@ -2128,3 +2128,10 @@ html.desktop .topbar input {
 .photo-group-head:hover .photo-group-open {
   color: var(--accent);
 }
+
+/* Narrower phones (most Android, smaller iPhones): the four tabs and settings need the whole row. */
+@media (max-width: 420px) {
+  .topbar .brand {
+    display: none;
+  }
+}
