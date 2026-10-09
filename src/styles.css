@@ -2032,6 +2032,10 @@ html.desktop .topbar input {
 }
 
 /* My photos: every recipe's photos, grouped. */
+/* Same gap under the search bar as the Recipes tab has above its filters. */
+.photo-gallery .toolbar {
+  margin-bottom: 18px;
+}
 .photo-library {
   display: flex;
   flex-direction: column;
