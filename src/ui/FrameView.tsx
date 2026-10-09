@@ -26,6 +26,11 @@ import { formatValue } from "./Slider";
 
 const LAYOUT_LABEL: Record<FrameOptions["layout"], MessageKey> = {
   strap: "frameStrap",
+  brand: "frameBrand",
+  shotOn: "frameShotOn",
+  centered: "frameCentered",
+  oneLine: "frameOneLine",
+  monitor: "frameMonitor",
   polaroid: "framePolaroid",
   gallery: "frameGallery",
   minimal: "frameMinimal",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cameraName, dateText, readExif, settingsParts } from "../src/exif";
+import { brandName, cameraName, dateText, modelName, readExif, settingsParts } from "../src/exif";
 import { cropRect, fitRatio, NO_CROP } from "../src/frame";
 
 /** A little-endian TIFF block with IFD0 (make, model, EXIF pointer) and an EXIF IFD. */
@@ -64,6 +64,15 @@ describe("readExif", () => {
     expect(cameraName(e)).toBe("Nikon Z f");
     expect(settingsParts(e)).toEqual(["40mm", "f/5.6", "1/100s", "ISO 400"]);
     expect(dateText(e)).toBe("2025.11.29");
+    expect(brandName(e)).toBe("NIKON");
+    expect(modelName(e)).toBe("Z f");
+  });
+
+  it("splits maker and model for other brands", () => {
+    expect(brandName({ make: "FUJIFILM", model: "X-T5" })).toBe("FUJIFILM");
+    expect(modelName({ make: "FUJIFILM", model: "X-T5" })).toBe("X-T5");
+    expect(modelName({ make: "Canon", model: "Canon EOS R5" })).toBe("EOS R5");
+    expect(brandName({})).toBeUndefined();
   });
 
   it("reads a NEF (bare TIFF)", () => {
