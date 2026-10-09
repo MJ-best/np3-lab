@@ -124,6 +124,45 @@ function text(ctx: Ctx, s: string, x: number, y: number, o: Text) {
   c.letterSpacing = "0px";
 }
 
+/**
+ * The maker's name as a wordmark, set in our own type in the spirit of the brand's lettering:
+ * Nikon heavy and slanted, the others in tracked capitals. Not the maker's logo artwork.
+ */
+function wordmark(brand: string) {
+  if (brand === "NIKON") return { text: "Nikon", weight: "900", slant: 0.2, track: -0.02 };
+  return { text: brand, weight: "900", slant: 0, track: 0.08 };
+}
+
+function brandWidth(ctx: Ctx, brand: string, size: number): number {
+  if (!brand) return 0;
+  const m = wordmark(brand);
+  const c = ctx as Ctx & { letterSpacing?: string };
+  c.letterSpacing = `${m.track * size}px`;
+  ctx.font = `${m.weight} ${size}px ${SANS}`;
+  const width = ctx.measureText(m.text).width;
+  c.letterSpacing = "0px";
+  return width;
+}
+
+/** Draw the wordmark with its baseline at y; returns its width. */
+function drawBrand(ctx: Ctx, brand: string, x: number, y: number, size: number, color: string, align: "left" | "right" = "left"): number {
+  if (!brand) return 0;
+  const m = wordmark(brand);
+  const width = brandWidth(ctx, brand, size);
+  const c = ctx as Ctx & { letterSpacing?: string };
+  ctx.save();
+  // Slant around the baseline, so the letters lean without shifting along it.
+  ctx.translate(align === "right" ? x - width : x, y);
+  ctx.transform(1, 0, -m.slant, 1, 0, 0);
+  c.letterSpacing = `${m.track * size}px`;
+  ctx.font = `${m.weight} ${size}px ${SANS}`;
+  ctx.fillStyle = color;
+  ctx.textAlign = "left";
+  ctx.fillText(m.text, 0, 0);
+  ctx.restore();
+  return width;
+}
+
 function roundRect(ctx: Ctx, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
@@ -139,7 +178,7 @@ interface Block {
   draw(ctx: Ctx): void;
 }
 
-function layoutBlock(bmp: ImageBitmap, info: FrameInfo, o: FrameOptions): Block {
+function layoutBlock(bmp: CanvasImageSource & { width: number; height: number }, info: FrameInfo, o: FrameOptions): Block {
   const w = bmp.width;
   const h = bmp.height;
   // One unit = 1% of the photo's average side, so portrait and landscape frames look alike.
@@ -206,7 +245,7 @@ function layoutBlock(bmp: ImageBitmap, info: FrameInfo, o: FrameOptions): Block 
             const rule = right - textW - 2.4 * u;
             ctx.fillStyle = t.line;
             ctx.fillRect(rule, h + 3 * u, Math.max(1, 0.18 * u), 6.4 * u);
-            text(ctx, brand, rule - 2.4 * u, h + 7.3 * u, { size: 3.2 * u, color: t.ink, weight: "900", align: "right", max: w * 0.24, track: 0.12 * u });
+            drawBrand(ctx, brand, rule - 2.4 * u, h + 7.4 * u, 3.4 * u, t.ink, "right");
           }
         },
       };
@@ -231,7 +270,12 @@ function layoutBlock(bmp: ImageBitmap, info: FrameInfo, o: FrameOptions): Block 
             text(ctx, lead, x, y1, { size: 2.4 * u, color: t.ink, weight: "300", max: half });
             x += ctx.measureText(lead).width;
           }
-          text(ctx, join([brand, model], " "), x, y1, { size: 2.4 * u, color: t.ink, weight: "700", max: half - (x - left) });
+          x += drawBrand(ctx, brand, x, y1, 2.5 * u, t.ink);
+          if (brand) {
+            ctx.font = `700 ${2.4 * u}px ${SANS}`;
+            x += ctx.measureText(" ").width;
+          }
+          text(ctx, model, x, y1, { size: 2.4 * u, color: t.ink, weight: "700", max: Math.max(1, half - (x - left)) });
           ctx.fillStyle = NIKON_YELLOW;
           ctx.fillRect(left, y2 - 1.2 * u, 0.9 * u, 0.9 * u);
           text(ctx, info.title, left + 1.6 * u, y2, { size: 1.7 * u, color: t.sub, weight: "500", max: half });
@@ -254,12 +298,12 @@ function layoutBlock(bmp: ImageBitmap, info: FrameInfo, o: FrameOptions): Block 
           const y = side + h;
           // Brand bold, model light, measured so the pair is centred together.
           const size = 3 * u;
-          ctx.font = `800 ${size}px ${SANS}`;
-          const bw = brand ? ctx.measureText(`${brand} `).width : 0;
+          ctx.font = `300 ${size}px ${SANS}`;
+          const bw = brand ? brandWidth(ctx, brand, size) + ctx.measureText(" ").width : 0;
           ctx.font = `300 ${size}px ${SANS}`;
           const mw = ctx.measureText(model).width;
           const x0 = cx - Math.min(bw + mw, w) / 2;
-          text(ctx, brand, x0, y + 8 * u, { size, color: t.ink, weight: "800", max: w / 2 });
+          drawBrand(ctx, brand, x0, y + 8 * u, size, t.ink);
           text(ctx, model, x0 + bw, y + 8 * u, { size, color: t.ink, weight: "300", max: w / 2 });
           text(ctx, settings.join("  ∙  "), cx, y + 12.4 * u, { size: 1.7 * u, color: t.sub, align: "center", max: w });
           text(ctx, info.title, cx, y + 16.8 * u, { size: 1.9 * u, color: t.ink, family: SERIF, style: "italic", align: "center", max: w });
@@ -522,48 +566,73 @@ export function fitRatio(w: number, h: number, ratio: FrameRatio): { W: number; 
   return { W, H, x: Math.round((W - w) / 2), y: Math.round((H - h) / 2) };
 }
 
-/** Cropping the photo itself (before it's framed): a shape, how far in, and where. */
-export type CropRatio = "none" | "1:1" | "4:5" | "3:2" | "16:9" | "9:16";
-export const CROP_RATIOS: CropRatio[] = ["none", "1:1", "4:5", "3:2", "16:9", "9:16"];
+/**
+ * Cropping the photo itself (before it's framed). The crop window has a fixed shape; the photo
+ * is moved, zoomed and turned underneath it, as in phone photo editors.
+ */
+export type CropRatio = "none" | "original" | "1:1" | "4:5" | "3:2" | "16:9" | "9:16";
+export const CROP_RATIOS: CropRatio[] = ["none", "original", "1:1", "4:5", "3:2", "16:9", "9:16"];
 
 export interface Crop {
   ratio: CropRatio;
-  /** 1 = the largest crop of that shape; 2 = half as wide. */
+  /** 1 = the largest window of that shape; 2 = half as wide. */
   zoom: number;
-  /** Centre of the crop, 0..1 across and down the photo. */
+  /** Centre of the window, 0..1 across and down the photo. */
   cx: number;
   cy: number;
+  /** How far the photo is turned, in degrees (clockwise). */
+  angle: number;
 }
 
-export const NO_CROP: Crop = { ratio: "none", zoom: 1, cx: 0.5, cy: 0.5 };
-export const MAX_CROP_ZOOM = 4;
+export const NO_CROP: Crop = { ratio: "none", zoom: 1, cx: 0.5, cy: 0.5, angle: 0 };
+export const MAX_CROP_ZOOM = 6;
+export const MAX_CROP_ANGLE = 45;
 
-/** The part of a w×h photo that `crop` keeps, in pixels, always inside the photo. */
-export function cropRect(w: number, h: number, crop: Crop): { sx: number; sy: number; sw: number; sh: number } {
-  if (crop.ratio === "none") return { sx: 0, sy: 0, sw: w, sh: h };
-  const [a, b] = crop.ratio.split(":").map(Number);
+/**
+ * The window `crop` keeps of a w×h photo: its size in photo pixels and its centre, moved so the
+ * turned window stays wholly inside the photo (it shrinks when turning needs it to).
+ */
+export function cropWindow(w: number, h: number, crop: Crop): { sw: number; sh: number; cx: number; cy: number; angle: number } {
+  if (crop.ratio === "none") return { sw: w, sh: h, cx: 0.5, cy: 0.5, angle: 0 };
+  const [a, b] = crop.ratio === "original" ? [w, h] : crop.ratio.split(":").map(Number);
   const r = a / b;
   const zoom = Math.min(MAX_CROP_ZOOM, Math.max(1, crop.zoom));
-  let sw = w / r > h ? h * r : w;
-  sw /= zoom;
-  const sh = sw / r;
+  const angle = Math.min(MAX_CROP_ANGLE, Math.max(-MAX_CROP_ANGLE, crop.angle));
+  let sw = (w / r > h ? h * r : w) / zoom;
+  let sh = sw / r;
+  // The turned window's bounding box, in photo pixels.
+  const rad = (angle * Math.PI) / 180;
+  const c = Math.abs(Math.cos(rad));
+  const s = Math.abs(Math.sin(rad));
+  const k = Math.min(1, w / (sw * c + sh * s), h / (sw * s + sh * c));
+  sw *= k;
+  sh *= k;
+  const bx = (sw * c + sh * s) / 2 / w;
+  const by = (sw * s + sh * c) / 2 / h;
   const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-  const sx = clamp(crop.cx * w - sw / 2, 0, w - sw);
-  const sy = clamp(crop.cy * h - sh / 2, 0, h - sh);
-  return { sx: Math.round(sx), sy: Math.round(sy), sw: Math.round(sw), sh: Math.round(sh) };
+  return { sw, sh, cx: clamp(crop.cx, bx, 1 - bx), cy: clamp(crop.cy, by, 1 - by), angle };
+}
+
+/** The cropped photo as a canvas (or the photo itself without a crop). */
+function applyCrop(img: ImageBitmap, crop: Crop): CanvasImageSource & { width: number; height: number } {
+  if (crop.ratio === "none") return img;
+  const win = cropWindow(img.width, img.height, crop);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(win.sw);
+  canvas.height = Math.round(win.sh);
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingQuality = "high";
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate((win.angle * Math.PI) / 180);
+  ctx.drawImage(img, -win.cx * img.width, -win.cy * img.height);
+  return canvas;
 }
 
 /** Render the framed photo; `photo` is any decodable image. */
 export async function renderFrame(photo: Blob, info: FrameInfo, o: FrameOptions, crop: Crop = NO_CROP): Promise<HTMLCanvasElement> {
   const whole = await createImageBitmap(photo);
-  let bmp = whole;
-  if (crop.ratio !== "none") {
-    const { sx, sy, sw, sh } = cropRect(whole.width, whole.height, crop);
-    bmp = await createImageBitmap(whole, sx, sy, sw, sh);
-    whole.close();
-  }
   try {
-    const block = layoutBlock(bmp, info, o);
+    const block = layoutBlock(applyCrop(whole, crop), info, o);
     const { W, H, x, y } = fitRatio(block.w, block.h, o.ratio);
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(W);
@@ -576,7 +645,7 @@ export async function renderFrame(photo: Blob, info: FrameInfo, o: FrameOptions,
     block.draw(ctx);
     return canvas;
   } finally {
-    bmp.close();
+    whole.close();
   }
 }
 
