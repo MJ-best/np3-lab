@@ -64,7 +64,7 @@ function recipeDetails(recipe: Recipe | undefined): Pick<FrameInfo, "params" | "
  * The photo with the crop box over it: drag the box to move it, the slider to zoom in.
  * Changes are reported when a drag or slide ends, so the frame isn't redrawn on every move.
  */
-function CropEditor({ src, crop, onChange }: { src: string; crop: Crop; onChange: (c: Crop) => void }) {
+function CropEditor({ src, crop, onChange, onDone }: { src: string; crop: Crop; onChange: (c: Crop) => void; onDone: () => void }) {
   const [draft, setDraft] = useState(crop);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -118,7 +118,12 @@ function CropEditor({ src, crop, onChange }: { src: string; crop: Crop; onChange
           onChange={() => onChange(draft)}
         />
       </label>
-      <p class="muted small">{t("frameCropHint")}</p>
+      <div class="crop-foot">
+        <p class="muted small">{t("frameCropHint")}</p>
+        <button class="primary" onClick={onDone}>
+          ✓ {t("frameCropDone")}
+        </button>
+      </div>
     </div>
   );
 }
@@ -141,12 +146,15 @@ export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => 
       if (made) URL.revokeObjectURL(made);
     };
   }, [photo.id]);
-  const set = (patch: Partial<FrameOptions>) =>
+  const set = (patch: Partial<FrameOptions>) => {
+    // Any other choice goes back to the framed preview, so its effect is visible.
+    setCropping(false);
     setOpts((o) => {
       const next = { ...o, ...patch };
       writeStore("frameOptions", next);
       return next;
     });
+  };
 
   useEffect(() => {
     let alive = true;
@@ -188,7 +196,7 @@ export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => 
     <div class="lightbox frame-view">
       <div class="frame-preview">
         {cropping && fullUrl ? (
-          <CropEditor src={fullUrl} crop={crop} onChange={setCrop} />
+          <CropEditor src={fullUrl} crop={crop} onChange={setCrop} onDone={() => setCropping(false)} />
         ) : frame ? (
           <img src={frame.url} alt={photo.name} />
         ) : (
@@ -200,6 +208,11 @@ export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => 
         <div class="frame-row">
           <span class="frame-label">{t("frameCrop")}</span>
           <div class="chips frame-chips" role="radiogroup" aria-label={t("frameCrop")}>
+            {crop.ratio !== "none" && !cropping && (
+              <button class="chip ghost" onClick={() => setCropping(true)}>
+                {t("frameCropAdjust")}
+              </button>
+            )}
             {CROP_RATIOS.map((r) => (
               <button
                 key={r}
@@ -215,11 +228,6 @@ export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => 
                 {r === "none" ? t("frameCropNone") : r}
               </button>
             ))}
-            {crop.ratio !== "none" && (
-              <button class={`chip ghost${cropping ? " active" : ""}`} onClick={() => setCropping((c) => !c)}>
-                {cropping ? `✓ ${t("frameCropDone")}` : t("frameCropAdjust")}
-              </button>
-            )}
           </div>
         </div>
         <div class="frame-row">

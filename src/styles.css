@@ -1960,6 +1960,16 @@ html.desktop .topbar input {
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
   pointer-events: none;
 }
+.crop-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(360px, 100%);
+  justify-content: space-between;
+}
+.crop-foot p {
+  margin: 0;
+}
 .crop-zoom {
   display: flex;
   align-items: center;
