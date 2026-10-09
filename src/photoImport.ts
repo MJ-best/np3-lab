@@ -1,7 +1,7 @@
 import { t } from "./i18n";
 import { addPhotos, matchRecipeByExif } from "./photos";
 import { isPhotoFile, toViewablePhoto } from "./raw";
-import { addUserPhoto, allRecipes, detailId, galleryFilter, openRecipePhotos, route, showToast } from "./state";
+import { addUserPhoto, allRecipes, detailId, openRecipePhotos, route, showToast } from "./state";
 
 /*
  * One rule for every way a photo comes in (window drop, "Add photos" on a recipe,
@@ -65,12 +65,11 @@ export async function importPhotos(files: File[], opts: { into?: string } = {}):
     showToast(t("photosFiled", { n: elsewhere, m: elsewhereIds.length }), "ok", 8000, {
       label: t("viewPhotos"),
       run: () => {
-        // One recipe: open its gallery. Several: the My photos view, grouped by recipe.
+        // One recipe: open its gallery. Several: the Gallery tab, grouped by recipe.
         if (elsewhereIds.length === 1) openRecipePhotos(elsewhereIds[0]);
         else {
           detailId.value = null;
-          galleryFilter.value = "photos";
-          route.value = "gallery";
+          route.value = "photos";
         }
       },
     });

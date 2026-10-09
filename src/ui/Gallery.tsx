@@ -22,11 +22,9 @@ import { importFromThisMac } from "../localNp3";
 import { exportAllRecipes } from "../exportAll";
 import { importPhotos } from "../photoImport";
 import { PHOTO_ACCEPT } from "../raw";
-import { photosByRecipe } from "../photos";
 import { CommunityPanel } from "./CommunityPanel";
 import { usePreparedSample } from "./hooks";
 import { np3FromCard, np3FromFiles } from "./ImportDialog";
-import { PhotoLibrary } from "./PhotoLibrary";
 import { RecipeCard } from "./RecipeCard";
 import { SceneChips } from "./SceneChips";
 
@@ -47,7 +45,6 @@ export function Gallery() {
   const hasCloud = recipes.some((r) => r.origin?.kind === "imaging-cloud");
 
   const visible = recipes.filter((r) => {
-    if (filter === "photos" && !photosByRecipe.value[r.id]?.length) return false;
     if (filter === "mine" && r.source === "builtin") return false;
     if ((filter === "reddit" || filter === "imaging-cloud") && r.origin?.kind !== filter) return false;
     if (filter.startsWith("tag:") && !r.tags.includes(filter.slice(4))) return false;
@@ -134,11 +131,6 @@ export function Gallery() {
             {t("filterReddit")}
           </button>
         )}
-        {Object.keys(photosByRecipe.value).length > 0 && (
-          <button class={`chip${filter === "photos" ? " active" : ""}`} onClick={() => setFilter("photos")}>
-            📷 {t("filterPhotos")}
-          </button>
-        )}
         {hasCloud && (
           <button class={`chip${filter === "imaging-cloud" ? " active" : ""}`} onClick={() => setFilter("imaging-cloud")}>
             {t("filterCloud")}
@@ -151,18 +143,13 @@ export function Gallery() {
         ))}
       </div>
 
-      {filter !== "photos" && (
-        <div class="scene-row">
-          <span class="label">{t("scene")}</span>
-          <SceneChips showHint />
-        </div>
-      )}
+      <div class="scene-row">
+        <span class="label">{t("scene")}</span>
+        <SceneChips showHint />
+      </div>
 
       {visible.length === 0 ? (
         <p class="empty">{recipes.length === 0 ? t("libraryEmpty") : t("noResults")}</p>
-      ) : filter === "photos" ? (
-        // My photos: the photos themselves, grouped by recipe.
-        <PhotoLibrary recipes={visible} />
       ) : (
         <div class="grid">
           {visible.map((r) => (

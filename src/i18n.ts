@@ -14,6 +14,10 @@ export const LANGS: { id: Lang; label: string }[] = [
 const ko = {
   appTagline: "니콘 플렉시블 컬러 레시피를 SD카드로 한 번에",
   tabGallery: "갤러리",
+  tabPhotos: "갤러리",
+  importPhotosBtn: "사진 가져오기",
+  photoGalleryEmpty: "레시피로 찍은 사진을 가져오면 레시피별로 모아서 보여 줍니다. 사진 정보에 기록된 레시피를 읽어 자동으로 정리하고, 니콘 RAW(NEF)도 됩니다. 사진은 이 기기에만 저장됩니다.",
+  photosToScenes: "레시피 정보가 없는 사진 {n}장은 미리보기 장면에 넣었습니다.",
   tabEditor: "에디터",
   tabCard: "SD카드",
   unofficial: "비공식 서드파티 도구 · Nikon Corporation과 관련이 없습니다",
@@ -328,6 +332,10 @@ type Dict = Record<keyof typeof ko, string>;
 const en: Dict = {
   appTagline: "Nikon Flexible Color recipes, straight to your SD card",
   tabGallery: "Gallery",
+  tabPhotos: "Gallery",
+  importPhotosBtn: "Import photos",
+  photoGalleryEmpty: "Import photos you shot with a recipe and they appear here, grouped by recipe. Each photo is filed under the recipe recorded in it, Nikon RAW (NEF) included. Photos stay on this device.",
+  photosToScenes: "{n} photos without a recipe were added as preview scenes.",
   tabEditor: "Editor",
   tabCard: "SD Card",
   unofficial: "Unofficial third-party tool · Not affiliated with Nikon Corporation",
@@ -646,6 +654,10 @@ export type MessageKey = keyof typeof ko;
 const ja: Dict = {
   appTagline: "ニコンのフレキシブルカラーレシピをSDカードへまとめて",
   tabGallery: "ギャラリー",
+  tabPhotos: "ギャラリー",
+  importPhotosBtn: "写真を取り込む",
+  photoGalleryEmpty: "レシピで撮った写真を取り込むと、レシピごとにまとめてここに表示します。写真に記録されたレシピを読み取って自動で整理し、ニコンのRAW（NEF）にも対応しています。写真はこの端末にのみ保存されます。",
+  photosToScenes: "レシピ情報のない写真{n}枚は、プレビューの場面に追加しました。",
   tabEditor: "エディター",
   tabCard: "SDカード",
   unofficial: "非公式のサードパーティ製ツールです · 株式会社ニコンとは関係ありません",
