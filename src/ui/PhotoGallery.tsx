@@ -3,7 +3,8 @@ import { t } from "../i18n";
 import { importPhotos } from "../photoImport";
 import { photosByRecipe } from "../photos";
 import { PHOTO_ACCEPT } from "../raw";
-import { allRecipes, showToast } from "../state";
+import { allRecipes, recipeQuery } from "../state";
+import { matchesQuery } from "./Gallery";
 import { PhotoLibrary } from "./PhotoLibrary";
 
 /** The Gallery tab: every photo, grouped by the recipe it was shot with. */
@@ -11,19 +12,20 @@ export function PhotoGallery() {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const empty = Object.keys(photosByRecipe.value).length === 0;
+  const query = recipeQuery.value;
+  const visible = allRecipes.value.filter((r) => photosByRecipe.value[r.id]?.length && matchesQuery(r, query));
 
   const add = async (files: File[]) => {
     if (files.length === 0) return;
     setBusy(true);
-    const r = await importPhotos(files);
+    await importPhotos(files);
     setBusy(false);
-    // Photos without a recipe don't show up here; say where they went.
-    if (r.scenes > 0) showToast(t("photosToScenes", { n: r.scenes }), "info", 6000);
   };
 
   return (
     <div class="gallery photo-gallery">
       <div class="toolbar">
+        <input class="search" type="search" placeholder={t("search")} value={query} onInput={(e) => (recipeQuery.value = e.currentTarget.value)} />
         <div class="toolbar-actions">
           <button class="primary" disabled={busy} onClick={() => input.current?.click()}>
             {busy ? "…" : `＋ ${t("importPhotosBtn")}`}
@@ -43,7 +45,13 @@ export function PhotoGallery() {
           }}
         />
       </div>
-      {empty ? <p class="empty">{t("photoGalleryEmpty")}</p> : <PhotoLibrary recipes={allRecipes.value} />}
+      {empty ? (
+        <p class="empty">{t("photoGalleryEmpty")}</p>
+      ) : visible.length === 0 ? (
+        <p class="empty">{t("noResults")}</p>
+      ) : (
+        <PhotoLibrary recipes={visible} />
+      )}
     </div>
   );
 }

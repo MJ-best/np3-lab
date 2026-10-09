@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useMemo, useRef } from "preact/hooks";
 import { t, tagLabel, tx } from "../i18n";
+import type { Recipe } from "../np3/recipe";
 import { isAndroid, isDesktop } from "../native";
 import { canUseCardFolder } from "../pack/cardWriter";
 import { downloadText } from "../pack/download";
@@ -12,6 +13,7 @@ import {
   pasteOpen,
   resetDraft,
   galleryFilter,
+  recipeQuery,
   route,
   showToast,
   type GalleryFilter,
@@ -28,8 +30,18 @@ import { np3FromCard, np3FromFiles } from "./ImportDialog";
 import { RecipeCard } from "./RecipeCard";
 import { SceneChips } from "./SceneChips";
 
+/** Does the recipe match the search box? Name, camera name, author, tags, notes and look. */
+export function matchesQuery(r: Recipe, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const look = r.params ? lookOf(r.params, r.tags.includes("mono")).summary : undefined;
+  const hay = [tx(r.title), r.npName, r.author, ...r.tags.map(tagLabel), tx(r.description), tx(r.use), look?.ko, look?.en, look?.ja].join(" ").toLowerCase();
+  return hay.includes(q);
+}
+
 export function Gallery() {
-  const [query, setQuery] = useState("");
+  const query = recipeQuery.value;
+  const setQuery = (q: string) => (recipeQuery.value = q);
   const filter = galleryFilter.value;
   const setFilter = (f: GalleryFilter) => (galleryFilter.value = f);
   const np3Input = useRef<HTMLInputElement>(null);
@@ -48,12 +60,7 @@ export function Gallery() {
     if (filter === "mine" && r.source === "builtin") return false;
     if ((filter === "reddit" || filter === "imaging-cloud") && r.origin?.kind !== filter) return false;
     if (filter.startsWith("tag:") && !r.tags.includes(filter.slice(4))) return false;
-    if (!query.trim()) return true;
-    const look = r.params ? lookOf(r.params, r.tags.includes("mono")).summary : undefined;
-    const hay = [tx(r.title), r.npName, r.author, ...r.tags.map(tagLabel), tx(r.description), tx(r.use), look?.ko, look?.en, look?.ja]
-      .join(" ")
-      .toLowerCase();
-    return hay.includes(query.trim().toLowerCase());
+    return matchesQuery(r, query);
   });
 
   const importFromCard = async () => {
