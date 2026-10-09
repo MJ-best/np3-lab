@@ -109,6 +109,38 @@ function cameraSdf(px, py) {
 const over = (dst, src, a) => dst.map((c, i) => c + (src[i] - c) * a);
 
 /** Draw the camera (shadow, body, stripe, lens) over `rgb` at design point (px, py). */
+/** Ellipse, rotated by `rot` radians; approximate distance, good enough for anti-aliasing. */
+const ellipse = (px, py, cx, cy, rx, ry, rot = 0) => {
+  const c = Math.cos(rot);
+  const s = Math.sin(rot);
+  const x = (px - cx) * c + (py - cy) * s;
+  const y = -(px - cx) * s + (py - cy) * c;
+  return (Math.hypot(x / rx, y / ry) - 1) * Math.min(rx, ry);
+};
+
+/**
+ * The app's mascot on Nikon yellow: a soft glowing dome rising from the bottom of the tile with two
+ * dark eyes. Design units are the 1024 canvas with the tile at 100–924; points outside it carry on
+ * the same picture, so full-bleed icons can use a wider window.
+ */
+function paintMascot(px, py, k) {
+  // Nikon yellow, a touch deeper at the top.
+  let rgb = over([242, 178, 0], [255, 214, 0], Math.min(1, Math.max(0, (py - 100) / 600)));
+  const dome = ellipse(px, py, 512, 830, 470, 450);
+  // Light spills a little past the dome's edge.
+  rgb = over(rgb, [255, 246, 200], (1 - smooth(-10, 70, dome)) * 0.35);
+  const r = Math.hypot((px - 512) / 470, (py - 800) / 450);
+  rgb = over(rgb, over([255, 205, 0], [255, 252, 232], smooth(0.25, 1, r)), cover(dome, k * 3));
+  for (const [cx, cy, rot] of [
+    [428, 660, -0.08],
+    [598, 624, 0.08],
+  ]) {
+    const eye = over([18, 18, 18], [52, 48, 40], smooth(-76, 30, py - cy));
+    rgb = over(rgb, eye, cover(ellipse(px, py, cx, cy, 56, 76, rot), k));
+  }
+  return rgb;
+}
+
 function paintCamera(rgb, px, py, k) {
   // Camera: drop shadow, body with a slight top highlight.
   const camD = cameraSdf(px, py);
@@ -135,20 +167,13 @@ function appIcon(size) {
   return png(size, (x, y) => {
     const px = x * k;
     const py = y * k;
-    // Soft shadow under the tile, then the cream tile.
+    // Soft shadow under the tile, then the tile.
     const shadow = 0.28 * (1 - smooth(-10, 26, roundBox(px, py - 12, TILE.x0, TILE.y0, TILE.x1, TILE.y1, TILE.r)));
     const tileA = cover(roundBox(px, py, TILE.x0, TILE.y0, TILE.x1, TILE.y1, TILE.r), k);
-    let rgb = [0, 0, 0];
-    let alpha = shadow;
-    const t = (py - TILE.y0) / (TILE.y1 - TILE.y0);
-    const cream = [245 - 10 * t, 241 - 12 * t, 232 - 16 * t];
-    if (tileA > 0) {
-      rgb = over(rgb, cream, tileA / Math.max(alpha + tileA * (1 - alpha), 1e-6));
-      alpha = alpha + tileA * (1 - alpha);
-    }
-    if (tileA === 0) return [0, 0, 0, Math.round(alpha * 255)];
-
-    rgb = paintCamera(rgb, px, py, k);
+    if (tileA === 0) return [0, 0, 0, Math.round(shadow * 255)];
+    const alpha = shadow + tileA * (1 - shadow);
+    // Straight alpha: the tile's colour, weighted by how much of the pixel is tile rather than shadow.
+    const rgb = paintMascot(px, py, k).map((c) => (c * tileA) / alpha);
     return [...rgb.map(Math.round), Math.round(alpha * 255)];
   });
 }
@@ -174,30 +199,22 @@ const out = (rel, buf) => {
   writeFileSync(p, buf);
   console.log("wrote", rel);
 };
-// Android: flat cream behind the camera (adaptive icon background, legacy round icon).
-const CREAM = [242, 238, 228];
-
 /**
- * Camera only, on transparency, `width` of the canvas wide. The colours are un-premultiplied
- * against CREAM so that, laid over it, the result matches the Mac icon (shadow included).
+ * The mascot full-bleed (no tile): `window` of the canvas shows the tile area 100–924, the rest
+ * carries on the picture. `round` cuts a circle for Android's legacy round icon.
  */
-function cameraOnly(size, width, tile) {
-  const k = 640 / (width * size); // the camera is 640 design units wide (x 192–832)
-  return png(size, (x, y) => {
-    const px = 512 + (x - size / 2) * k;
-    const py = 539 + (y - size / 2) * k; // vertical centre of hump + body (y 318–760)
-    const body = cover(cameraSdf(px, py), k);
-    const shadow = 0.22 * (1 - smooth(-6, 30, cameraSdf(px, py - 16)));
-    const target = paintCamera(CREAM, px, py, k);
-    if (tile) {
-      const a = cover(Math.hypot(x - size / 2, y - size / 2) - size * 0.46, 1);
-      return [...target.map(Math.round), Math.round(a * 255)];
-    }
-    const a = body + shadow * (1 - body);
-    if (a <= 0) return [0, 0, 0, 0];
-    const rgb = target.map((c, i) => Math.min(255, Math.max(0, (c - CREAM[i] * (1 - a)) / a)));
-    return [...rgb.map(Math.round), Math.round(a * 255)];
-  });
+function mascotBleed(size, window, { round = false, opaque = false } = {}) {
+  const k = 824 / (window * size);
+  return png(
+    size,
+    (x, y) => {
+      const px = 512 + (x - size / 2) * k;
+      const py = 512 + (y - size / 2) * k;
+      const a = round ? cover(Math.hypot(x - size / 2, y - size / 2) - size * 0.46, 1) : 1;
+      return [...paintMascot(px, py, k).map(Math.round), Math.round(a * 255)];
+    },
+    opaque,
+  );
 }
 
 out("build/icon.png", appIcon(1024));
@@ -209,19 +226,10 @@ const DENSITIES = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
 for (const [name, scale] of Object.entries(DENSITIES)) {
   // Legacy icons (Android 7) are 48dp; the adaptive foreground is 108dp with a 72dp visible area.
   out(`${RES}/mipmap-${name}/ic_launcher.png`, appIcon(48 * scale));
-  out(`${RES}/mipmap-${name}/ic_launcher_round.png`, cameraOnly(48 * scale, 0.6, true));
-  // 0.5 of 108dp keeps the camera inside the 66dp safe circle of any launcher mask.
-  out(`${RES}/mipmap-${name}/ic_launcher_foreground.png`, cameraOnly(108 * scale, 0.5, false));
+  out(`${RES}/mipmap-${name}/ic_launcher_round.png`, mascotBleed(48 * scale, 1, { round: true }));
+  // The launcher shows the middle 72 of the 108dp foreground; that's where the tile goes.
+  out(`${RES}/mipmap-${name}/ic_launcher_foreground.png`, mascotBleed(108 * scale, 72 / 108));
 }
 
 // iOS: one 1024 px icon, square and opaque (iOS rounds the corners; the App Store rejects alpha).
-out(
-  "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
-  png(1024, (x, y) => {
-    const k = 640 / (0.62 * 1024);
-    const px = 512 + (x - 512) * k;
-    const py = 539 + (y - 512) * k;
-    const shadow = 0.22 * (1 - smooth(-6, 30, cameraSdf(px, py - 16)));
-    return [...paintCamera(over(CREAM, [0, 0, 0], shadow), px, py, k).map(Math.round), 255];
-  }, true),
-);
+out("ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png", mascotBleed(1024, 1, { opaque: true }));
