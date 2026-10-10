@@ -21,6 +21,7 @@ import {
 import { ColorBlenderPanel, ColorGradingPanel } from "./ColorPanels";
 import { CompareSlider } from "./CompareSlider";
 import { CurveEditor } from "./CurveEditor";
+import { MoodPanel } from "./MoodPanel";
 import { usePreparedSample } from "./hooks";
 import { SceneChips } from "./SceneChips";
 import { Slider } from "./Slider";
@@ -89,7 +90,8 @@ export function Editor() {
     <div class="editor">
       <section class="editor-preview">
         <SceneChips />
-        <CompareSlider source={source} params={draftParams.value} maxHeight={560} />
+        {/* One column (phones): a shorter preview, so it stays in view with the looks right below it. */}
+        <CompareSlider source={source} params={draftParams.value} maxHeight={matchMedia("(max-width: 980px)").matches ? Math.round(innerHeight * 0.48) : 560} />
         <p class="hint">{t("approxPreview")}</p>
       </section>
 
@@ -142,6 +144,8 @@ export function Editor() {
             </button>
           </div>
         </div>
+
+        <MoodPanel />
 
         <details class="panel" open>
           <summary>{t("secDetail")}</summary>

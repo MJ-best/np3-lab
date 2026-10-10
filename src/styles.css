@@ -1116,6 +1116,16 @@ input[type="range"].custom-track::-moz-range-thumb {
   .editor-preview {
     position: static;
   }
+  /* One column: the looks come right under the preview, so a tap's effect is in view. */
+  .editor-controls {
+    display: contents;
+  }
+  .editor-preview {
+    order: -2;
+  }
+  .editor .mood-panel {
+    order: -1;
+  }
 }
 /* Narrow windows and phones: one row, tabs between the logo and the settings button. */
 @media (max-width: 760px) {
@@ -2134,4 +2144,46 @@ html.desktop .topbar input {
   .topbar .brand {
     display: none;
   }
+}
+
+/* Editor looks: one row per group, chips scroll sideways on narrow screens. */
+.mood-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.mood-label {
+  flex: none;
+  width: 64px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.mood-chips {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+}
+.mood-chips .chip {
+  flex: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mood-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.mood-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.mood-foot .segmented {
+  margin-bottom: 0;
 }
