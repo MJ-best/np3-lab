@@ -24,11 +24,13 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 | --- | --- |
 | **카드 자동 인식** | 카드를 꽂으면 메뉴 막대에서 기다리던 앱이 열리고 `NIKON/CUSTOMPC` 속 레시피를 미리보기와 함께 보여줍니다. 다른 브랜드 카드와 네트워크 드라이브는 무시합니다. |
 | **넣기·빼기·이름 바꾸기** | **＋ 레시피 넣기**로 여러 개를 한 번에 넣습니다. 번호(`PICCON01.NP3`…)는 자동으로 매기고 겹치지 않게 합니다. 카메라에 보일 이름을 바꿀 수 있고, 빼기는 휴지통으로 옮겨서 **되돌리기**가 됩니다. |
-| **나만의 필터 라이브러리** | 레시피마다 그 레시피로 찍은 내 사진을 모아 갤러리로 봅니다. 니콘 사진(JPEG·RAW NEF)을 어디서 추가하든(창에 끌어다 놓기, 가져오기 › 사진, 레시피의 사진 추가) 사진 정보에 기록된 Picture Control 이름으로 레시피를 찾아 **자동으로 정리**합니다. 레시피 정보가 없는 사진만 보고 있던 레시피에 들어갑니다. 사진이 있는 레시피는 대표 사진으로 표시되고 **📷 내 사진** 필터로 모아 볼 수 있습니다. |
+| **나만의 필터 라이브러리** | 레시피마다 그 레시피로 찍은 내 사진을 모아 갤러리로 봅니다. 니콘 사진(JPEG·RAW NEF)을 어디서 추가하든(창에 끌어다 놓기, 가져오기 › 사진, 레시피의 사진 추가) 사진 정보에 기록된 Picture Control 이름으로 레시피를 찾아 **자동으로 정리**합니다. 레시피 정보가 없는 사진만 보고 있던 레시피에 들어갑니다. 맨 위 **갤러리** 탭에서 모든 사진을 레시피별로 모아 보고, 레시피 탭과 같은 검색창으로 찾습니다. |
+| **프레임** | 사진에 레시피 이름과 촬영 정보(카메라·렌즈·초점거리·조리개·셔터·ISO·날짜)를 담아 저장합니다. 스트랩·브랜드·Shot on·폴라로이드·필름·시네마 등 레이아웃 14가지, 배경 3가지, 1:1·4:5·9:16 비율을 고르고, 사진 앱처럼 손가락으로 자르고 돌린 뒤(격자 표시) 저장합니다. 휴대폰에서는 공유 창으로 바로 사진 앱에 넣습니다. |
 | **자동 백업** | 카드에서 처음 보는 레시피는 내 레시피에 자동으로 보관합니다. 카드를 포맷해도 레시피가 남습니다. |
 | **커뮤니티 레시피 260여 개** | Nikon 크리에이터 · Nikon 컬러 그레이딩 · 독립 크리에이터 · SerbanJPG 필름 레시피를 원본 저장소에서 바로 받습니다. 업데이트할 때는 바뀐 파일만 받습니다. 레시피마다 크리에이터·원본 링크와 함께 **설명·컨셉·추천 장면**이 표시되고 검색됩니다. |
 | **미리보기 비교** | 풍경·피부톤·야경·컬러 차트나 내 사진 위에서 원본/적용을 슬라이더로 비교합니다. 레시피 수치로 계산한 근사치입니다. |
 | **플렉시블 에디터** | 샤프닝, 명료도, 톤, 채도, 컬러 블렌더 8색, 컬러 그레이딩 3구간, 톤 커브(최대 20점)를 조절해 나만의 `.NP3`를 만듭니다. |
+| **원하는 느낌** | 에디터에서 버튼 한 번으로 분위기(맑고 투명하게·감성 필름·포지티브 필름·빈티지·시네마틱·몽환적인·진한 흑백), 피부톤(웜톤·쿨톤·핑크톤·뽀얀 피부·생기 있게), 색 강조를 더합니다. 줄마다 하나씩 섞고 강도를 고르며, 다시 누르면 빠집니다. 값은 커뮤니티 레시피 265개가 각 느낌에 실제로 쓰는 설정과 비교해 맞췄습니다. |
 | **NX Studio에서 바로 가져오기** | NX Studio 등에서 NP3를 파일로 내보내면 어느 폴더에 저장했든 Spotlight로 찾아냅니다. 앱을 앞으로 가져오면 "새 NP3 n개 발견 · 가져오기" 알림이 뜨고, 가져오기 메뉴의 **이 Mac에서 NP3 찾기**로 최신 파일부터 볼 수도 있습니다. |
 | **전체 레시피 내보내기** | 레시피 탭 맨 아래 **전체 레시피 내보내기 (NP3)**로 모든 레시피를 고른 폴더에 `My Recipes/`, `Community/<모음>/` 구조로 저장합니다. 기존 파일은 덮어쓰지 않습니다. 같은 이름에 내용이 다르면 `이름_20261001.NP3`처럼 날짜를 붙여 저장하고, 내용이 같으면 건너뜁니다. |
 | **Reddit·텍스트 가져오기** | 커뮤니티에 글로 공유된 수치를 붙여넣으면 레시피 여러 개를 자동으로 나눠 가져옵니다(한국어·영어). |
@@ -160,7 +162,8 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 
 - 직접 만든 레시피를 기본으로 넣으려면 `recipes/`에 JSON이나 `.NP3`를 두세요. 형식은 [recipes/README.md](recipes/README.md)를 보세요.
 - 미리보기 사진을 바꾸려면 `samples/`에 사진을 넣으세요. [samples/README.md](samples/README.md)를 보세요.
-- 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `android/`·`src/androidBridge.ts`(Android: 저장소 접근 프레임워크로 카드 폴더 읽기·쓰기), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기·증분 업데이트), `src/data/recipeNotes.ts`(레시피 설명), `src/look.ts`(수치로 컨셉 분석), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
+- 아이폰·아이패드판은 개발 중입니다. `npm run build:ios`로 웹을 빌드해 `ios/App/App.xcodeproj`를 Xcode로 열고 기기에 설치합니다(Apple 개발자 계정 필요). 카드는 파일 앱 선택창으로 한 번 고르면 기억합니다.
+- 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `android/`·`src/androidBridge.ts`(Android: 저장소 접근 프레임워크로 카드 폴더 읽기·쓰기), `ios/`(iPhone·iPad: `SafFoldersPlugin.swift`로 같은 카드 기능), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기·증분 업데이트), `src/data/recipeNotes.ts`(레시피 설명), `src/look.ts`(수치로 컨셉 분석), `src/moods.ts`(원하는 느낌 버튼), `src/frame.ts`·`src/exif.ts`(프레임·촬영 정보), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
 - 버그 제보와 PR 환영합니다. Windows 지원(꺼내기, 안내 문구)은 도움이 필요한 부분입니다.
 
 ## 라이선스
@@ -179,6 +182,9 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 - **260+ community recipes:** Nikon creators, Nikon color grading presets, independent creators and [SerbanJPG](https://serbanjpg.com) film recipes, downloaded in the app from [shouryan01/Nikon-Recipes](https://github.com/shouryan01/Nikon-Recipes) and [vanlong20it/recipe-note](https://github.com/vanlong20it/recipe-note). Updates only fetch changed files. Each recipe shows its creator, a link to the original file, and a searchable description, concept and recommended use (notes based on [Timor88/NikonNP3](https://github.com/Timor88/NikonNP3)).
 - **Straight from NX Studio:** export a Picture Control to an NP3 file anywhere and NP3 Lab finds it with Spotlight. Bring the app forward to get a "new NP3 found · Import" prompt, or use Import → Find NP3 files on this Mac (newest first).
 - **Export all recipes** as NP3 files into a folder (`My Recipes/`, `Community/<collection>/`). Existing files are never overwritten: a different file with the same name gets the date appended (`Name_20261001.NP3`), and unchanged recipes are skipped.
+- **Gallery tab:** every photo grouped by recipe, with the same search box as Recipes.
+- **Frames:** save a photo with its recipe name and shooting details (camera, lens, focal length, aperture, shutter, ISO, date) in 14 layouts (strap, brand, Shot on, Polaroid, film, cinema…), three backgrounds and 1:1 / 4:5 / 9:16 canvases; crop and straighten it like in a phone photo editor first.
+- **One-tap looks in the editor:** a mood (clear, soft film, positive film, vintage, cinematic, dreamy, rich B&W), a skin tone (warm, cool, pink, fair, healthy) and a colour to bring out, combined at the strength you choose. Their values are checked against what ~265 community recipes for each look actually use.
 - **Editor, before/after preview, Reddit/text import, per-model camera instructions** (Zf, Z6III, Z5II, Z50II, ZR, Z8, Z9).
 
 **Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repositories have no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).
@@ -205,6 +211,9 @@ Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, ref
 - **すべてのレシピを書き出し:** 既存のファイルは上書きしません。同じ名前で内容が異なる場合は日付を付けて（`名前_20261001.NP3`）保存し、変更がなければスキップします。
 - **コミュニティレシピ260件以上:** Nikonクリエイター、Nikonカラーグレーディング、個人クリエイター、[SerbanJPG](https://serbanjpg.com)のレシピを、アプリ内で元のリポジトリから取得します。説明・コンセプト・おすすめのシーン付きです。
 - **自分だけのフィルターライブラリ:** レシピごとに撮った写真をギャラリーとして保存。ニコンのJPEGやRAW（NEF）は、どこから追加しても（ウインドウへのドロップ、取り込み › 写真、レシピの写真を追加）Exifのピクチャーコントロール名でレシピに自動で整理します。
+- **ギャラリータブ:** すべての写真をレシピごとにまとめて表示し、レシピタブと同じ検索欄で探せます。
+- **フレーム:** 写真にレシピ名と撮影情報（カメラ・レンズ・焦点距離・絞り・シャッター・ISO・日付）を入れて保存。レイアウト14種類、背景3色、1:1・4:5・9:16に対応し、スマホの写真アプリのようにトリミングと傾き補正ができます。
+- **かんたんスタイル:** エディターでボタンひとつで雰囲気・肌のトーン・強調する色を重ねられます。値は各スタイルのコミュニティレシピ約265件と照らし合わせて調整しています。
 - エディター、ビフォー/アフタープレビュー、テキスト（日本語・韓国語・英語の項目名）からの取り込み、機種別のカメラでの登録手順。
 
 **インストール:** [Releases](https://github.com/MJ-best/np3-lab/releases)からDMGをダウンロードし、アプリを「アプリケーション」フォルダにドラッグします。公証を受けていないため、まずリリースの `SHA256SUMS.txt` で `shasum -a 256 -c SHA256SUMS.txt --ignore-missing` を実行し、`OK` と表示されることを確認してください。初回は右クリック →［開く］、または `xattr -cr "/Applications/NP3 Lab.app"` を実行してください。詳しくは[SECURITY.md](SECURITY.md)をご覧ください。
