@@ -29,16 +29,16 @@ describe("applyMoods", () => {
   it("scales with strength", () => {
     const soft = applyMoods(base(), { look: "film" }, STRENGTH_SCALE.soft);
     const strong = applyMoods(base(), { look: "film" }, STRENGTH_SCALE.strong);
-    expect(soft.contrast).toBeGreaterThan(strong.contrast!);
-    expect(strong.contrast).toBe(Math.round(20 + delta("look", "film").scalars!.contrast! * STRENGTH_SCALE.strong));
+    expect(soft.highlights).toBeGreaterThan(strong.highlights!);
+    expect(strong.highlights).toBe(Math.round(delta("look", "film").scalars!.highlights! * STRENGTH_SCALE.strong));
   });
 
   it("mixes grading tints as colours: an opposite tint cancels out", () => {
     const p = normalizeParams({
       ...defaultParams(),
-      colorGrading: { blending: 50, balance: 0, midTone: { hue: 215 + 180, chroma: 6, brightness: 0 } },
+      colorGrading: { blending: 50, balance: 0, shadows: { hue: 230 + 180, chroma: 6, brightness: 0 } },
     });
-    expect(applyMoods(p, { skin: "cool" }, 1).colorGrading?.midTone).toBeUndefined();
+    expect(applyMoods(p, { skin: "cool" }, 1).colorGrading?.shadows).toBeUndefined();
   });
 
   it("leaves tone sliders alone while a tone curve is in use", () => {
