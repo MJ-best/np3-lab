@@ -18,6 +18,12 @@ import {
  *
  * In the colour blender, skin sits between the red and orange bands (about 70% orange), so skin
  * looks move both. A positive blender hue moves a colour towards the next band (orange → yellow).
+ *
+ * The values follow what popular community recipes for each look actually do (checked against
+ * ~265 recipes from Nikon Imaging Cloud creators, Nikon's own sets, Filmstill, SerbanJPG and others):
+ * film and slide emulations warm the shadows and midtones and cool the highlights, turn greens
+ * towards teal and blues towards cyan; cinematic ones put warmth in the shadows and teal in the
+ * highlights; portrait ones brighten orange (skin) and quiet the greens.
  */
 
 export type MoodGroup = "look" | "skin" | "accent";
@@ -59,9 +65,15 @@ const LOOKS: Mood[] = [
       ja: "白はクリーンに、空は澄んで、ディテールはくっきり。ソニーのカメラのような透明感。",
     },
     delta: {
-      scalars: { contrast: 12, highlights: -20, shadows: 20, whiteLevel: 8, blackLevel: -6, saturation: 10, clarity: 1.25 },
-      blender: { blue: { chroma: 20, brightness: -6 }, cyan: { chroma: 15 }, green: { chroma: -10 }, orange: { brightness: 8 } },
-      grading: { highlights: { hue: 205, chroma: 8 }, midTone: { hue: 215, chroma: 6 } },
+      scalars: { contrast: -5, shadows: 5, whiteLevel: 8, saturation: 10, clarity: 0.5 },
+      blender: {
+        blue: { hue: -20, chroma: 10, brightness: -15 },
+        cyan: { chroma: 15 },
+        green: { hue: 20, chroma: -15, brightness: -15 },
+        yellow: { chroma: -10 },
+        orange: { chroma: 6, brightness: 12 },
+      },
+      grading: { highlights: { hue: 215, chroma: 8 } },
     },
   },
   {
@@ -69,20 +81,21 @@ const LOOKS: Mood[] = [
     group: "look",
     label: { ko: "감성 필름", en: "Soft film", ja: "エモいフィルム" },
     hint: {
-      ko: "부드러운 대비, 차분한 초록, 청록빛 그림자와 따뜻한 하이라이트. 후지필름처럼 감성적인 색.",
-      en: "Gentle contrast, quiet greens, teal shadows and warm highlights: the mood of Fujifilm colour.",
-      ja: "やわらかなコントラスト、落ち着いた緑、青緑の影と暖かいハイライト。富士フイルムのようなエモい色。",
+      ko: "하이라이트는 부드럽게 누르고, 초록은 청록빛으로 차분하게, 피부는 따뜻하게. 후지필름처럼 감성적인 색.",
+      en: "Gentle highlights, quiet teal-leaning greens and warm skin: the mood of Fujifilm colour.",
+      ja: "ハイライトはやわらかく、緑は青緑に落ち着かせ、肌は暖かく。富士フイルムのようなエモい色。",
     },
     delta: {
-      scalars: { contrast: -15, highlights: -25, shadows: 12, blackLevel: 10, saturation: -15, clarity: -0.75 },
+      scalars: { highlights: -25, whiteLevel: -8, saturation: -5 },
       blender: {
-        green: { hue: 30, chroma: -30 },
-        yellow: { hue: -15, chroma: -20 },
-        blue: { hue: -18, chroma: -12 },
-        red: { chroma: 10, brightness: -6 },
-        orange: { brightness: 6 },
+        green: { hue: 30, chroma: -20, brightness: -15 },
+        yellow: { hue: -12, chroma: -10 },
+        orange: { hue: 10 },
+        red: { chroma: 8, brightness: 5 },
+        cyan: { hue: 15 },
+        blue: { hue: -20, brightness: -8 },
       },
-      grading: { shadows: { hue: 185, chroma: 18 }, highlights: { hue: 40, chroma: 14 } },
+      grading: { shadows: { hue: 40, chroma: 8 }, midTone: { hue: 50, chroma: 6 }, highlights: { hue: 210, chroma: 8 } },
     },
   },
   {
@@ -90,21 +103,21 @@ const LOOKS: Mood[] = [
     group: "look",
     label: { ko: "포지티브 필름", en: "Positive film", ja: "ポジフィルム" },
     hint: {
-      ko: "진한 색, 단단한 대비, 노랗게 물든 하이라이트. 리코 GR처럼 필름 같은 느낌.",
-      en: "Rich colour, firm contrast and golden highlights: slide film, like a Ricoh GR.",
-      ja: "濃い色、しっかりしたコントラスト、黄色く色づくハイライト。リコーGRのようなフィルムらしさ。",
+      ko: "진한 색과 단단한 대비, 따뜻하게 물든 색감. 리코 GR처럼 필름 같은 느낌.",
+      en: "Rich colour, firm contrast and a warm cast: slide film, like a Ricoh GR.",
+      ja: "濃い色としっかりしたコントラスト、暖かく色づく色調。リコーGRのようなフィルムらしさ。",
     },
     delta: {
       scalars: { contrast: 25, highlights: -10, shadows: -10, saturation: 18, clarity: 0.5 },
       blender: {
-        red: { chroma: 18 },
-        orange: { hue: -8, chroma: 10 },
+        red: { hue: -8, chroma: 20 },
+        orange: { hue: 12, chroma: 12 },
         yellow: { chroma: 18 },
-        green: { hue: -18, chroma: 10 },
-        cyan: { hue: 10 },
-        blue: { chroma: 18, brightness: -10 },
+        green: { chroma: 15 },
+        cyan: { hue: 10, chroma: 20 },
+        blue: { hue: -15, chroma: 18, brightness: -10 },
       },
-      grading: { highlights: { hue: 48, chroma: 20 }, midTone: { hue: 40, chroma: 6 }, shadows: { hue: 165, chroma: 10 } },
+      grading: { shadows: { hue: 40, chroma: 6 }, midTone: { hue: 45, chroma: 10 } },
     },
   },
   {
@@ -117,9 +130,9 @@ const LOOKS: Mood[] = [
       ja: "黒を浮かせて色をあせさせた、古いアルバムの写真のような雰囲気。",
     },
     delta: {
-      scalars: { contrast: -20, blackLevel: 25, whiteLevel: -12, highlights: -12, saturation: -32, clarity: -1 },
-      blender: { green: { hue: 12, chroma: -18 }, blue: { chroma: -18 } },
-      grading: { highlights: { hue: 42, chroma: 20 }, midTone: { hue: 40, chroma: 8 }, shadows: { hue: 25, chroma: 10 } },
+      scalars: { contrast: -20, blackLevel: 15, whiteLevel: -6, highlights: -12, saturation: -18, clarity: -0.5 },
+      blender: { yellow: { hue: -10, chroma: -15 }, green: { hue: 12, chroma: -18 }, blue: { chroma: -8 } },
+      grading: { shadows: { hue: 40, chroma: 6 }, midTone: { hue: 35, chroma: 12 }, highlights: { hue: 45, chroma: 8 } },
     },
   },
   {
@@ -127,14 +140,21 @@ const LOOKS: Mood[] = [
     group: "look",
     label: { ko: "시네마틱", en: "Cinematic", ja: "シネマティック" },
     hint: {
-      ko: "청록빛 그림자와 주황빛 하이라이트. 영화 장면 같은 색 대비.",
-      en: "Teal shadows and orange highlights, the colour contrast of a film still.",
-      ja: "青緑の影とオレンジのハイライト。映画のワンシーンのような色の対比。",
+      ko: "따뜻한 그림자와 청록빛 하이라이트, 깊어지는 하늘색. 영화 장면 같은 색 대비.",
+      en: "Warm shadows, teal highlights and deeper sky colours: the colour contrast of a film still.",
+      ja: "暖かい影と青緑のハイライト、深まる空の色。映画のワンシーンのような色の対比。",
     },
     delta: {
-      scalars: { contrast: 15, highlights: -15, shadows: 6, saturation: -10 },
-      blender: { orange: { chroma: 12 }, blue: { hue: -25, chroma: 6 }, green: { hue: 25, chroma: -18 }, cyan: { chroma: 12 } },
-      grading: { shadows: { hue: 190, chroma: 26 }, highlights: { hue: 32, chroma: 20 } },
+      scalars: { contrast: 10, highlights: -10, shadows: 5, saturation: -5 },
+      blender: {
+        orange: { chroma: 15 },
+        red: { chroma: 8 },
+        yellow: { hue: -10 },
+        green: { chroma: -25 },
+        cyan: { chroma: 25 },
+        blue: { hue: -15, chroma: 20 },
+      },
+      grading: { shadows: { hue: 40, chroma: 20 }, highlights: { hue: 215, chroma: 16 } },
     },
   },
   {
@@ -142,13 +162,14 @@ const LOOKS: Mood[] = [
     group: "look",
     label: { ko: "몽환적인", en: "Dreamy", ja: "幻想的" },
     hint: {
-      ko: "부드럽게 번지는 빛과 연한 분홍빛. 화사하고 몽환적인 인물 사진.",
-      en: "Soft, glowing light with a hint of pink, for airy portraits.",
-      ja: "やわらかくにじむ光と淡いピンク。ふんわり幻想的なポートレートに。",
+      ko: "하얗게 날리지 않는 부드러운 빛, 띄운 검정과 연한 분홍빛. 안개 낀 듯 몽환적인 느낌.",
+      en: "Soft light that never clips, lifted blacks and a hint of pink: misty and dreamy.",
+      ja: "白飛びしないやわらかな光、浮かせた黒と淡いピンク。霧がかかったような幻想的な雰囲気。",
     },
     delta: {
-      scalars: { contrast: -18, highlights: 10, whiteLevel: 10, shadows: 12, saturation: -12, clarity: -2.5 },
-      grading: { highlights: { hue: 330, chroma: 14 }, shadows: { hue: 260, chroma: 10 } },
+      scalars: { contrast: -15, highlights: -30, whiteLevel: -20, blackLevel: 15, saturation: -5, clarity: -2 },
+      blender: { green: { chroma: -15 } },
+      grading: { highlights: { hue: 330, chroma: 10 }, shadows: { hue: 260, chroma: 6 } },
     },
   },
   {
@@ -160,7 +181,7 @@ const LOOKS: Mood[] = [
       en: "No colour, more contrast: a weighty black and white.",
       ja: "色を抜いてコントラストを上げた、重厚なモノクロ。",
     },
-    delta: { scalars: { saturation: -100, contrast: 25, clarity: 1, blackLevel: -6 } },
+    delta: { scalars: { saturation: -100, contrast: 25, shadows: -15, whiteLevel: 5, clarity: 1, blackLevel: -6 } },
   },
 ];
 
@@ -176,8 +197,8 @@ const SKIN: Mood[] = [
     },
     dot: "#e6b07a",
     delta: {
-      blender: { orange: { hue: 18, chroma: 10, brightness: 4 }, red: { hue: 10, chroma: 4 } },
-      grading: { midTone: { hue: 38, chroma: 8 }, highlights: { hue: 45, chroma: 8 } },
+      blender: { orange: { hue: 8, chroma: 5, brightness: 8 }, red: { hue: 8 }, green: { chroma: -10 } },
+      grading: { shadows: { hue: 45, chroma: 10 }, midTone: { hue: 40, chroma: 6 } },
     },
   },
   {
@@ -191,8 +212,8 @@ const SKIN: Mood[] = [
     },
     dot: "#e9c3b8",
     delta: {
-      blender: { orange: { hue: -18, chroma: -10, brightness: 8 }, red: { hue: -8 }, yellow: { chroma: -12 } },
-      grading: { midTone: { hue: 215, chroma: 6 }, highlights: { hue: 205, chroma: 6 } },
+      blender: { orange: { hue: -6, chroma: -8, brightness: 12 }, yellow: { chroma: -12 }, green: { chroma: -10 }, blue: { hue: -10 } },
+      grading: { shadows: { hue: 230, chroma: 6 }, highlights: { hue: 210, chroma: 6 } },
     },
   },
   {
@@ -206,8 +227,9 @@ const SKIN: Mood[] = [
     },
     dot: "#efb3b5",
     delta: {
-      blender: { orange: { hue: -30, chroma: 6, brightness: 6 }, red: { hue: -18, chroma: 10 }, magenta: { chroma: 10 } },
-      grading: { midTone: { hue: 350, chroma: 10 }, highlights: { hue: 340, chroma: 6 } },
+      scalars: { saturation: -5 },
+      blender: { orange: { hue: -10, chroma: -5, brightness: 14 }, red: { hue: -6, chroma: 6 }, yellow: { chroma: -10 }, green: { chroma: -15 } },
+      grading: { shadows: { hue: 350, chroma: 8 }, midTone: { hue: 350, chroma: 6 }, highlights: { hue: 340, chroma: 4 } },
     },
   },
   {
@@ -221,8 +243,9 @@ const SKIN: Mood[] = [
     },
     dot: "#f7e1d6",
     delta: {
-      scalars: { clarity: -1, highlights: 8, shadows: 8 },
-      blender: { orange: { brightness: 25, chroma: -15 }, red: { brightness: 10, chroma: -6 }, yellow: { chroma: -10 } },
+      scalars: { clarity: -0.5 },
+      blender: { orange: { hue: 6, chroma: -8, brightness: 18 }, red: { brightness: 6 }, yellow: { chroma: -8, brightness: 6 } },
+      grading: { highlights: { hue: 215, chroma: 8 } },
     },
   },
   {
@@ -235,7 +258,11 @@ const SKIN: Mood[] = [
       ja: "血色を生かして、いきいきと健康的な肌に。",
     },
     dot: "#d9926d",
-    delta: { blender: { orange: { chroma: 15, brightness: 4 }, red: { chroma: 10, hue: -6 } } },
+    delta: {
+      scalars: { saturation: 8 },
+      blender: { orange: { chroma: 10, brightness: 6 }, red: { hue: 6, chroma: 5 }, green: { chroma: -10 } },
+      grading: { shadows: { hue: 45, chroma: 8 } },
+    },
   },
 ];
 
@@ -257,7 +284,7 @@ function accent(color: BlenderColor): Mood {
   const n = BLENDER_COLORS.length;
   const near = new Set([BLENDER_COLORS[(i + 1) % n], BLENDER_COLORS[(i + n - 1) % n]]);
   const blender: MoodDelta["blender"] = {};
-  for (const c of BLENDER_COLORS) blender[c] = { chroma: c === color ? 30 : near.has(c) ? 10 : -15 };
+  for (const c of BLENDER_COLORS) blender[c] = { chroma: c === color ? 40 : near.has(c) ? 15 : -15 };
   const [dot, label] = ACCENT_NAMES[color];
   return {
     id: color,
