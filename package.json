@@ -1,6 +1,6 @@
 {
   "name": "np3-lab",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "private": true,
   "description": "Unofficial Mac app for Nikon Z Flexible Color Picture Controls (.NP3): manage recipes on your SD card, preview them, and edit your own.",
   "type": "module",
