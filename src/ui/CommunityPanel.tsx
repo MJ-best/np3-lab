@@ -1,6 +1,6 @@
 import { COMMUNITY_SOURCES, communityInfo, communityProgress } from "../community";
 import { lang, t } from "../i18n";
-import { refreshCommunityRecipes } from "../state";
+import { refreshCommunityRecipes, removeCommunityRecipes } from "../state";
 
 const SourceLinks = ({ sources }: { sources: { id: string; label: string; home: string; count?: number }[] }) => (
   <>
@@ -35,6 +35,14 @@ export function CommunityPanel() {
         <button class="link" disabled={busy} onClick={() => refreshCommunityRecipes()}>
           {busy ? progressText : t("communityUpdate")}
         </button>
+        {!busy && (
+          <>
+            {" · "}
+            <button class="link" onClick={() => confirm(t("confirmCommunityRemove", { n: info.count })) && removeCommunityRecipes()}>
+              {t("communityRemove")}
+            </button>
+          </>
+        )}
       </p>
     );
   }

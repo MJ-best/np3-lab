@@ -1,9 +1,9 @@
 import { useRef, useState } from "preact/hooks";
 import { t } from "../i18n";
 import { importPhotos } from "../photoImport";
-import { photosByRecipe } from "../photos";
+import { SCENES, photosByRecipe } from "../photos";
 import { PHOTO_ACCEPT } from "../raw";
-import { allRecipes, recipeQuery } from "../state";
+import { allRecipes, recipeById, recipeQuery } from "../state";
 import { matchesQuery } from "./Gallery";
 import { PhotoLibrary } from "./PhotoLibrary";
 
@@ -11,9 +11,17 @@ import { PhotoLibrary } from "./PhotoLibrary";
 export function PhotoGallery() {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const empty = Object.keys(photosByRecipe.value).length === 0;
+  // Only recipe photos count here (preview scenes live in the same library).
+  const withPhotos = allRecipes.value.filter((r) => photosByRecipe.value[r.id]?.length);
+  // Photos whose recipe is gone (deleted, or a community recipe removed) stay visible so they can be deleted.
+  const orphans = Object.entries(photosByRecipe.value)
+    .filter(([id]) => id !== SCENES && !recipeById.value.has(id))
+    .flatMap(([, list]) => list)
+    .sort((a, b) => b.createdAt - a.createdAt);
+  const empty = withPhotos.length === 0 && orphans.length === 0;
   const query = recipeQuery.value;
-  const visible = allRecipes.value.filter((r) => photosByRecipe.value[r.id]?.length && matchesQuery(r, query));
+  const visible = withPhotos.filter((r) => matchesQuery(r, query));
+  const shownOrphans = query.trim() ? [] : orphans;
 
   const add = async (files: File[]) => {
     if (files.length === 0) return;
@@ -47,10 +55,10 @@ export function PhotoGallery() {
       </div>
       {empty ? (
         <p class="empty">{t("photoGalleryEmpty")}</p>
-      ) : visible.length === 0 ? (
+      ) : visible.length === 0 && shownOrphans.length === 0 ? (
         <p class="empty">{t("noResults")}</p>
       ) : (
-        <PhotoLibrary recipes={visible} />
+        <PhotoLibrary recipes={visible} orphans={shownOrphans} />
       )}
     </div>
   );

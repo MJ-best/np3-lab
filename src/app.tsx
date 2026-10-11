@@ -7,7 +7,7 @@ import { webglAvailable } from "./render/renderer";
 import { loadPhotoIndex } from "./photos";
 import { importPhotos } from "./photoImport";
 import { checkForNewLocalNp3 } from "./localNp3";
-import { builtinsReady, cart, dismissToast, importSession, openImport, route, toasts, type Route } from "./state";
+import { builtinsReady, cartRecipes, dismissToast, importSession, openImport, route, toasts, type Route } from "./state";
 import { Cart } from "./ui/Cart";
 import { CardView } from "./ui/CardView";
 import { Editor } from "./ui/Editor";
@@ -142,7 +142,7 @@ export function App() {
               onClick={() => (route.value = tab.id)}
             >
               {t(tab.key)}
-              {tab.id === "card" && !isDesktop && cart.value.length > 0 && <span class="count">{cart.value.length}</span>}
+              {tab.id === "card" && !isDesktop && cartRecipes.value.length > 0 && <span class="count">{cartRecipes.value.length}</span>}
               {tab.id === "card" && isDesktop && activeCard.value && <span class="count">{activeCard.value.np3Count}</span>}
             </button>
           ))}

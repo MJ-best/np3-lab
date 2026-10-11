@@ -326,6 +326,16 @@ export async function downloadCommunityRecipes(force = false): Promise<Recipe[] 
   return recipes;
 }
 
+/** Delete the downloaded recipes from app storage (they can be downloaded again). */
+export function forgetCommunityRecipes() {
+  try {
+    for (const key of [STORE_KEY, LEGACY_KEY]) localStorage.removeItem(`nikonpclab.${key}`);
+  } catch {
+    /* storage unavailable */
+  }
+  communityInfo.value = null;
+}
+
 // A function declaration (hoisted): the stored recipes are counted per source at module load.
 export function isCommunityRecipe(r: Recipe): boolean {
   return r.id.startsWith("community:");

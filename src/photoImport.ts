@@ -1,6 +1,6 @@
 import { t } from "./i18n";
 import { addPhotos, matchRecipeByExif } from "./photos";
-import { isPhotoFile, toViewablePhoto } from "./raw";
+import { isPhotoFile } from "./raw";
 import { addUserPhoto, allRecipes, detailId, openRecipePhotos, route, showToast } from "./state";
 
 /*
@@ -50,13 +50,7 @@ export async function importPhotos(files: File[], opts: { into?: string } = {}):
     result.intoFallback = await addPhotos(opts.into, unknown);
     toThis += result.intoFallback;
   } else {
-    for (const f of unknown) {
-      const viewable = await toViewablePhoto(f);
-      if (viewable) {
-        await addUserPhoto(viewable);
-        result.scenes++;
-      }
-    }
+    for (const f of unknown) if (await addUserPhoto(f)) result.scenes++;
   }
 
   // Say where things went, especially photos that landed in another recipe than the one on screen.

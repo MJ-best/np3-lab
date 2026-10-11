@@ -420,6 +420,28 @@ button.on:hover:not(:disabled) {
 .scenes .hint {
   margin-top: 8px;
 }
+.chip-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: -4px;
+  margin: -2px 6px -2px -7px;
+}
+.scene-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  max-width: 360px;
+}
+.scene-edit .rename-input {
+  flex: 1;
+  min-width: 0;
+}
+.scene-edit button {
+  white-space: nowrap;
+}
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -2137,6 +2159,9 @@ html.desktop .topbar input {
 .photo-group-head:hover .photo-group-title,
 .photo-group-head:hover .photo-group-open {
   color: var(--accent);
+}
+.photo-group-head.orphan .photo-group-title {
+  color: var(--muted);
 }
 
 /* Narrower phones (most Android, smaller iPhones): the four tabs and settings need the whole row. */

@@ -293,6 +293,16 @@ export async function renderThumbnail(src: PreparedSource, params: RecipeParams 
   return url;
 }
 
+/** Free everything kept for an image that's gone (a deleted preview scene). */
+export function forgetSource(key: string) {
+  instance?.forget(key);
+  for (const [k, url] of thumbCache)
+    if (k.startsWith(`${key}|`)) {
+      URL.revokeObjectURL(url);
+      thumbCache.delete(k);
+    }
+}
+
 export function webglAvailable(): boolean {
   return getRenderer() !== null;
 }
