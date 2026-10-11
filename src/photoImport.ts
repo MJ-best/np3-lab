@@ -4,10 +4,11 @@ import { isPhotoFile } from "./raw";
 import { addUserPhoto, allRecipes, detailId, openRecipePhotos, route, showToast } from "./state";
 
 /*
- * One rule for every way a photo comes in (window drop, "Add photos" on a recipe,
- * "My photo" scene, Import → Photos): a Nikon photo goes to the recipe named in its
+ * One rule for every way photos are imported (window drop, "Add photos" on a recipe,
+ * the Gallery tab, Import → Photos): a Nikon photo goes to the recipe named in its
  * EXIF. Only photos without a known recipe go to the fallback — the recipe being
- * viewed, or a preview scene when there is none.
+ * viewed, or a preview scene when there is none. ("My photo" in the scene row is not
+ * an import: what you pick there always becomes a preview scene.)
  */
 
 export interface PhotoImportResult {

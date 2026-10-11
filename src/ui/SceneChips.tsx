@@ -1,18 +1,36 @@
 import { useRef } from "preact/hooks";
-import { importPhotos } from "../photoImport";
 import { renamePhoto } from "../photos";
 import { PHOTO_ACCEPT } from "../raw";
 import { lang, t } from "../i18n";
 import { hasBundledPhotos } from "../render/samples";
-import { activeSample, activeSampleId, allSamples, deleteScene, setActiveSample } from "../state";
+import { activeSample, activeSampleId, addUserPhoto, allSamples, deleteScene, setActiveSample } from "../state";
 
-/** Row of preview-scene chips plus a button to add your own photo; your own can be renamed and deleted. */
+/**
+ * Row of preview scenes. "My photo" comes first, so it never scrolls out of reach, followed by
+ * your own photos (newest first; the chosen one can be renamed and deleted) and the built-in scenes.
+ */
 export function SceneChips({ showHint = false }: { showHint?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const own = activeSample.value?.kind === "user" ? activeSample.value : null;
   return (
     <div class="scenes">
       <div class="chips" role="tablist" aria-label={t("scene")}>
+        <button class="chip ghost" onClick={() => fileRef.current?.click()}>
+          ＋ {t("addPhoto")}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept={PHOTO_ACCEPT}
+          multiple
+          hidden
+          onChange={async (e) => {
+            const input = e.currentTarget;
+            // Picked here to preview on, so they stay preview photos even when shot with a recipe.
+            for (const file of Array.from(input.files ?? [])) await addUserPhoto(file);
+            input.value = "";
+          }}
+        />
         {allSamples.value.map((s) => (
           <button
             key={s.id}
@@ -25,28 +43,11 @@ export function SceneChips({ showHint = false }: { showHint?: boolean }) {
             {s.label[lang.value]}
           </button>
         ))}
-        <button class="chip ghost" onClick={() => fileRef.current?.click()}>
-          ＋ {t("addPhoto")}
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept={PHOTO_ACCEPT}
-          multiple
-          hidden
-          onChange={async (e) => {
-            const input = e.currentTarget;
-            // Recipe photos are filed under their recipe; the rest become preview scenes.
-            await importPhotos(Array.from(input.files ?? []));
-            input.value = "";
-          }}
-        />
       </div>
       {own && (
         <div class="scene-edit">
           <input
             key={own.id}
-            class="rename-input"
             defaultValue={own.label[lang.value]}
             maxLength={60}
             aria-label={t("sceneName")}
@@ -58,7 +59,7 @@ export function SceneChips({ showHint = false }: { showHint?: boolean }) {
               else e.currentTarget.value = own.label[lang.value];
             }}
           />
-          <button class="small-btn danger ghost" onClick={() => void deleteScene(own.id)}>
+          <button class="danger ghost" onClick={() => void deleteScene(own.id)}>
             {t("deletePhoto")}
           </button>
         </div>
