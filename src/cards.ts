@@ -4,7 +4,7 @@ import { androidNative, isAndroid, isIos, native, nativeErrorMessage, type Nativ
 import { newId, parseNp3, recipeToBytes, sameBytes, withNpName, type Recipe } from "./np3/recipe";
 import { planCardFiles } from "./pack/naming";
 import { readStore, writeStore } from "./storage";
-import { allRecipes, builtinsReady, myRecipes, naming, showToast, upsertMine } from "./state";
+import { allRecipes, builtinsReady, isRetired, myRecipes, naming, showToast, upsertMine } from "./state";
 
 /*
  * Desktop-only: memory cards reported by the Electron main process, what's in
@@ -95,9 +95,10 @@ function toItems(card: NativeCard, files: { fileName: string; bytes: Uint8Array 
 /**
  * Copy card files that aren't in the library yet into My recipes. Files this app
  * can't preview are kept too (as raw bytes), so formatting the card never loses them.
+ * Versions the user deleted or changed in My recipes stay out.
  */
 function backupNew(card: NativeCard, items: CardItem[]): number {
-  const fresh = items.filter((it) => !it.inLibrary && it.valid);
+  const fresh = items.filter((it) => !it.inLibrary && it.valid && !isRetired(it.bytes));
   const now = Date.now();
   fresh.forEach((it, i) => {
     const recipe: Recipe = { ...it.recipe, id: newId("card"), createdAt: now + i, origin: { kind: "card", author: card.name } };

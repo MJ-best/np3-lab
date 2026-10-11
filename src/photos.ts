@@ -40,6 +40,12 @@ const STORE = "photos";
 const FULL_EDGE = 4096;
 const THUMB_EDGE = 960;
 
+/** Preview scenes (your own photos to try recipes on) are kept here too, under this id instead of a recipe's. */
+export const SCENES = "scenes";
+
+/** Identifies the original file (name, size, date) so adding it again is skipped. */
+export const sourceKeyOf = (f: File) => `${f.name}:${f.size}:${f.lastModified}`;
+
 /** recipeId → photos (newest first). */
 export const photosByRecipe = signal<Record<string, PhotoThumb[]>>({});
 
@@ -110,7 +116,6 @@ async function downscale(file: Blob, edge: number, quality: number): Promise<Blo
 export async function addPhotos(recipeId: string, files: File[]): Promise<number> {
   let added = 0;
   const current = Object.values(photosByRecipe.value).flat();
-  const sourceKey = (f: File) => `${f.name}:${f.size}:${f.lastModified}`;
   const inRecipe = current.filter((p) => p.recipeId === recipeId);
   const already = new Set(inRecipe.flatMap((p) => (p.sourceKey ? [p.sourceKey] : [])));
   // Photos added before keys existed can only be recognised by name.
@@ -119,8 +124,8 @@ export async function addPhotos(recipeId: string, files: File[]): Promise<number
   for (const original of files.filter(isPhotoFile)) {
     // The same file added twice (or dropped again later) stays one photo; one added before
     // shooting details were kept gets them now.
-    const same = inRecipe.find((p) => p.sourceKey === sourceKey(original) || (!p.sourceKey && p.name === original.name));
-    if (same || already.has(sourceKey(original)) || legacyNames.has(original.name)) {
+    const same = inRecipe.find((p) => p.sourceKey === sourceKeyOf(original) || (!p.sourceKey && p.name === original.name));
+    if (same || already.has(sourceKeyOf(original)) || legacyNames.has(original.name)) {
       // A photo added before shooting details were kept, or at a smaller size, is brought up to date.
       if (same) {
         try {
@@ -150,7 +155,7 @@ export async function addPhotos(recipeId: string, files: File[]): Promise<number
         id: `ph-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
         recipeId,
         name: original.name,
-        sourceKey: sourceKey(original),
+        sourceKey: sourceKeyOf(original),
         createdAt: Date.now() + added,
         // Read from the original: re-encoding below drops the EXIF.
         exif: await readOriginalExif(original),
@@ -176,6 +181,17 @@ export async function deletePhoto(id: string) {
   const gone = all.find((p) => p.id === id);
   if (gone) URL.revokeObjectURL(gone.thumbUrl);
   setIndex(all.filter((p) => p.id !== id));
+}
+
+export async function renamePhoto(id: string, name: string) {
+  // Read and write in one transaction, so a delete can't land in between and be undone.
+  const r = await tx<PhotoRecord | undefined>("readwrite", (s) => {
+    const req = s.get(id);
+    req.addEventListener("success", () => req.result && s.put({ ...req.result, name }));
+    return req;
+  });
+  if (!r) return;
+  setIndex(Object.values(photosByRecipe.value).flat().map((p) => (p.id === id ? { ...p, name } : p)));
 }
 
 export async function fullPhoto(id: string): Promise<Blob | null> {

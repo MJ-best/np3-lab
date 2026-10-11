@@ -1,13 +1,16 @@
-import { prepareSource, type PreparedSource } from "./renderer";
+import { forgetSource, prepareSource, type PreparedSource } from "./renderer";
 import { drawColorChart, drawLandscape, drawNight, drawSkinTones } from "./testChart";
 
 export interface Sample {
   id: string;
   label: { ko: string; en: string; ja: string };
   kind: "bundled" | "generated" | "user";
-  /** URL for bundled/user photos; generated scenes are drawn on demand. */
+  /** URL for bundled photos; generated scenes are drawn on demand. */
   url?: string;
   draw?: () => HTMLCanvasElement;
+  /** Your own photos: read from the photo library when first shown, with a small copy for the chip. */
+  blob?: () => Promise<Blob | null>;
+  thumb?: string;
 }
 
 // Photos dropped into /samples are bundled at build time (inlined in the single-file build).
@@ -86,6 +89,16 @@ export function loadSample(sample: Sample): Promise<PreparedSource> {
   if (!p) {
     p = (async () => {
       if (sample.draw) return prepareSource(sample.id, sample.draw());
+      if (sample.blob) {
+        const blob = await sample.blob();
+        if (!blob) throw new Error(`Sample ${sample.id} is gone`);
+        const bmp = await createImageBitmap(blob);
+        try {
+          return prepareSource(sample.id, bmp);
+        } finally {
+          bmp.close();
+        }
+      }
       if (!sample.url) throw new Error(`Sample ${sample.id} has no source`);
       return prepareSource(sample.id, await loadImage(sample.url));
     })();
@@ -95,13 +108,8 @@ export function loadSample(sample: Sample): Promise<PreparedSource> {
   return p;
 }
 
-export async function sampleFromFile(file: File): Promise<Sample> {
-  const url = URL.createObjectURL(file);
-  const name = file.name.replace(/\.[^.]+$/, "");
-  return {
-    id: `user:${name}:${file.size}:${file.lastModified}`,
-    label: { ko: name, en: name, ja: name },
-    kind: "user",
-    url,
-  };
+/** Drop a deleted scene from every cache. */
+export function forgetSample(id: string) {
+  prepared.delete(id);
+  forgetSource(id);
 }

@@ -1,7 +1,7 @@
 import { computed, signal } from "@preact/signals";
 import { BUILTIN_RECIPES, loadBundledNp3 } from "./builtinRecipes";
 import { recipeFromBackup } from "./backup";
-import { downloadCommunityRecipes, isCommunityRecipe, storedCommunityRecipes } from "./community";
+import { downloadCommunityRecipes, forgetCommunityRecipes, isCommunityRecipe, storedCommunityRecipes } from "./community";
 import { t, tx } from "./i18n";
 import { isDesktop } from "./native";
 import {
@@ -11,6 +11,7 @@ import {
   newId,
   normalizeParams,
   parseNp3,
+  recipeToBytes,
   sameBytes,
   sanitizeNpName,
   type Recipe,
@@ -19,7 +20,8 @@ import {
 } from "./np3/recipe";
 import { IDENTITY_POINTS, toneCurveFromPoints, type CurvePoint } from "./np3/toneCurve";
 import type { FileNameMode } from "./pack/naming";
-import { BUILTIN_SAMPLES, sampleFromFile, type Sample } from "./render/samples";
+import { SCENES, addPhotos, deletePhoto, fullPhoto, photosByRecipe, sourceKeyOf } from "./photos";
+import { BUILTIN_SAMPLES, forgetSample, type Sample } from "./render/samples";
 import { base64ToBytes, bytesToBase64, readStore, writeStore } from "./storage";
 
 // ---------------------------------------------------------------------------
@@ -97,6 +99,10 @@ export async function refreshCommunityRecipes(): Promise<void> {
     showToast(t("communityFailed", { msg: String((err as Error)?.message ?? err) }), "error", 8000);
   }
 }
+export function removeCommunityRecipes() {
+  forgetCommunityRecipes();
+  builtinRecipes.value = builtinRecipes.value.filter((r) => !isCommunityRecipe(r));
+}
 /** Resolves once the bundled NP3 recipes are in `builtinRecipes`. */
 export const builtinsReady: Promise<void> = loadBundledNp3().then((extra) => {
   if (extra.length > 0) builtinRecipes.value = [...builtinRecipes.value, ...extra];
@@ -105,14 +111,39 @@ export const builtinsReady: Promise<void> = loadBundledNp3().then((extra) => {
 export const allRecipes = computed(() => [...myRecipes.value, ...builtinRecipes.value]);
 export const recipeById = computed(() => new Map(allRecipes.value.map((r) => [r.id, r])));
 
+// ponytail: 32-bit hash + length; a collision only means one card file isn't backed up automatically.
+const bytesKey = (b: Uint8Array) => {
+  let h = 2166136261;
+  for (const x of b) h = Math.imul(h ^ x, 16777619);
+  return `${b.length}.${(h >>> 0).toString(36)}`;
+};
+const retired = new Set(readStore<string[]>("retired") ?? []);
+/** Remember a version that is leaving My recipes (deleted, or changed), so auto-backup won't copy it back from a card. */
+function retire(r: Recipe) {
+  try {
+    const key = bytesKey(recipeToBytes(r));
+    if (retired.has(key)) return;
+    retired.add(key);
+    writeStore("retired", [...retired].slice(-500));
+  } catch {
+    /* no bytes: nothing a card could hold */
+  }
+}
+/** Is this card file a recipe version the user deleted or changed? */
+export const isRetired = (bytes: Uint8Array) => retired.has(bytesKey(bytes));
+
 export function upsertMine(recipe: Recipe) {
   const list = myRecipes.value;
   const i = list.findIndex((r) => r.id === recipe.id);
+  if (i >= 0) retire(list[i]);
   myRecipes.value = i >= 0 ? list.map((r, j) => (j === i ? recipe : r)) : [recipe, ...list];
   persistMine();
 }
 
 export function deleteMine(id: string) {
+  const gone = myRecipes.value.find((r) => r.id === id);
+  if (gone) retire(gone);
+  for (const p of photosByRecipe.value[id] ?? []) void deletePhoto(p.id);
   myRecipes.value = myRecipes.value.filter((r) => r.id !== id);
   persistMine();
   removeFromCart(id);
@@ -120,7 +151,7 @@ export function deleteMine(id: string) {
 }
 
 
-export function updateMine(id: string, patch: Partial<Pick<Recipe, "title" | "origin" | "tags">>) {
+export function updateMine(id: string, patch: Partial<Pick<Recipe, "title" | "origin" | "npName" | "raw">>) {
   const r = myRecipes.value.find((x) => x.id === id);
   if (r) upsertMine({ ...r, ...patch });
 }
@@ -312,7 +343,17 @@ export function setNaming(mode: FileNameMode) {
 // ---------------------------------------------------------------------------
 // Preview scenes
 
-export const userSamples = signal<Sample[]>([]);
+// Your own photos, kept in the photo library: shown oldest first, after the built-in scenes.
+const PHOTO_EXT = /\.(jpe?g|png|webp|gif|heic|heif|avif|tiff?|nef|nrw)$/i;
+export const userSamples = computed(() =>
+  (photosByRecipe.value[SCENES] ?? [])
+    .slice()
+    .reverse()
+    .map((p): Sample => {
+      const name = p.name.replace(PHOTO_EXT, "");
+      return { id: p.id, label: { ko: name, en: name, ja: name }, kind: "user", thumb: p.thumbUrl, blob: () => fullPhoto(p.id) };
+    }),
+);
 export const allSamples = computed(() => [...BUILTIN_SAMPLES, ...userSamples.value]);
 export const activeSampleId = signal<string>(readStore<string>("sample") ?? BUILTIN_SAMPLES[0].id);
 export const activeSample = computed(
@@ -320,13 +361,27 @@ export const activeSample = computed(
 );
 export function setActiveSample(id: string) {
   activeSampleId.value = id;
-  if (!id.startsWith("user:")) writeStore("sample", id);
+  writeStore("sample", id);
 }
-export async function addUserPhoto(file: File) {
-  const sample = await sampleFromFile(file);
-  if (!userSamples.value.some((s) => s.id === sample.id)) userSamples.value = [...userSamples.value, sample];
-  setActiveSample(sample.id);
+/** Keep a photo as a preview scene (adding the same file again just picks it). */
+export async function addUserPhoto(file: File): Promise<boolean> {
+  await addPhotos(SCENES, [file]);
+  const scene = photosByRecipe.value[SCENES]?.find((p) => p.sourceKey === sourceKeyOf(file));
+  if (!scene) {
+    showToast(t("photoAddFailed", { name: file.name }), "error");
+    return false;
+  }
+  setActiveSample(scene.id);
   showToast(t("photoAdded", { name: file.name }), "ok");
+  return true;
+}
+/** Delete one of your preview scenes; the one next to it is shown instead. */
+export async function deleteScene(id: string) {
+  const list = userSamples.value;
+  const i = list.findIndex((s) => s.id === id);
+  if (activeSampleId.value === id) setActiveSample((list[i + 1] ?? list[i - 1] ?? BUILTIN_SAMPLES[0]).id);
+  await deletePhoto(id);
+  forgetSample(id);
 }
 
 // ---------------------------------------------------------------------------

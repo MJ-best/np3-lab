@@ -7,7 +7,10 @@ import {
   RANGES,
   SCALAR_KEYS,
   TONE_KEYS,
+  NP_NAME_MAX,
   recipeToBytes,
+  sanitizeNpName,
+  withNpName,
   type Recipe,
   type RecipeParams,
 } from "../np3/recipe";
@@ -54,13 +57,29 @@ const safeUrl = (url: string | undefined) => (url && /^https?:\/\//i.test(url) ?
 function OriginInfo({ recipe }: { recipe: Recipe }) {
   const [editing, setEditing] = useState(false);
   const o = recipe.origin;
-  const editable = recipe.source !== "builtin";
+  // Card files that aren't in the library are renamed on the card screen instead.
+  const editable = recipe.source !== "builtin" && !recipe.id.startsWith("card:");
   if (editing) {
     return (
       <div class="origin-edit">
         <label class="field">
           <span>{t("titleField")}</span>
           <input value={tx(recipe.title)} onInput={(e) => updateMine(recipe.id, { title: e.currentTarget.value })} />
+        </label>
+        <label class="field">
+          <span>{t("cameraName")}</span>
+          <input
+            class="mono"
+            value={recipe.npName}
+            maxLength={NP_NAME_MAX}
+            spellcheck={false}
+            onChange={(e) => {
+              const input = e.currentTarget;
+              const npName = input.value.trim() ? sanitizeNpName(input.value) : recipe.npName;
+              input.value = npName;
+              if (npName !== recipe.npName) updateMine(recipe.id, { npName, raw: recipe.raw && withNpName(recipe.raw, npName) });
+            }}
+          />
         </label>
         <label class="field">
           <span>{t("authorField")}</span>
@@ -293,7 +312,8 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
             <button
               class="danger ghost"
               onClick={() => {
-                if (confirm(t("confirmDelete", { name: tx(recipe.title) }))) {
+                const name = tx(recipe.title);
+                if (confirm(photoCount > 0 ? t("confirmDeleteWithPhotos", { name, n: photoCount }) : t("confirmDelete", { name }))) {
                   deleteMine(recipe.id);
                   detailId.value = null;
                 }
