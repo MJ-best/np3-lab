@@ -343,18 +343,15 @@ export function setNaming(mode: FileNameMode) {
 // ---------------------------------------------------------------------------
 // Preview scenes
 
-// Your own photos, kept in the photo library: shown oldest first, after the built-in scenes.
+// Your own photos, kept in the photo library: newest first, before the built-in scenes.
 const PHOTO_EXT = /\.(jpe?g|png|webp|gif|heic|heif|avif|tiff?|nef|nrw)$/i;
 export const userSamples = computed(() =>
-  (photosByRecipe.value[SCENES] ?? [])
-    .slice()
-    .reverse()
-    .map((p): Sample => {
-      const name = p.name.replace(PHOTO_EXT, "");
-      return { id: p.id, label: { ko: name, en: name, ja: name }, kind: "user", thumb: p.thumbUrl, blob: () => fullPhoto(p.id) };
-    }),
+  (photosByRecipe.value[SCENES] ?? []).map((p): Sample => {
+    const name = p.name.replace(PHOTO_EXT, "");
+    return { id: p.id, label: { ko: name, en: name, ja: name }, kind: "user", thumb: p.thumbUrl, blob: () => fullPhoto(p.id) };
+  }),
 );
-export const allSamples = computed(() => [...BUILTIN_SAMPLES, ...userSamples.value]);
+export const allSamples = computed(() => [...userSamples.value, ...BUILTIN_SAMPLES]);
 export const activeSampleId = signal<string>(readStore<string>("sample") ?? BUILTIN_SAMPLES[0].id);
 export const activeSample = computed(
   () => allSamples.value.find((s) => s.id === activeSampleId.value) ?? allSamples.value[0],

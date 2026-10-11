@@ -428,19 +428,29 @@ button.on:hover:not(:disabled) {
   vertical-align: -4px;
   margin: -2px 6px -2px -7px;
 }
+/* Name field and Delete share one height, whatever font size the platform gives the field. */
 .scene-edit {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
-  margin-top: 8px;
-  max-width: 360px;
+  margin-top: 10px;
+  max-width: 480px;
 }
-.scene-edit .rename-input {
+.scene-edit input {
   flex: 1;
   min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+}
+.scene-edit input:focus {
+  border-color: var(--accent);
+  outline: none;
 }
 .scene-edit button {
-  white-space: nowrap;
+  flex: none;
+  padding: 0 16px;
 }
 .grid {
   display: grid;
