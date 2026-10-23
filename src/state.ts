@@ -33,7 +33,7 @@ export const detailId = signal<string | null>(null);
 /** Which side of the recipe dialog to open on; null lets it decide (photos first when there are any). */
 export const detailTab = signal<"photos" | "preview" | null>(null);
 
-export type GalleryFilter = "all" | "mine" | "reddit" | "imaging-cloud" | `tag:${string}`;
+export type GalleryFilter = "all" | "card" | "mine" | "reddit" | "imaging-cloud" | `tag:${string}`;
 /** Search text, shared by the Recipes and Gallery tabs so it carries over between them. */
 export const recipeQuery = signal("");
 /** Recipes-tab filter. */
