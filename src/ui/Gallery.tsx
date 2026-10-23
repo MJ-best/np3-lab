@@ -7,6 +7,7 @@ import { downloadText } from "../pack/download";
 import {
   activeSample,
   allRecipes,
+  cart,
   exportBackup,
   importBackup,
   openImport,
@@ -55,8 +56,10 @@ export function Gallery() {
   const hasMine = recipes.some((r) => r.source !== "builtin");
   const hasReddit = recipes.some((r) => r.origin?.kind === "reddit");
   const hasCloud = recipes.some((r) => r.origin?.kind === "imaging-cloud");
+  const hasCart = recipes.some((r) => cart.value.includes(r.id));
 
   const visible = recipes.filter((r) => {
+    if (filter === "card" && !cart.value.includes(r.id)) return false;
     if (filter === "mine" && r.source === "builtin") return false;
     if ((filter === "reddit" || filter === "imaging-cloud") && r.origin?.kind !== filter) return false;
     if (filter.startsWith("tag:") && !r.tags.includes(filter.slice(4))) return false;
@@ -128,6 +131,11 @@ export function Gallery() {
         <button class={`chip${filter === "all" ? " active" : ""}`} onClick={() => setFilter("all")}>
           {t("filterAll")}
         </button>
+        {hasCart && (
+          <button class={`chip${filter === "card" ? " active" : ""}`} onClick={() => setFilter("card")}>
+            {t("filterCard")}
+          </button>
+        )}
         {hasMine && (
           <button class={`chip${filter === "mine" ? " active" : ""}`} onClick={() => setFilter("mine")}>
             {t("filterMine")}

@@ -197,6 +197,7 @@ const ko = {
 
   search: "레시피 검색",
   filterAll: "전체",
+  filterCard: "카드에 담음",
   filterMine: "내 레시피",
   importNp3: "NP3 가져오기",
   importFromCard: "카드에서 가져오기",
@@ -544,6 +545,7 @@ const en: Dict = {
 
   search: "Search recipes",
   filterAll: "All",
+  filterCard: "Added to card",
   filterMine: "My recipes",
   importNp3: "Import NP3",
   importFromCard: "Import from card",
@@ -895,6 +897,7 @@ const ja: Dict = {
 
   search: "レシピを検索",
   filterAll: "すべて",
+  filterCard: "カードに追加済み",
   filterMine: "マイレシピ",
   importNp3: "NP3を取り込む",
   importFromCard: "カードから取り込む",
