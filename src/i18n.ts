@@ -96,8 +96,7 @@ const ko = {
   pickerEmpty: "넣을 레시피가 없습니다. 레시피 탭에서 커뮤니티 레시피를 받아 주세요.",
   cameraGuideTitle: "카메라에서 레시피 불러오기",
   cameraModel: "카메라 기종",
-  otherZ: "기타 Z 기종",
-  otherZNote: "Z6II·Z7II·Z5·Z6·Z7·Z50·Z fc·Z30 등은 플렉시블 컬러 Picture Control을 지원하지 않아 이 앱의 레시피를 불러올 수 없습니다. 플렉시블 컬러는 Zf(FW 2.00 이상), Z6III, Z5II, Z50II, ZR, Z8(FW 3.00 이상), Z9(FW 5.30 이상)에서 쓸 수 있습니다.",
+  otherZ: "기타 니콘",
   firmwareNeeded: "{model}은(는) 펌웨어 {fw} 이상이 필요합니다. (설정 메뉴 › 펌웨어 버전에서 확인)",
   stepInsert: "레시피를 넣은 메모리 카드를 카메라에 넣고 전원을 켭니다.",
   stepInsertPrimary: "레시피를 넣은 메모리 카드를 카메라에 넣고 전원을 켭니다. 슬롯이 2개라면 주 슬롯(사진 촬영 메뉴 › 주 슬롯 선택)에 있는 카드만 읽습니다.",
@@ -228,7 +227,6 @@ const ko = {
   after: "적용",
   openInEditor: "에디터에서 편집",
   duplicateEdit: "복제해서 편집",
-  downloadNp3: "NP3 다운로드",
   copyText: "텍스트로 복사",
   copied: "클립보드에 복사했습니다.",
   deleteRecipe: "삭제",
@@ -354,6 +352,13 @@ const ko = {
   macZip3: "폴더가 없다면 풀린 NIKON 폴더를 카드 최상위에 끌어다 놓으면 됩니다.",
   macZip4: "Finder에서 카드를 꺼내기(⏏)한 뒤 뽑으세요.",
   slotNote: "카메라 내부 커스텀 슬롯은 C-1~C-9 9개지만, 카드에는 최대 99개를 넣어두고 현장에서 언제든 바꿔 넣을 수 있습니다.",
+  downloadFile: "{ext} 다운로드",
+  legacyShort: "구형",
+  legacyNote: "{model}은(는) 플렉시블 컬러를 지원하지 않습니다. 레시피를 카드에 넣으면 일반 Picture Control(.NCP)로 바꿔서 넣습니다. 톤·채도·선명도는 옮겨지고 컬러 블렌더·컬러 그레이딩·명료도는 빠지며, 미리보기도 바뀐 모습으로 보여 줍니다.",
+  legacyBanner: "{model} 기준으로 보여 줍니다. 플렉시블 컬러 레시피는 일반 Picture Control로 바꾼 모습(컬러 블렌더·그레이딩 제외)이며, 카드에도 그렇게 들어갑니다.",
+  legacyEditorNote: "{model}에는 컬러 블렌더·컬러 그레이딩·명료도가 없어 숨겼습니다. 톤·채도·선명도로 만든 레시피는 그대로 옮겨지고, 카드에는 일반 Picture Control(.NCP)로 들어갑니다.",
+  legacyPreviewNote: "{model}에서 보일 모습입니다. 컬러 블렌더와 컬러 그레이딩은 이 기종에 없어 빠집니다.",
+  notOnCamera: "{model}에서 안 됨",
 };
 
 type Dict = Record<keyof typeof ko, string>;
@@ -443,8 +448,7 @@ const en: Dict = {
   pickerEmpty: "Nothing to add yet. Download the community recipes in the Recipes tab first.",
   cameraGuideTitle: "Load recipes on the camera",
   cameraModel: "Camera model",
-  otherZ: "Other Z",
-  otherZNote: "Z6II, Z7II, Z5, Z6, Z7, Z50, Z fc, Z30 and similar models don't support Flexible Color Picture Controls, so they can't load these recipes. Flexible Color works on the Zf (FW 2.00+), Z6III, Z5II, Z50II, ZR, Z8 (FW 3.00+) and Z9 (FW 5.30+).",
+  otherZ: "Other Nikon",
   firmwareNeeded: "The {model} needs firmware {fw} or later (check under Setup menu › Firmware version).",
   stepInsert: "Put the memory card with the recipes into the camera and turn it on.",
   stepInsertPrimary: "Put the memory card with the recipes into the camera and turn it on. With two slots, only the card in the primary slot (Photo shooting menu › Primary slot selection) is read.",
@@ -575,7 +579,6 @@ const en: Dict = {
   after: "After",
   openInEditor: "Edit in editor",
   duplicateEdit: "Duplicate & edit",
-  downloadNp3: "Download NP3",
   copyText: "Copy as text",
   copied: "Copied to clipboard.",
   deleteRecipe: "Delete",
@@ -701,6 +704,13 @@ const en: Dict = {
   macZip3: "If it doesn't, drag the unzipped NIKON folder to the top level of the card.",
   macZip4: "Eject (⏏) the card in Finder before removing it.",
   slotNote: "The camera still has 9 custom slots (C-1 to C-9), but the card can carry up to 99 recipes so you can swap them in the field.",
+  downloadFile: "Download {ext}",
+  legacyShort: "older",
+  legacyNote: "The {model} doesn't support Flexible Color. Recipes go onto the card as original Picture Controls (.NCP): tone, saturation and sharpening carry over; the color blender, color grading and clarity don't. The preview shows the converted look.",
+  legacyBanner: "Showing recipes for the {model}: Flexible Color recipes appear as original Picture Controls (without the color blender and grading), the way they go onto the card.",
+  legacyEditorNote: "The {model} has no color blender, color grading or clarity, so they're hidden. Tone, saturation and sharpening carry over, and the recipe goes onto the card as an original Picture Control (.NCP).",
+  legacyPreviewNote: "How it will look on the {model}. The color blender and color grading aren't available there, so they're left out.",
+  notOnCamera: "Not for {model}",
 };
 
 export type MessageKey = keyof typeof ko;
@@ -794,8 +804,7 @@ const ja: Dict = {
   pickerEmpty: "追加できるレシピがありません。先に［レシピ］タブでコミュニティレシピを取得してください。",
   cameraGuideTitle: "カメラにレシピを登録する",
   cameraModel: "カメラの機種",
-  otherZ: "その他のZ",
-  otherZNote: "Z6II・Z7II・Z5・Z6・Z7・Z50・Z fc・Z30などはフレキシブルカラーのピクチャーコントロールに対応していないため、このアプリのレシピを登録できません。フレキシブルカラーはZf（C:2.00以降）、Z6III、Z5II、Z50II、ZR、Z8（C:3.00以降）、Z9（C:5.30以降）で使えます。",
+  otherZ: "その他のニコン",
   firmwareNeeded: "{model}はファームウェア{fw}以降が必要です（セットアップメニュー ›［ファームウェアバージョン］で確認できます）。",
   stepInsert: "レシピを入れたメモリーカードをカメラに入れ、電源をオンにします。",
   stepInsertPrimary: "レシピを入れたメモリーカードをカメラに入れ、電源をオンにします。スロットが2つある場合は、主スロット（静止画撮影メニュー ›［主スロットの選択］）のカードだけが読み込まれます。",
@@ -926,7 +935,6 @@ const ja: Dict = {
   after: "適用後",
   openInEditor: "エディターで編集",
   duplicateEdit: "複製して編集",
-  downloadNp3: "NP3をダウンロード",
   copyText: "テキストでコピー",
   copied: "クリップボードにコピーしました。",
   deleteRecipe: "削除",
@@ -1052,6 +1060,13 @@ const ja: Dict = {
   macZip3: "フォルダがない場合は、展開したNIKONフォルダをカードの一番上の階層にドラッグします。",
   macZip4: "Finderでカードを取り出して（⏏）から抜いてください。",
   slotNote: "カメラ内のカスタムピクチャーコントロールはC-1～C-9の9件ですが、カードには最大99件を入れておき、撮影現場でいつでも入れ替えられます。",
+  downloadFile: "{ext}をダウンロード",
+  legacyShort: "旧機種",
+  legacyNote: "{model}はフレキシブルカラーに対応していません。レシピはカードに入れるときに通常のピクチャーコントロール（.NCP）に変換します。トーン・彩度・輪郭強調は引き継がれ、カラーブレンダー・カラーグレーディング・明瞭度は外れます。プレビューも変換後の見え方で表示します。",
+  legacyBanner: "{model}向けに表示しています。フレキシブルカラーのレシピは通常のピクチャーコントロールに変換した見え方（カラーブレンダー・グレーディングを除く）で、カードにもそのまま入ります。",
+  legacyEditorNote: "{model}にはカラーブレンダー・カラーグレーディング・明瞭度がないため非表示にしました。トーン・彩度・輪郭強調はそのまま引き継がれ、カードには通常のピクチャーコントロール（.NCP）として入ります。",
+  legacyPreviewNote: "{model}での見え方です。カラーブレンダーとカラーグレーディングはこの機種にないため外れます。",
+  notOnCamera: "{model}は非対応",
 };
 
 const DICTS: Record<Lang, Dict> = { ko, en, ja };
@@ -1110,6 +1125,7 @@ const TAGS: Record<string, { ko: string; en: string; ja: string }> = {
   nikonpc: { ko: "NikonPC", en: "NikonPC", ja: "NikonPC" },
   serbanjpg: { ko: "SerbanJPG", en: "SerbanJPG", ja: "SerbanJPG" },
   muted: { ko: "저채도", en: "Muted", ja: "低彩度" },
+  classic: { ko: "일반 Picture Control", en: "Original Picture Control", ja: "通常のピクチャーコントロール" },
   contrasty: { ko: "하이콘트라스트", en: "High contrast", ja: "ハイコントラスト" },
 };
 

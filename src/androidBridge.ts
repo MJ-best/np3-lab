@@ -1,5 +1,5 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
-import { MAX_NP3_BYTES, dateTag, exportNames, isNp3Bytes, isSafeNp3Name, looksLikeNikonCard, safeSegment, sameBytes } from "../electron/cardRules.mjs";
+import { MAX_NP3_BYTES, PC_FILE_RE, dateTag, exportNames, isNp3Bytes, isSafeNp3Name, looksLikeNikonCard, pcExtOf, safeSegment, sameBytes } from "../electron/cardRules.mjs";
 import type { ExportFile, ExportResult, NativeBridge, NativeCard, NativeCardFile, NativeSettings } from "./native";
 
 /*
@@ -44,8 +44,6 @@ interface SafFoldersPlugin {
 }
 
 const Saf = registerPlugin<SafFoldersPlugin>("SafFolders");
-
-const NP3_RE = /\.np3$/i;
 
 function toBase64(bytes: Uint8Array): string {
   let s = "";
@@ -94,7 +92,7 @@ function requireCard(uri: string): string[] {
 }
 
 async function np3Names(uri: string, path: string[]): Promise<string[]> {
-  return (await names(uri, path)).filter((e) => !e.isDir && NP3_RE.test(e.name) && !e.name.startsWith("._")).map((e) => e.name);
+  return (await names(uri, path)).filter((e) => !e.isDir && PC_FILE_RE.test(e.name) && !e.name.startsWith("._")).map((e) => e.name);
 }
 
 async function toCard(folder: SafFolder): Promise<NativeCard | null> {
@@ -125,7 +123,7 @@ async function listCards(): Promise<NativeCard[]> {
 }
 
 async function writeWithoutOverwrite(uri: string, path: string[], base: string, bytes: Uint8Array, tag: string) {
-  const { family, candidates } = exportNames(base, ".NP3", tag);
+  const { family, candidates } = exportNames(base, pcExtOf(bytes), tag);
   const existing = (await names(uri, path)).map((e) => e.name);
   const taken = new Set(existing.map((n) => n.toLowerCase()));
   for (const name of existing.filter((n) => family.test(n))) {

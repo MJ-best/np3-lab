@@ -1,7 +1,8 @@
 import { computed, signal } from "@preact/signals";
 import { t } from "./i18n";
 import { androidNative, isAndroid, isIos, native, nativeErrorMessage, type NativeCard } from "./native";
-import { newId, parseNp3, recipeToBytes, sameBytes, withNpName, type Recipe } from "./np3/recipe";
+import { legacyBytes, forCard } from "./camera";
+import { PC_FILE_RE, classicTags, isFlexible, newId, parseNp3, recipeToBytes, sameBytes, withNpName, type Recipe } from "./np3/recipe";
 import { planCardFiles } from "./pack/naming";
 import { readStore, writeStore } from "./storage";
 import { allRecipes, builtinsReady, isRetired, myRecipes, naming, showToast, upsertMine } from "./state";
@@ -55,6 +56,8 @@ function libraryBytes(): { recipe: Recipe; bytes: Uint8Array }[] {
   for (const r of allRecipes.value) {
     try {
       out.push({ recipe: r, bytes: recipeToBytes(r) });
+      // A Flexible recipe written for an older body is on the card as an original Picture Control.
+      if (isFlexible(r) && r.params) out.push({ recipe: r, bytes: legacyBytes(r.npName, r.params) });
     } catch {
       /* recipe without params or bytes */
     }
@@ -67,7 +70,7 @@ function toItems(card: NativeCard, files: { fileName: string; bytes: Uint8Array 
   return files.map((f) => {
     const match = lib.find((l) => sameBytes(l.bytes, f.bytes));
     if (match) return { fileName: f.fileName, bytes: f.bytes, recipe: match.recipe, inLibrary: true, valid: true };
-    let npName = f.fileName.replace(/\.np3$/i, "");
+    let npName = f.fileName.replace(PC_FILE_RE, "");
     let params = null;
     let valid = false;
     try {
@@ -83,7 +86,7 @@ function toItems(card: NativeCard, files: { fileName: string; bytes: Uint8Array 
       source: "imported",
       title: npName,
       npName,
-      tags: [],
+      tags: classicTags(f.bytes),
       params,
       raw: f.bytes,
       origin: { kind: "card", author: card.name },
@@ -170,7 +173,7 @@ export async function addToActiveCard(recipes: Recipe[]): Promise<void> {
   const card = activeCard.value;
   if (!native || !card || recipes.length === 0) return;
   try {
-    const plan = planCardFiles(recipes, { mode: naming.value, existing: await namesOnCard(card) });
+    const plan = planCardFiles(recipes.map(forCard), { mode: naming.value, existing: await namesOnCard(card) });
     const written = plan.files.map((f) => f.fileName);
     if (written.length > 0) {
       await native.writeFiles(

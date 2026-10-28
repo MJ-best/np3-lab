@@ -17,24 +17,25 @@ import {
 } from "../cards";
 import { lang, t, tagLabel, tx } from "../i18n";
 import { isAndroid, isIos } from "../native";
-import { NP_NAME_MAX, type Recipe } from "../np3/recipe";
+import { NP_NAME_MAX, parseNp3, pcExt, pcFormat, type RecipeParams } from "../np3/recipe";
 import { MAX_PER_CARD } from "../pack/naming";
 import { renderThumbnail, type PreparedSource } from "../render/renderer";
+import { currentCamera, legacyCamera, viewParams } from "../camera";
 import { activeSample, allRecipes, detailId } from "../state";
 import { CameraGuide } from "./CameraGuide";
 import { usePreparedSample } from "./hooks";
 import { Overlay } from "./RecipeDetail";
 
-function Thumb({ source, recipe, width = 360 }: { source: PreparedSource | null; recipe: Recipe; width?: number }) {
+function Thumb({ source, params, width = 360 }: { source: PreparedSource | null; params: RecipeParams | null; width?: number }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     if (!source) return;
     let alive = true;
-    renderThumbnail(source, recipe.params ?? null, width).then((u) => alive && setUrl(u));
+    renderThumbnail(source, params, width).then((u) => alive && setUrl(u));
     return () => {
       alive = false;
     };
-  }, [source, recipe.params]);
+  }, [source, params]);
   return url ? <img src={url} alt="" draggable={false} /> : <div class="thumb-placeholder" />;
 }
 
@@ -42,6 +43,15 @@ function CardTile({ item, source }: { item: CardItem; source: PreparedSource | n
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(item.recipe.npName);
   const title = tx(item.recipe.title);
+  // The preview shows the file itself: for an older body that can be the original Picture Control written for it.
+  const fileParams = useMemo(() => {
+    try {
+      return parseNp3(item.bytes).params;
+    } catch {
+      return null;
+    }
+  }, [item.bytes]);
+  const format = pcFormat(item.bytes);
   // Enter unmounts the input, which then also fires blur: only the first one counts.
   const committed = useRef(false);
   const startEditing = () => {
@@ -59,9 +69,15 @@ function CardTile({ item, source }: { item: CardItem; source: PreparedSource | n
   return (
     <article class="card card-file">
       <button class="card-thumb" onClick={() => (detailId.value = item.recipe.id)} aria-label={title}>
-        <Thumb source={source} recipe={item.recipe} />
+        <Thumb source={source} params={fileParams} />
         {item.inLibrary && <span class="badge floating ok-badge">✓ {t("backedUp")}</span>}
-        {!item.recipe.params && <span class="badge floating right warn">NP3</span>}
+        {legacyCamera.value && format === "flexible" ? (
+          <span class="badge floating right warn">{t("notOnCamera", { model: currentCamera.value.label || t("otherZ") })}</span>
+        ) : format !== "flexible" ? (
+          <span class="badge floating right">{pcExt(item.bytes).slice(1)}</span>
+        ) : (
+          !fileParams && <span class="badge floating right warn">NP3</span>
+        )}
       </button>
       <div class="card-body">
         {editing ? (
@@ -141,7 +157,7 @@ function RecipePicker({ onClose, source }: { onClose: () => void; source: Prepar
                 onClick={() => toggle(r.id)}
               >
                 <div class="pick-thumb">
-                  <Thumb source={source} recipe={r} width={260} />
+                  <Thumb source={source} params={viewParams(r)} width={260} />
                   <span class="pick-check">{already ? "✓" : checked ? "✓" : ""}</span>
                 </div>
                 <span class="pick-title">{tx(r.title)}</span>

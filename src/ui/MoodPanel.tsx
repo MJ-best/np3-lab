@@ -1,4 +1,5 @@
 import { signal } from "@preact/signals";
+import { legacyCamera } from "../camera";
 import { t, tx, type MessageKey } from "../i18n";
 import {
   MOODS,
@@ -62,7 +63,8 @@ export function MoodPanel() {
   return (
     <details class="panel mood-panel" open>
       <summary>{t("moodTitle")}</summary>
-      {MOOD_GROUPS.map((group) => (
+      {/* Skin tones and colour pops live in the colour blender and grading, which older bodies don't have. */}
+      {MOOD_GROUPS.filter((g) => g === "look" || !legacyCamera.value).map((group) => (
         <div class="mood-row" key={group}>
           <span class="mood-label">{t(GROUP_LABEL[group])}</span>
           <div class="chips mood-chips" role="group" aria-label={t(GROUP_LABEL[group])}>

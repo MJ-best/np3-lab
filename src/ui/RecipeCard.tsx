@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
+import { pcExt } from "../np3/recipe";
+import { legacyCamera, viewParams } from "../camera";
 import { t, tagLabel, tx } from "../i18n";
 import { lookOf } from "../look";
 import type { Recipe } from "../np3/recipe";
@@ -44,11 +46,11 @@ export function RecipeCard({ recipe, source }: { recipe: Recipe; source: Prepare
   useEffect(() => {
     if (!source || !visible || cover) return;
     let alive = true;
-    enqueue(() => renderThumbnail(source, recipe.params ?? null, 520)).then((url) => alive && setThumb(url));
+    enqueue(() => renderThumbnail(source, viewParams(recipe), 520)).then((url) => alive && setThumb(url));
     return () => {
       alive = false;
     };
-  }, [source, recipe.params, visible, !!cover]);
+  }, [source, recipe.params, legacyCamera.value, visible, !!cover]);
 
   return (
     <article class="card" ref={ref}>
@@ -62,7 +64,7 @@ export function RecipeCard({ recipe, source }: { recipe: Recipe; source: Prepare
         )}
         {photos.length > 0 && <span class="badge floating bottom photo-count">📷 {photos.length}</span>}
         <span class={`badge floating ${badgeClass(recipe)}`}>{sourceBadge(recipe)}</span>
-        {!recipe.params && <span class="badge floating right warn">NP3</span>}
+        {!recipe.params && <span class="badge floating right warn">{recipe.raw ? pcExt(recipe.raw).slice(1) : "NP3"}</span>}
       </button>
       <div class="card-body">
         <div class="card-title-row">

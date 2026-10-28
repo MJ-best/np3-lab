@@ -1,4 +1,6 @@
 import { useMemo, useRef } from "preact/hooks";
+import { currentCamera, legacyCamera } from "../camera";
+import { CameraSelect } from "./CameraGuide";
 import { t, tagLabel, tx } from "../i18n";
 import type { Recipe } from "../np3/recipe";
 import { isAndroid, isDesktop } from "../native";
@@ -110,7 +112,7 @@ export function Gallery() {
         <input
           ref={np3Input}
           type="file"
-          accept=".np3,.NP3"
+          accept=".np3,.NP3,.np2,.NP2,.ncp,.NCP"
           multiple
           hidden
           onChange={async (e) => {
@@ -123,6 +125,13 @@ export function Gallery() {
       </div>
 
       {!communityInfo.value && <CommunityPanel />}
+
+      {legacyCamera.value && (
+        <div class="legacy-banner">
+          <span>{t("legacyBanner", { model: currentCamera.value.label || t("otherZ") })}</span>
+          <CameraSelect />
+        </div>
+      )}
 
       <div class="chips filters">
         <button class={`chip${filter === "all" ? " active" : ""}`} onClick={() => setFilter("all")}>

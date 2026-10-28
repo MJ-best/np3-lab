@@ -10,7 +10,7 @@ import { BrowserWindow, Menu, Tray, app, dialog, ipcMain, nativeImage, session, 
 import { LOGIN_FLAG, setMacLoginAgent } from "./loginItem.mjs";
 import { findLocalNp3 } from "./localNp3.mjs";
 import { exportRecipes } from "./exportFiles.mjs";
-import { MAX_NP3_BYTES, isNp3Bytes, isSafeNp3Name, looksLikeNikonCard } from "./cardRules.mjs";
+import { MAX_NP3_BYTES, PC_FILE_RE, isNp3Bytes, isSafeNp3Name, looksLikeNikonCard } from "./cardRules.mjs";
 import { CARD_FILESYSTEMS, parseMacMounts, withTimeout } from "./volumes.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -105,8 +105,6 @@ function applyLoginItem() {
 // ---------------------------------------------------------------------------
 // Card detection
 
-const NP3_RE = /\.np3$/i;
-
 async function childNames(dir) {
   try {
     return await readdir(dir);
@@ -167,7 +165,7 @@ async function customPcDir(root, create) {
 async function inspectVolume(v) {
   if (!(await isNikonCard(v.path))) return null;
   const dir = await customPcDir(v.path, false);
-  const np3Count = dir ? (await childNames(dir)).filter((n) => NP3_RE.test(n) && !n.startsWith("._")).length : 0;
+  const np3Count = dir ? (await childNames(dir)).filter((n) => PC_FILE_RE.test(n) && !n.startsWith("._")).length : 0;
   let freeBytes = null;
   try {
     const s = await statfs(v.path);
@@ -256,7 +254,7 @@ ipcMain.handle("card:read", async (_e, cardPath) => {
   if (!dir) return [];
   const files = [];
   for (const name of (await childNames(dir)).sort()) {
-    if (!NP3_RE.test(name) || name.startsWith("._")) continue;
+    if (!PC_FILE_RE.test(name) || name.startsWith("._")) continue;
     // Only plain, NP3-sized files: no links, folders or huge files dressed up as .NP3.
     const s = await lstat(join(dir, name)).catch(() => null);
     if (!s?.isFile() || s.size > MAX_NP3_BYTES) continue;
