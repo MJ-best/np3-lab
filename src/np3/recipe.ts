@@ -8,6 +8,12 @@ import {
   type FlexibleColorPictureControlOptions,
   type ToneCurve,
 } from "nikon-flexible-color-picture-control";
+import { PC_FILE_RE, pcExtOf } from "../../electron/cardRules.mjs";
+import { ncpToParams, parseNcp } from "./ncp";
+
+export { PC_FILE_RE };
+/** File extension for Picture Control bytes, as the camera expects it (.NP3, .NP2, .NCP). */
+export const pcExt = (bytes: Uint8Array): string => pcExtOf(bytes);
 
 export type { ColorBlender, ColorBlenderValues, ColorGrading, ColorGradingValues, ToneCurve };
 
@@ -184,16 +190,20 @@ export function paramsToBytes(npName: string, params: RecipeParams): Uint8Array 
   return serialize({ name: sanitizeNpName(npName), ...normalizeParams(params) });
 }
 
-/** The camera name lives in a 20-byte, NUL-padded field at offset 24. */
-const NAME_OFFSET = 24;
+/**
+ * The camera name is a 20-byte, NUL-padded field: at offset 24 in NP3 files, which tag it
+ * (00 02, length 20), and straight after the header at offset 16 in the original .NCP format.
+ */
 const NAME_FIELD = 20;
+const nameOffset = (b: Uint8Array) => (b[18] === 0x02 && b[23] === NAME_FIELD ? 24 : 16);
 
-/** Copy of an NP3 file with a different camera name; every other byte is kept as-is. */
+/** Copy of a Picture Control file with a different camera name; every other byte is kept as-is. */
 export function withNpName(bytes: Uint8Array, name: string): Uint8Array {
   const clean = sanitizeNpName(name);
   const out = new Uint8Array(bytes);
-  out.fill(0, NAME_OFFSET, NAME_OFFSET + NAME_FIELD);
-  for (let i = 0; i < clean.length; i++) out[NAME_OFFSET + i] = clean.charCodeAt(i);
+  const at = nameOffset(out);
+  out.fill(0, at, at + NAME_FIELD);
+  for (let i = 0; i < clean.length; i++) out[at + i] = clean.charCodeAt(i);
   return out;
 }
 
@@ -203,6 +213,22 @@ const MAGIC = [0x4e, 0x43, 0x50, 0x00]; // "NCP\0"
 const FLEXIBLE_VERSION = "0310";
 const MIN_FLEXIBLE_LENGTH = 392;
 
+/**
+ * The three Picture Control file types share one header ("NCP\0" … version) and differ in
+ * version: 0310 Flexible Color (.NP3, newer bodies only), 03xx other .NP3, 02xx .NP2,
+ * 01xx the original .NCP that every camera with custom Picture Controls can load.
+ */
+export type PcFormat = "flexible" | "np3" | "np2" | "ncp";
+export function pcFormat(bytes: Uint8Array): PcFormat | null {
+  if (bytes.length < 16 || MAGIC.some((b, i) => bytes[i] !== b)) return null;
+  const version = String.fromCharCode(...bytes.slice(12, 16));
+  return version === FLEXIBLE_VERSION ? "flexible" : version.startsWith("01") ? "ncp" : version.startsWith("02") ? "np2" : "np3";
+}
+/** Tag for files that aren't Flexible Color, so they can be found (and filtered) in the library. */
+export const classicTags = (bytes: Uint8Array): string[] => (pcFormat(bytes) && pcFormat(bytes) !== "flexible" ? ["classic"] : []);
+/** Flexible Color: a recipe without bytes of its own is always one (made in the editor). */
+export const isFlexible = (r: Pick<Recipe, "raw">) => !r.raw || pcFormat(r.raw) === "flexible";
+
 export interface ParsedNp3 {
   npName: string;
   params: RecipeParams | null;
@@ -210,15 +236,18 @@ export interface ParsedNp3 {
   note?: "not-np3" | "unsupported-version";
 }
 
-/** Parse an NP3 file. Throws only when the bytes are clearly not a picture control. */
+/** Parse a Picture Control file (.NP3, .NP2, .NCP). Throws only when the bytes are clearly not one. */
 export function parseNp3(bytes: Uint8Array): ParsedNp3 {
-  if (bytes.length < 16 || MAGIC.some((b, i) => bytes[i] !== b)) {
-    throw new Error("not-np3");
-  }
-  const version = String.fromCharCode(...bytes.slice(12, 16));
-  const rawName = String.fromCharCode(...bytes.slice(24, 43)).split("\0", 1)[0] ?? "";
+  const format = pcFormat(bytes);
+  if (!format) throw new Error("not-np3");
+  const at = nameOffset(bytes);
+  const rawName = String.fromCharCode(...bytes.slice(at, at + NAME_FIELD - 1)).split("\0", 1)[0] ?? "";
   const npName = rawName.replace(/[^\x20-\x7e]/g, "").trim() || "IMPORTED";
-  if (version !== FLEXIBLE_VERSION || bytes.length < MIN_FLEXIBLE_LENGTH) {
+  if (format === "ncp") {
+    const ncp = parseNcp(bytes);
+    return ncp ? { npName, params: normalizeParams(ncpToParams(ncp)) } : { npName, params: null, note: "unsupported-version" };
+  }
+  if (format !== "flexible" || bytes.length < MIN_FLEXIBLE_LENGTH) {
     return { npName, params: null, note: "unsupported-version" };
   }
   try {

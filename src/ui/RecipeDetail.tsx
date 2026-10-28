@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { currentCamera, forCard, legacyCamera, viewParams } from "../camera";
 import { t, tagLabel, tx, type MessageKey } from "../i18n";
 import {
   BLENDER_COLORS,
@@ -8,6 +9,8 @@ import {
   SCALAR_KEYS,
   TONE_KEYS,
   NP_NAME_MAX,
+  isFlexible,
+  pcExt,
   recipeToBytes,
   sanitizeNpName,
   withNpName,
@@ -225,6 +228,16 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
   const editable = recipe.source === "mine" && !recipe.raw;
   const inLibrary = !recipe.id.startsWith("card:");
   const photoCount = inLibrary ? (photosByRecipe.value[recipe.id]?.length ?? 0) : 0;
+  // On an older body: how it will look there, and the original Picture Control it is saved as.
+  const legacy = legacyCamera.value;
+  const shown = useMemo(() => viewParams(recipe), [recipe, legacy]);
+  const outBytes = useMemo(() => {
+    try {
+      return recipeToBytes(forCard(recipe));
+    } catch {
+      return null;
+    }
+  }, [recipe, legacy]);
   const hasPhotos = photoCount > 0;
   const [view, setView] = useState<"photos" | "preview">(() => detailTab.value ?? (hasPhotos ? "photos" : "preview"));
   useEffect(() => {
@@ -269,11 +282,14 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
           <>
             <SceneChips />
             {recipe.params ? (
-              <CompareSlider source={source} params={recipe.params} maxHeight={620} />
+              <CompareSlider source={source} params={shown} maxHeight={620} />
             ) : (
               <div class="no-preview">{t("noPreview")}</div>
             )}
             <p class="hint">{t("approxPreview")}</p>
+            {legacyCamera.value && isFlexible(recipe) && recipe.params && (
+              <p class="hint warn-text">{t("legacyPreviewNote", { model: currentCamera.value.label || t("otherZ") })}</p>
+            )}
             {inLibrary && !hasPhotos && <RecipePhotos recipeId={recipe.id} />}
           </>
         )}
@@ -306,7 +322,9 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
           {recipe.params && (
             <button onClick={() => openInEditor(recipe)}>{editable ? t("openInEditor") : t("duplicateEdit")}</button>
           )}
-          <button onClick={() => downloadBytes(recipeToBytes(recipe), `${fileBaseFor(recipe)}.NP3`)}>{t("downloadNp3")}</button>
+          {outBytes && (
+            <button onClick={() => downloadBytes(outBytes, `${fileBaseFor(recipe)}${pcExt(outBytes)}`)}>{t("downloadFile", { ext: pcExt(outBytes).slice(1) })}</button>
+          )}
           {recipe.params && <button onClick={() => copyText(formatRecipeText(recipe.npName, recipe.params!))}>{t("copyText")}</button>}
           {recipe.source !== "builtin" && inLibrary && (
             <button

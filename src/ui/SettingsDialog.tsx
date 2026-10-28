@@ -2,6 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import { autoBackup, setAutoBackup } from "../cards";
 import { lang, setLang, t, LANGS } from "../i18n";
 import { isAndroid, native, type NativeSettings } from "../native";
+import { CameraSelect } from "./CameraGuide";
 import { Overlay } from "./RecipeDetail";
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
@@ -43,6 +44,10 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
               </button>
             ))}
           </div>
+        </div>
+        <div class="setting-row">
+          <span>{t("cameraModel")}</span>
+          <CameraSelect />
         </div>
         {native && (
           <>
