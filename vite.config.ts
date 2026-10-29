@@ -37,13 +37,15 @@ export default defineConfig({
   base: "./",
   // Only the hosted web version has extra pages (the privacy policy).
   publicDir: WEB ? "web" : false,
-  plugins: [preact(), viteSingleFile({ removeViteModuleLoader: true }), renameOutput()],
+  // The hosted web version keeps the code and photos as separate files: the page shows up before the
+  // sample photos arrive, and the browser caches them between visits.
+  plugins: [preact(), ...(WEB ? [] : [viteSingleFile({ removeViteModuleLoader: true })]), renameOutput()],
   // Recipe files dropped into recipes/*.np3 are bundled as assets.
   assetsInclude: ["**/*.np3", "**/*.NP3"],
   build: {
     outDir: WEB ? "dist-web" : "dist",
     // Inline everything (sample photos, NP3 files) so the app is one portable HTML file.
-    assetsInlineLimit: Number.MAX_SAFE_INTEGER,
+    assetsInlineLimit: WEB ? 4096 : Number.MAX_SAFE_INTEGER,
     chunkSizeWarningLimit: 50_000,
     target: "es2022",
   },

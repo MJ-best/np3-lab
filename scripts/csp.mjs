@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 
 /** Hosts the page may talk to: GitHub and jsDelivr for the community recipes, nothing else. */
 const CONNECT_SRC = ["https://api.github.com", "https://data.jsdelivr.com", "https://cdn.jsdelivr.net", "https://raw.githubusercontent.com", "data:"];
-const WEB_SCRIPTS = ["https://apis.google.com"];
+const WEB_SCRIPTS = ["'self'", "https://apis.google.com"];
 const WEB_FRAMES = ["'self'", "https://*.firebaseapp.com"];
 const WEB_CONNECT = ["https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://firestore.googleapis.com"];
 
@@ -20,7 +20,8 @@ export function withCsp(html, { web = false } = {}) {
     // The hosted web version also signs in with Google (Firebase Auth) and syncs with Firestore.
     `script-src ${[...hashes, ...(web ? WEB_SCRIPTS : [])].join(" ")}`,
     ...(web ? [`frame-src ${WEB_FRAMES.join(" ")}`] : []),
-    "style-src 'unsafe-inline'",
+    // The hosted web version loads its code and stylesheet as files from its own site.
+    `style-src ${web ? "'self' " : ""}'unsafe-inline'`,
     "img-src 'self' data: blob:",
     `connect-src ${[...CONNECT_SRC, ...(web ? WEB_CONNECT : [])].join(" ")}`,
     "base-uri 'none'",
