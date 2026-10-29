@@ -10,15 +10,13 @@ import { connectFirestoreEmulator, getFirestore } from "firebase/firestore/lite"
 const emulator = import.meta.env.VITE_FIREBASE_EMULATOR === "1";
 const projectId = emulator ? "demo-np3lab" : "np3-lab";
 
-// Sign in through the site's own domain when served by Firebase Hosting, so browsers that block
-// third-party storage still complete the sign-in.
-const ownDomain = [`${projectId}.web.app`, `${projectId}.firebaseapp.com`].includes(location.hostname);
-
 const app = initializeApp({
   apiKey: emulator ? "demo-key" : "AIzaSyBqHk0Xae484O9YGnmpTT-fmakjQL7UBV4",
   appId: emulator ? "demo-app" : "1:808573237131:web:6088f1095187207887a18e",
   projectId,
-  authDomain: ownDomain ? location.hostname : `${projectId}.firebaseapp.com`,
+  // The default domain needs no extra OAuth redirect URI; popup sign-in works with it even where
+  // third-party storage is blocked (only redirect sign-in would need the site's own domain).
+  authDomain: `${projectId}.firebaseapp.com`,
 });
 
 export const auth = getAuth(app);
