@@ -7,6 +7,8 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 import { withCsp } from "./scripts/csp.mjs";
 
 const OUTPUT_NAME = "NP3-Lab.html";
+/** The hosted web version (npm run build:web → dist-web/, served by Firebase Hosting). */
+const WEB = process.env.VITE_WEB === "1";
 
 /** Add the CSP, then rename dist/index.html so the single-file build has a self-explanatory name. */
 function renameOutput(): Plugin {
@@ -16,6 +18,11 @@ function renameOutput(): Plugin {
     closeBundle() {
       // The Android build keeps index.html: Capacitor loads it from dist/.
       if (process.env.CAP_BUILD) return;
+      if (WEB) {
+        const page = resolve(import.meta.dirname, "dist-web/index.html");
+        writeFileSync(page, withCsp(readFileSync(page, "utf8"), { web: true }));
+        return;
+      }
       const from = resolve(import.meta.dirname, "dist/index.html");
       if (!existsSync(from)) return;
       writeFileSync(from, withCsp(readFileSync(from, "utf8")));
@@ -28,10 +35,13 @@ function renameOutput(): Plugin {
 export default defineConfig({
   // Relative paths so the built file also works when opened via file://
   base: "./",
+  // Only the hosted web version has extra pages (the privacy policy).
+  publicDir: WEB ? "web" : false,
   plugins: [preact(), viteSingleFile({ removeViteModuleLoader: true }), renameOutput()],
   // Recipe files dropped into recipes/*.np3 are bundled as assets.
   assetsInclude: ["**/*.np3", "**/*.NP3"],
   build: {
+    outDir: WEB ? "dist-web" : "dist",
     // Inline everything (sample photos, NP3 files) so the app is one portable HTML file.
     assetsInlineLimit: Number.MAX_SAFE_INTEGER,
     chunkSizeWarningLimit: 50_000,
