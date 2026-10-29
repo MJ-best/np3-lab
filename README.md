@@ -35,6 +35,7 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 | **전체 레시피 내보내기** | 레시피 탭 맨 아래 **전체 레시피 내보내기 (NP3)**로 모든 레시피를 고른 폴더에 `My Recipes/`, `Community/<모음>/` 구조로 저장합니다. 기존 파일은 덮어쓰지 않습니다. 같은 이름에 내용이 다르면 `이름_20261001.NP3`처럼 날짜를 붙여 저장하고, 내용이 같으면 건너뜁니다. |
 | **Reddit·텍스트 가져오기** | 커뮤니티에 글로 공유된 수치를 붙여넣으면 레시피 여러 개를 자동으로 나눠 가져옵니다(한국어·영어). |
 | **기종별 불러오기 안내** | 카드를 뽑으면 Zf·Z6III·Z5II·Z50II·ZR·Z8·Z9별 메뉴 경로와 필요한 펌웨어를 보여줍니다. |
+| **구형 기종 (Z5·Z6·Z7·Z50 등)** | **⚙︎ 설정**에서 카메라를 고르면 플렉시블 컬러 레시피를 그 기종이 읽는 일반 Picture Control(`.NCP`)로 바꿔 카드에 넣습니다. 톤·채도·샤프닝은 옮기고, 컬러 블렌더·컬러 그레이딩·명료도는 빠집니다. 미리보기도 바뀐 모습으로 보여줍니다. 카드의 `.NCP`·`.NP2` 파일과 커뮤니티의 일반 Picture Control 레시피도 보입니다. |
 
 | 레시피 갤러리 | 원본/적용 비교 | 기종별 안내 |
 | --- | --- | --- |
@@ -60,7 +61,7 @@ xattr -cr "/Applications/NP3 Lab.app"
 4. **⏏ 꺼내기**를 누른 뒤 카드를 카메라에 넣고, 카메라에서 C-1~C-9 슬롯에 불러옵니다.
    - **Zf:** MENU → 사진 촬영 메뉴 → Picture Control 관리 → 저장/편집
    - **Z6III · Z5II · Z50II · ZR · Z8 · Z9:** MENU → 사진 촬영 메뉴 → Picture Control 관리 → 로드/저장 → 카메라에 복사
-   - Zf는 FW 2.00 이상, Z8은 FW 3.00 이상, Z9는 FW 5.30 이상이 필요합니다. 다른 Z 기종은 플렉시블 컬러를 지원하지 않습니다.
+   - Zf는 FW 2.00 이상, Z8은 FW 3.00 이상, Z9는 FW 5.30 이상이 필요합니다. 다른 Z 기종(Z5·Z6·Z6II·Z7·Z7II·Z50·Z fc·Z30)은 플렉시블 컬러를 지원하지 않으니 **⚙︎ 설정**에서 기종을 고르세요. `.NCP`로 바꿔 넣고, 카메라에서는 로드/저장 → 카메라에 복사로 불러옵니다.
 
 - 창을 닫아도 앱은 **메뉴 막대**에서 카드를 기다리고, 로그인할 때 자동으로 실행됩니다. 이 동작은 **⚙︎ 설정**에서 끌 수 있습니다.
 - 카메라 안의 슬롯은 여전히 C-1~C-9 9개입니다. 대신 카드에는 최대 99개를 넣어 두고 현장에서 언제든 바꿔 넣을 수 있습니다.
@@ -186,6 +187,7 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 - **Frames:** save a photo with its recipe name and shooting details (camera, lens, focal length, aperture, shutter, ISO, date) in 14 layouts (strap, brand, Shot on, Polaroid, film, cinema…), three backgrounds and 1:1 / 4:5 / 9:16 canvases; crop and straighten it like in a phone photo editor first.
 - **One-tap looks in the editor:** a mood (clear, soft film, positive film, vintage, cinematic, dreamy, rich B&W), a skin tone (warm, cool, pink, fair, healthy) and a colour to bring out, combined at the strength you choose. Their values are checked against what ~265 community recipes for each look actually use.
 - **Your own preview photos:** try recipes on your own photos as well as the sample scenes. Rename or delete them; they stay after the app closes.
+- **Older bodies (Z5, Z6, Z6II, Z7, Z7II, Z50, Z fc, Z30):** pick the camera in Settings and Flexible Color recipes go on the card as original Picture Controls (`.NCP`). Tone, saturation and sharpening carry over; the color blender, grading and clarity are left out, and the preview shows the result. `.NCP`/`.NP2` files on the card and the community's original Picture Control recipes are shown too.
 - **Editor, before/after preview, Reddit/text import, per-model camera instructions** (Zf, Z6III, Z5II, Z50II, ZR, Z8, Z9).
 
 **Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repositories have no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).
@@ -216,6 +218,7 @@ Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, ref
 - **フレーム:** 写真にレシピ名と撮影情報（カメラ・レンズ・焦点距離・絞り・シャッター・ISO・日付）を入れて保存。レイアウト14種類、背景3色、1:1・4:5・9:16に対応し、スマホの写真アプリのようにトリミングと傾き補正ができます。
 - **かんたんスタイル:** エディターでボタンひとつで雰囲気・肌のトーン・強調する色を重ねられます。値は各スタイルのコミュニティレシピ約265件と照らし合わせて調整しています。
 - **自分の写真でプレビュー:** サンプルの代わりに自分の写真でもレシピを確認できます。名前の変更・削除ができ、アプリを閉じても残ります。
+- **旧機種（Z5、Z6、Z6II、Z7、Z7II、Z50、Z fc、Z30）:** 設定でカメラを選ぶと、フレキシブルカラーのレシピを通常のピクチャーコントロール（`.NCP`）に変換してカードに入れます。トーン・彩度・シャープネスは引き継ぎ、カラーブレンダー・カラーグレーディング・明瞭度は省かれます。プレビューも変換後の見た目で表示します。
 - エディター、ビフォー/アフタープレビュー、テキスト（日本語・韓国語・英語の項目名）からの取り込み、機種別のカメラでの登録手順。
 
 **インストール:** [Releases](https://github.com/MJ-best/np3-lab/releases)からDMGをダウンロードし、アプリを「アプリケーション」フォルダにドラッグします。公証を受けていないため、まずリリースの `SHA256SUMS.txt` で `shasum -a 256 -c SHA256SUMS.txt --ignore-missing` を実行し、`OK` と表示されることを確認してください。初回は右クリック →［開く］、または `xattr -cr "/Applications/NP3 Lab.app"` を実行してください。詳しくは[SECURITY.md](SECURITY.md)をご覧ください。
