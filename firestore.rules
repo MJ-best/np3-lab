@@ -1,0 +1,23 @@
+rules_version = '2';
+// Each signed-in user reads and writes only their own synced items (see src/account.ts):
+// users/<uid>/recipes/<id> and users/<uid>/prefs/<cart|camera>, each { t, data } or { t, deleted }.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{col}/{id} {
+      function owner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+      function valid() {
+        let d = request.resource.data;
+        return col in ['recipes', 'prefs']
+          && d.keys().hasOnly(['t', 'data', 'deleted'])
+          && d.t is number
+          && (d.keys().hasAny(['data'])
+            ? d.data is string && d.data.size() < 200000 && !d.keys().hasAny(['deleted'])
+            : d.deleted == true);
+      }
+      allow read, delete: if owner();
+      allow create, update: if owner() && valid();
+    }
+  }
+}

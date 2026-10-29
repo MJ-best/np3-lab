@@ -230,6 +230,19 @@ code,
 .setting-row .segmented {
   margin-bottom: 0;
 }
+.settings .account {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.settings .account .setting-row {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 8px;
+}
+.settings .account .hint {
+  margin: 0 0 8px;
+}
 /* Japanese glyphs (kanji shapes differ from Korean fonts). */
 html[lang="ja"] {
   --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", sans-serif;

@@ -1,9 +1,58 @@
 import { useEffect, useState } from "preact/hooks";
+import { account, accountsEnabled, deleteAccount, lastSynced, signIn, signOutAccount, syncNow, syncStatus } from "../account";
 import { autoBackup, setAutoBackup } from "../cards";
 import { lang, setLang, t, LANGS } from "../i18n";
 import { isAndroid, native, type NativeSettings } from "../native";
 import { CameraSelect } from "./CameraGuide";
 import { Overlay } from "./RecipeDetail";
+
+/** Hosted web version: optional Google account that syncs My recipes, the card list and the camera. */
+function AccountRows() {
+  const me = account.value;
+  const status = syncStatus.value;
+  const time = lastSynced.value ? new Date(lastSynced.value).toLocaleTimeString(lang.value, { hour: "2-digit", minute: "2-digit" }) : "";
+  return (
+    <div class="account">
+      <div class="setting-row">
+        <span>{t("account")}</span>
+        {me ? (
+          <button onClick={() => void signOutAccount()}>{t("signOut")}</button>
+        ) : (
+          <button class="primary" onClick={() => void signIn()}>
+            {t("signInGoogle")}
+          </button>
+        )}
+      </div>
+      {me && (
+        <p class="hint">
+          {me.email}
+          {" · "}
+          {status === "syncing" && t("syncSyncing")}
+          {status === "ok" && t("syncOk", { time })}
+          {status === "error" && (
+            <>
+              {t("syncError")}{" "}
+              <button class="link" onClick={() => void syncNow()}>
+                {t("syncRetry")}
+              </button>
+            </>
+          )}
+        </p>
+      )}
+      <p class="hint">
+        {t("syncHint")}{" "}
+        <a href="privacy.html" target="_blank" rel="noopener">
+          {t("privacyPolicy")}
+        </a>
+      </p>
+      {me && (
+        <button class="danger ghost" onClick={() => confirm(t("deleteAccountConfirm")) && void deleteAccount()}>
+          {t("deleteAccount")}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const [s, setS] = useState<NativeSettings | null>(null);
@@ -49,6 +98,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
           <span>{t("cameraModel")}</span>
           <CameraSelect />
         </div>
+        {accountsEnabled && <AccountRows />}
         {native && (
           <>
             <label class="toggle">
