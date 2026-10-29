@@ -1,4 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
+import { account, accountsEnabled, startAccount } from "./account";
 import { handleAndroidBack } from "./androidBack";
 import { activeCard, startCardSync } from "./cards";
 import { lang, t, type MessageKey } from "./i18n";
@@ -84,6 +85,7 @@ export function App() {
   useEffect(() => {
     document.documentElement.lang = lang.value;
     void loadPhotoIndex();
+    startAccount();
     if (isDesktop) {
       document.documentElement.classList.add("desktop");
       if (isAndroid) document.documentElement.classList.add(native!.platform);
@@ -148,6 +150,11 @@ export function App() {
           ))}
         </nav>
         <div class="topbar-actions">
+          {accountsEnabled && !account.value && (
+            <button class="lang" onClick={() => setSettingsOpen(true)}>
+              {t("signIn")}
+            </button>
+          )}
           <button class="lang" aria-label={t("settingsTitle")} title={t("settingsTitle")} onClick={() => setSettingsOpen(true)}>
             ⚙︎
           </button>

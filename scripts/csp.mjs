@@ -2,22 +2,27 @@ import { createHash } from "node:crypto";
 
 /** Hosts the page may talk to: GitHub and jsDelivr for the community recipes, nothing else. */
 const CONNECT_SRC = ["https://api.github.com", "https://data.jsdelivr.com", "https://cdn.jsdelivr.net", "https://raw.githubusercontent.com", "data:"];
+const WEB_SCRIPTS = ["https://apis.google.com"];
+const WEB_FRAMES = ["'self'", "https://*.firebaseapp.com"];
+const WEB_CONNECT = ["https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://firestore.googleapis.com"];
 
 /**
  * Content Security Policy for the single-file build. Scripts are allowed by hash, so only
  * the bundled code runs (no injected or remote script); network access is limited to the
  * recipe sources; images may only come from the file itself, data: and blob: URLs.
  */
-export function withCsp(html) {
+export function withCsp(html, { web = false } = {}) {
   const hashes = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)]
     .filter((m) => m[1].length > 0)
     .map((m) => `'sha256-${createHash("sha256").update(m[1]).digest("base64")}'`);
   const policy = [
     "default-src 'none'",
-    `script-src ${hashes.join(" ")}`,
+    // The hosted web version also signs in with Google (Firebase Auth) and syncs with Firestore.
+    `script-src ${[...hashes, ...(web ? WEB_SCRIPTS : [])].join(" ")}`,
+    ...(web ? [`frame-src ${WEB_FRAMES.join(" ")}`] : []),
     "style-src 'unsafe-inline'",
     "img-src 'self' data: blob:",
-    `connect-src ${CONNECT_SRC.join(" ")}`,
+    `connect-src ${[...CONNECT_SRC, ...(web ? WEB_CONNECT : [])].join(" ")}`,
     "base-uri 'none'",
     "form-action 'none'",
   ].join("; ");

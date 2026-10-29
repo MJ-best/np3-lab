@@ -7,6 +7,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:web": "VITE_WEB=1 vite build",
+    "deploy:web": "npm run build:web && firebase deploy --only hosting,firestore:rules",
+    "dev:web": "VITE_WEB=1 VITE_FIREBASE_EMULATOR=1 vite --port 5175",
+    "emulators": "firebase emulators:start --only auth,firestore --project demo-np3lab",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -32,6 +36,7 @@
     "@types/node": "^26.6.3",
     "electron": "^44.5.0",
     "electron-builder": "^26.15.3",
+    "firebase": "13.1.0",
     "jszip": "^3.10.2",
     "nikon-flexible-color-picture-control": "1.0.0",
     "preact": "^10.29.8",

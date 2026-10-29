@@ -155,6 +155,20 @@ export function deleteMine(id: string) {
   if (draft.value.editingId === id) draft.value = { ...draft.value, editingId: null, dirty: true };
 }
 
+/** My recipes as they are stored (bytes in base64), for account sync. */
+export const storedMine = () => myRecipes.value.map(toStored);
+
+/**
+ * Take My recipes from account sync. Versions that leave are retired, so a card won't bring them
+ * back; photos stay (a deleted recipe's photos show as photos without a recipe).
+ */
+export function setMine(list: Recipe[]) {
+  const incoming = new Map(list.map((r) => [r.id, JSON.stringify(toStored(r))]));
+  for (const r of myRecipes.value) if (incoming.get(r.id) !== JSON.stringify(toStored(r))) retire(r);
+  myRecipes.value = list;
+  persistMine();
+  if (draft.value.editingId && !incoming.has(draft.value.editingId)) draft.value = { ...draft.value, editingId: null, dirty: true };
+}
 
 export function updateMine(id: string, patch: Partial<Pick<Recipe, "title" | "origin" | "npName" | "raw">>) {
   const r = myRecipes.value.find((x) => x.id === id);

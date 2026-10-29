@@ -3,3 +3,7 @@ dist/
 .DS_Store
 *.log
 release/
+dist-web/
+.firebase/
+firebase-debug.log
+firestore-debug.log
