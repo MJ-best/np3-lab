@@ -29,5 +29,14 @@ if (emulator) {
   connectFirestoreEmulator(db, "127.0.0.1", 8080);
 }
 
-export { deleteUser, onAuthStateChanged, reauthenticateWithPopup, signInWithPopup, signOut } from "firebase/auth";
+export {
+  createUserWithEmailAndPassword,
+  deleteUser,
+  onAuthStateChanged,
+  reauthenticateWithPopup,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 export { collection, doc, getDocs, writeBatch } from "firebase/firestore/lite";

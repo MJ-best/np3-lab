@@ -1,13 +1,13 @@
 import { useEffect, useState } from "preact/hooks";
-import { account, accountsEnabled, deleteAccount, lastSynced, signIn, signOutAccount, syncNow, syncStatus } from "../account";
+import { account, accountsEnabled, deleteAccount, guest, lastSynced, signOutAccount, syncNow, syncStatus } from "../account";
 import { autoBackup, setAutoBackup } from "../cards";
 import { lang, setLang, t, LANGS } from "../i18n";
 import { isAndroid, native, type NativeSettings } from "../native";
 import { CameraSelect } from "./CameraGuide";
 import { Overlay } from "./RecipeDetail";
 
-/** Hosted web version: optional Google account that syncs My recipes, the card list and the camera. */
-function AccountRows() {
+/** Hosted web version: optional account that syncs My recipes, the card list and the camera. */
+function AccountRows({ onClose }: { onClose: () => void }) {
   const me = account.value;
   const status = syncStatus.value;
   const time = lastSynced.value ? new Date(lastSynced.value).toLocaleTimeString(lang.value, { hour: "2-digit", minute: "2-digit" }) : "";
@@ -16,10 +16,23 @@ function AccountRows() {
       <div class="setting-row">
         <span>{t("account")}</span>
         {me ? (
-          <button onClick={() => void signOutAccount()}>{t("signOut")}</button>
+          <button
+            onClick={() => {
+              onClose();
+              void signOutAccount();
+            }}
+          >
+            {t("signOut")}
+          </button>
         ) : (
-          <button class="primary" onClick={() => void signIn()}>
-            {t("signInGoogle")}
+          <button
+            class="primary"
+            onClick={() => {
+              onClose();
+              guest.value = false;
+            }}
+          >
+            {t("signInOrUp")}
           </button>
         )}
       </div>
@@ -46,7 +59,14 @@ function AccountRows() {
         </a>
       </p>
       {me && (
-        <button class="danger ghost" onClick={() => confirm(t("deleteAccountConfirm")) && void deleteAccount()}>
+        <button
+          class="danger ghost"
+          onClick={() => {
+            if (!confirm(t("deleteAccountConfirm"))) return;
+            onClose();
+            void deleteAccount();
+          }}
+        >
           {t("deleteAccount")}
         </button>
       )}
@@ -98,7 +118,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
           <span>{t("cameraModel")}</span>
           <CameraSelect />
         </div>
-        {accountsEnabled && <AccountRows />}
+        {accountsEnabled && <AccountRows onClose={onClose} />}
         {native && (
           <>
             <label class="toggle">
