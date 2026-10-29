@@ -1,7 +1,7 @@
-import { effect, signal } from "@preact/signals";
+import { computed, effect, signal } from "@preact/signals";
 import { recipeFromBackup } from "./backup";
 import { cameraModel, setCameraModel } from "./camera";
-import { t } from "./i18n";
+import { lang, t, type MessageKey } from "./i18n";
 import type { Recipe } from "./np3/recipe";
 import { cart, myRecipes, setMine, showToast, storedMine } from "./state";
 import { readStore, writeStore } from "./storage";
@@ -26,6 +26,14 @@ const firebase = () => (fbPromise ??= loadFirebase!());
 export const account = signal<{ uid: string; email: string | null } | null>(null);
 export const syncStatus = signal<"syncing" | "ok" | "error" | null>(null);
 export const lastSynced = signal<number | null>(null);
+
+/** Set by "use without an account" on the sign-up page; the next visit starts there again. */
+export const guest = signal(false);
+const authChecked = signal(false);
+// Remembered so a signed-in visitor goes straight to the app while Firebase is still loading.
+const wasSignedIn = readStore<boolean>("signedIn") ?? false;
+/** Visitors who aren't signed in start on the sign-up page (with how-to and updates). */
+export const showLanding = computed(() => accountsEnabled && !account.value && !guest.value && (authChecked.value || !wasSignedIn));
 
 const COLLECTIONS = ["recipes", "prefs"];
 
@@ -182,6 +190,8 @@ export function startAccount() {
   void firebase().then(({ auth, onAuthStateChanged }) =>
     onAuthStateChanged(auth, (user) => {
       account.value = user ? { uid: user.uid, email: user.email } : null;
+      authChecked.value = true;
+      writeStore("signedIn", !!user);
       syncStatus.value = null;
       if (user) void syncNow();
     }),
@@ -195,10 +205,27 @@ export function startAccount() {
 }
 
 const quiet = new Set(["auth/popup-closed-by-user", "auth/cancelled-popup-request", "auth/user-cancelled"]);
-function reportAuthError(err: unknown) {
+const AUTH_ERRORS: Record<string, MessageKey> = {
+  "auth/popup-blocked": "signInPopupBlocked",
+  "auth/email-already-in-use": "authEmailInUse",
+  "auth/invalid-email": "authInvalidEmail",
+  "auth/missing-email": "authInvalidEmail",
+  "auth/weak-password": "authWeakPassword",
+  "auth/missing-password": "authWeakPassword",
+  "auth/invalid-credential": "authWrongPassword",
+  "auth/wrong-password": "authWrongPassword",
+  "auth/user-not-found": "authWrongPassword",
+  "auth/too-many-requests": "authTooMany",
+  "auth/network-request-failed": "authOffline",
+};
+/** A sign-in error in words, for the sign-up form and toasts. */
+export function authErrorText(err: unknown) {
   const code = (err as { code?: string })?.code ?? "";
-  if (quiet.has(code)) return;
-  showToast(code === "auth/popup-blocked" ? t("signInPopupBlocked") : t("signInFailed", { msg: code || String(err) }), "error", 8000);
+  return AUTH_ERRORS[code] ? t(AUTH_ERRORS[code]) : t("signInFailed", { msg: code || String(err) });
+}
+function reportAuthError(err: unknown) {
+  if (quiet.has((err as { code?: string })?.code ?? "")) return;
+  showToast(authErrorText(err), "error", 8000);
 }
 
 export async function signIn() {
@@ -208,6 +235,23 @@ export async function signIn() {
   } catch (err) {
     reportAuthError(err);
   }
+}
+
+// The email forms show their own errors, so these throw.
+export async function signUpEmail(email: string, password: string) {
+  const { auth, createUserWithEmailAndPassword } = await firebase();
+  await createUserWithEmailAndPassword(auth, email, password);
+}
+
+export async function signInEmail(email: string, password: string) {
+  const { auth, signInWithEmailAndPassword } = await firebase();
+  await signInWithEmailAndPassword(auth, email, password);
+}
+
+export async function resetPassword(email: string) {
+  const { auth, sendPasswordResetEmail } = await firebase();
+  auth.languageCode = lang.value;
+  await sendPasswordResetEmail(auth, email);
 }
 
 /** Sign out; this device keeps its recipes. */
@@ -225,6 +269,14 @@ export async function deleteAccount() {
   if (!user) return;
   clearTimeout(sendTimer);
   outbox.clear();
+  // Firebase deletes only an account signed in within the last few minutes. Google users confirm
+  // in a popup below; email users sign in again first, before anything is deleted.
+  const viaGoogle = user.providerData.some((p) => p.providerId === "google.com");
+  if (!viaGoogle && Date.now() - Date.parse(user.metadata.lastSignInTime ?? "") > 4 * 60_000) {
+    showToast(t("deleteAccountRelogin"), "error", 8000);
+    await fb.signOut(fb.auth);
+    return;
+  }
   try {
     for (const col of COLLECTIONS) {
       const docs = (await fb.getDocs(fb.collection(fb.db, `users/${user.uid}/${col}`))).docs;

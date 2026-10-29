@@ -23,9 +23,9 @@
 
 <p><strong>로그인하지 않으면</strong> 레시피, 사진, 설정은 모두 이 브라우저에만 저장되고 NP3 Lab 서버로 보내지 않습니다. 커뮤니티 레시피를 받을 때는 브라우저가 GitHub와 jsDelivr에서 직접 받습니다.</p>
 
-<p><strong>Google로 로그인하면</strong> 기기 사이 동기화를 위해 다음을 Google Firebase(Authentication, Cloud Firestore, 서울 리전)에 저장합니다.</p>
+<p><strong>이메일이나 Google 계정으로 가입·로그인하면</strong> 기기 사이 동기화를 위해 다음을 Google Firebase(Authentication, Cloud Firestore, 서울 리전)에 저장합니다.</p>
 <ul>
-  <li>Google 계정의 이메일 주소와 고유 ID</li>
+  <li>로그인에 쓴 이메일 주소와 고유 ID. 이메일로 가입했다면 비밀번호는 Firebase Authentication이 해시로만 보관하고, NP3 Lab은 비밀번호를 볼 수 없습니다.</li>
   <li>내 레시피: 이름, 설정값, Picture Control 파일, 출처 링크와 작성자</li>
   <li>카드에 넣을 레시피 목록과 고른 카메라 기종</li>
 </ul>
@@ -36,14 +36,14 @@
 
 <h2 id="en">Privacy policy (English)</h2>
 <p><strong>Without signing in,</strong> your recipes, photos and settings stay in this browser and are never sent to NP3 Lab. Community recipes are downloaded by your browser directly from GitHub and jsDelivr.</p>
-<p><strong>When you sign in with Google,</strong> the following is stored with Google Firebase (Authentication and Cloud Firestore, Seoul region) so it can sync between your devices: your Google account's email address and unique ID; My recipes (names, settings, Picture Control files, source links and authors); the list of recipes for the card and the camera model you picked.</p>
+<p><strong>When you sign up or sign in with email or Google,</strong> the following is stored with Google Firebase (Authentication and Cloud Firestore, Seoul region) so it can sync between your devices: the email address you sign in with and a unique ID (with email sign-up, Firebase Authentication keeps only a hash of your password, and NP3 Lab never sees it); My recipes (names, settings, Picture Control files, source links and authors); the list of recipes for the card and the camera model you picked.</p>
 <p><strong>Not stored:</strong> photos (they always stay on the device), community recipe files, location. No ads or analytics, and nothing is sold or shared.</p>
 <p><strong>Deleting:</strong> Settings › Account › <strong>Delete account</strong> deletes the account and its data at once. Recipes and photos on the device stay.</p>
 <p><strong>Contact:</strong> <a href="https://github.com/MJ-best/np3-lab/issues">github.com/MJ-best/np3-lab/issues</a></p>
 
 <h2 id="ja">プライバシーポリシー（日本語）</h2>
 <p><strong>ログインしない場合、</strong>レシピ・写真・設定はすべてこのブラウザにだけ保存され、NP3 Labのサーバーには送られません。コミュニティレシピは、ブラウザがGitHubとjsDelivrから直接取得します。</p>
-<p><strong>Googleでログインすると、</strong>端末間の同期のために次の情報をGoogle Firebase（Authentication、Cloud Firestore、ソウルリージョン）に保存します：Googleアカウントのメールアドレスと固有ID、マイレシピ（名前・設定値・ピクチャーコントロールのファイル・出典リンクと作成者）、カードに入れるレシピのリストと選んだカメラの機種。</p>
+<p><strong>メールアドレスかGoogleアカウントで登録・ログインすると、</strong>端末間の同期のために次の情報をGoogle Firebase（Authentication、Cloud Firestore、ソウルリージョン）に保存します：ログインに使ったメールアドレスと固有ID（メールで登録した場合、パスワードはFirebase Authenticationがハッシュでのみ保管し、NP3 Labが見ることはありません）、マイレシピ（名前・設定値・ピクチャーコントロールのファイル・出典リンクと作成者）、カードに入れるレシピのリストと選んだカメラの機種。</p>
 <p><strong>保存しないもの:</strong> 写真（常に端末にだけ残ります）、コミュニティレシピのファイル、位置情報。広告や分析ツールは使わず、情報を販売・提供することはありません。</p>
 <p><strong>削除:</strong> 設定 › アカウント › <strong>アカウントを削除</strong>で、アカウントと保存されたデータがすぐに削除されます。端末のレシピと写真は残ります。</p>
 <p><strong>お問い合わせ:</strong> <a href="https://github.com/MJ-best/np3-lab/issues">github.com/MJ-best/np3-lab/issues</a></p>
