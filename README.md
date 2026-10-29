@@ -4,7 +4,7 @@
 
 > ⚠️ **비공식 서드파티 도구입니다.** Nikon Corporation과 관련이 없고 Nikon의 보증이나 후원을 받지 않았습니다. Nikon, Nikon Z, Zf, Z8, Z9, Picture Control은 Nikon Corporation의 상표입니다. 자세한 내용은 [NOTICE.md](NOTICE.md)를 보세요.
 
-[English](#english) · [日本語](#日本語) · [안드로이드판](#안드로이드판) · [다운로드 (Releases)](https://github.com/MJ-best/np3-lab/releases) · [출처와 라이선스](NOTICE.md)
+[English](#english) · [日本語](#日本語) · [웹판 np3-lab.web.app](https://np3-lab.web.app) · [안드로이드판](#안드로이드판) · [다운로드 (Releases)](https://github.com/MJ-best/np3-lab/releases) · [출처와 라이선스](NOTICE.md)
 
 ![카드를 꽂으면 카드 속 레시피가 보입니다](docs/screenshots/card.jpg)
 
@@ -82,7 +82,9 @@ xattr -cr "/Applications/NP3 Lab.app"
 
 ## 브라우저판
 
-설치 없이 [Releases](https://github.com/MJ-best/np3-lab/releases)의 `NP3-Lab.html`을 Chrome이나 Edge로 열어도 대부분의 기능을 쓸 수 있습니다. Windows에서도 됩니다. 카드 자동 인식은 안 되고, 레시피를 담아 **SD카드에 바로 저장**(폴더 선택)하거나 **ZIP**으로 받습니다.
+설치 없이 **[np3-lab.web.app](https://np3-lab.web.app)**에서 바로 쓰거나, [Releases](https://github.com/MJ-best/np3-lab/releases)의 `NP3-Lab.html`을 Chrome이나 Edge로 열어도 대부분의 기능을 쓸 수 있습니다. Windows에서도 됩니다. 카드 자동 인식은 안 되고, 레시피를 담아 **SD카드에 바로 저장**(폴더 선택)하거나 **ZIP**으로 받습니다.
+
+웹판에서는 원하면 **Google로 로그인**할 수 있습니다. 로그인하면 내 레시피, 카드에 넣을 목록, 카메라 기종이 다른 브라우저와 기기에서도 똑같이 보입니다. 로그인하지 않아도 모든 기능을 쓸 수 있고, 사진은 기기에만 남습니다. 무엇을 저장하는지는 [개인정보 처리방침](https://np3-lab.web.app/privacy.html)을 보세요.
 
 ## 안드로이드판
 
@@ -155,6 +157,7 @@ npm run dist:mac   # release/에 설치용 DMG 생성
 
 ```bash
 npm run build      # dist/NP3-Lab.html 브라우저판
+npm run deploy:web # dist-web/ 웹판을 Firebase Hosting(np3-lab.web.app)에 배포. 로컬 시험: npm run emulators + npm run dev:web
 ```
 
 ```bash
@@ -192,6 +195,8 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 
 **Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repositories have no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).
 
+**Web version:** use it at **[np3-lab.web.app](https://np3-lab.web.app)** with nothing to install. Optionally sign in with Google to see the same My recipes, card list and camera model in every browser; everything works without signing in, and photos stay on the device ([privacy policy](https://np3-lab.web.app/privacy.html)).
+
 **Android (experimental):** the same card-first app on Android 7.0+ phones and tablets, with a USB OTG card reader. Tap **Choose SD card**, pick the card's `NIKON` folder (Android doesn't allow choosing the card's top folder) and allow access; after that the card is read whenever it's plugged in. Screenshots: [안드로이드판](#안드로이드판).
 
 **Install:** download the DMG from [Releases](https://github.com/MJ-best/np3-lab/releases) and drag the app to Applications. It isn't notarized, so first check the download against the release's `SHA256SUMS.txt` (`shasum -a 256 -c SHA256SUMS.txt --ignore-missing` should print `OK`), then right-click → Open the first time, or run `xattr -cr "/Applications/NP3 Lab.app"`. See [SECURITY.md](SECURITY.md).
@@ -220,6 +225,8 @@ Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, ref
 - **自分の写真でプレビュー:** サンプルの代わりに自分の写真でもレシピを確認できます。名前の変更・削除ができ、アプリを閉じても残ります。
 - **旧機種（Z5、Z6、Z6II、Z7、Z7II、Z50、Z fc、Z30）:** 設定でカメラを選ぶと、フレキシブルカラーのレシピを通常のピクチャーコントロール（`.NCP`）に変換してカードに入れます。トーン・彩度・シャープネスは引き継ぎ、カラーブレンダー・カラーグレーディング・明瞭度は省かれます。プレビューも変換後の見た目で表示します。
 - エディター、ビフォー/アフタープレビュー、テキスト（日本語・韓国語・英語の項目名）からの取り込み、機種別のカメラでの登録手順。
+
+**ウェブ版:** **[np3-lab.web.app](https://np3-lab.web.app)** でインストールなしで使えます。Googleでログインすると、マイレシピ・カードに入れるリスト・カメラの機種がほかのブラウザでも同じように表示されます（任意。写真は端末にだけ残ります）。
 
 **インストール:** [Releases](https://github.com/MJ-best/np3-lab/releases)からDMGをダウンロードし、アプリを「アプリケーション」フォルダにドラッグします。公証を受けていないため、まずリリースの `SHA256SUMS.txt` で `shasum -a 256 -c SHA256SUMS.txt --ignore-missing` を実行し、`OK` と表示されることを確認してください。初回は右クリック →［開く］、または `xattr -cr "/Applications/NP3 Lab.app"` を実行してください。詳しくは[SECURITY.md](SECURITY.md)をご覧ください。
 

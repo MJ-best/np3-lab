@@ -15,8 +15,8 @@ const projectId = emulator ? "demo-np3lab" : "np3-lab";
 const ownDomain = [`${projectId}.web.app`, `${projectId}.firebaseapp.com`].includes(location.hostname);
 
 const app = initializeApp({
-  apiKey: emulator ? "demo-key" : "",
-  appId: emulator ? "demo-app" : "",
+  apiKey: emulator ? "demo-key" : "AIzaSyBqHk0Xae484O9YGnmpTT-fmakjQL7UBV4",
+  appId: emulator ? "demo-app" : "1:808573237131:web:6088f1095187207887a18e",
   projectId,
   authDomain: ownDomain ? location.hostname : `${projectId}.firebaseapp.com`,
 });
