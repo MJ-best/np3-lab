@@ -26,7 +26,8 @@
     "build:android": "CAP_BUILD=1 vite build && cap sync android",
     "apk": "npm run build:android && cd android && ./gradlew assembleDebug",
     "apk:release": "npm run build:android && cd android && ./gradlew assembleRelease",
-    "pages": "node scripts/build-pro-pages.mjs"
+    "pages": "node scripts/build-pro-pages.mjs",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-np3lab \"vitest run tests/rules.test.ts\""
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
@@ -35,6 +36,7 @@
     "@capacitor/cli": "^8.5.2",
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@preact/preset-vite": "^2.10.6",
     "@preact/signals": "^2.11.2",
     "@tauri-apps/api": "^2.12.4",
@@ -43,6 +45,7 @@
     "electron": "^44.5.0",
     "electron-builder": "^26.15.3",
     "firebase": "13.1.0",
+    "firebase-tools": "^15.35.0",
     "jszip": "^3.10.2",
     "nikon-flexible-color-picture-control": "1.0.0",
     "preact": "^10.29.8",

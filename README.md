@@ -156,6 +156,10 @@ npm test           # 단위 테스트
 ```
 
 ```bash
+npm run test:rules # Firestore 보안 규칙 시험 (에뮬레이터, JDK 21 필요)
+```
+
+```bash
 npm run dist:mac   # release/에 설치용 DMG 생성
 ```
 
