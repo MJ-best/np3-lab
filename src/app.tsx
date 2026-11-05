@@ -1,5 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { account, accountsEnabled, guest, showLanding, startAccount } from "./account";
+import { watchPro } from "./pro";
+import { openSharedFromUrl } from "./share";
 import { handleAndroidBack } from "./androidBack";
 import { activeCard, startCardSync } from "./cards";
 import { lang, t, type MessageKey } from "./i18n";
@@ -17,6 +19,7 @@ import { ImportDialog, np3FromFiles } from "./ui/ImportDialog";
 import { Landing } from "./ui/Landing";
 import { Logo } from "./ui/Logo";
 import { PhotoGallery } from "./ui/PhotoGallery";
+import { ProDialog } from "./ui/ProDialog";
 import { RecipeDetail } from "./ui/RecipeDetail";
 import { SettingsDialog } from "./ui/SettingsDialog";
 import { TextImportDialog } from "./ui/TextImportDialog";
@@ -88,6 +91,9 @@ export function App() {
     document.documentElement.lang = lang.value;
     void loadPhotoIndex();
     startAccount();
+    // Hosted web version: Pro status, and recipes shared by link (?share=…).
+    watchPro();
+    void openSharedFromUrl();
     if (isDesktop) {
       document.documentElement.classList.add("desktop");
       if (isAndroid) document.documentElement.classList.add(native!.platform);
@@ -166,6 +172,7 @@ export function App() {
       </footer>
 
       <RecipeDetail />
+      {accountsEnabled && <ProDialog />}
       <TextImportDialog />
       <ImportDialog />
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}

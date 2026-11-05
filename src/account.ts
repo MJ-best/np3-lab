@@ -21,7 +21,8 @@ type Firebase = typeof import("./firebase");
 // A constant false here lets the other builds leave Firebase out entirely.
 const loadFirebase = accountsEnabled ? () => import("./firebase") : null;
 let fbPromise: Promise<Firebase> | null = null;
-const firebase = () => (fbPromise ??= loadFirebase!());
+/** The Firebase module, loaded on first use (hosted web version only). */
+export const firebase = () => (fbPromise ??= loadFirebase!());
 
 export const account = signal<{ uid: string; email: string | null } | null>(null);
 export const syncStatus = signal<"syncing" | "ok" | "error" | null>(null);
@@ -278,6 +279,9 @@ export async function deleteAccount() {
     return;
   }
   try {
+    // Recipes shared by link (Pro) go with the account.
+    const shares = (await fb.getDocs(fb.query(fb.collection(fb.db, "shares"), fb.where("owner", "==", user.uid)))).docs;
+    for (const d of shares) await fb.deleteDoc(d.ref);
     for (const col of COLLECTIONS) {
       const docs = (await fb.getDocs(fb.collection(fb.db, `users/${user.uid}/${col}`))).docs;
       for (let i = 0; i < docs.length; i += 400) {

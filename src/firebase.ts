@@ -6,6 +6,7 @@
 import { initializeApp } from "firebase/app";
 import { GoogleAuthProvider, connectAuthEmulator, getAuth } from "firebase/auth";
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore/lite";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
 const emulator = import.meta.env.VITE_FIREBASE_EMULATOR === "1";
 const projectId = emulator ? "demo-np3lab" : "np3-lab";
@@ -21,12 +22,15 @@ const app = initializeApp({
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+/** Pro checkout and subscription management (functions/index.js), next to Firestore in Seoul. */
+export const functions = getFunctions(app, "asia-northeast3");
 export const google = new GoogleAuthProvider();
 google.setCustomParameters({ prompt: "select_account" });
 
 if (emulator) {
   connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
   connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 }
 
 export {
@@ -39,4 +43,5 @@ export {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-export { collection, doc, getDocs, writeBatch } from "firebase/firestore/lite";
+export { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where, writeBatch } from "firebase/firestore/lite";
+export { httpsCallable } from "firebase/functions";

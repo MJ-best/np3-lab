@@ -9,3 +9,5 @@ firebase-debug.log
 firestore-debug.log
 target/
 src-tauri/target/
+functions/.secret.local
+functions/.runtimeconfig.json

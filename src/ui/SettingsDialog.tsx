@@ -3,8 +3,27 @@ import { account, accountsEnabled, deleteAccount, guest, lastSynced, signOutAcco
 import { autoBackup, setAutoBackup } from "../cards";
 import { lang, setLang, t, LANGS } from "../i18n";
 import { isAndroid, native, type NativeSettings } from "../native";
+import { entitlement, isPro, manageSubscription, proPageUrl } from "../pro";
 import { CameraSelect } from "./CameraGuide";
 import { Overlay } from "./RecipeDetail";
+
+/** Pro status: the paid-until date and subscription management, or where to learn about Pro. */
+function ProRow() {
+  const e = entitlement.value;
+  const until = e?.proUntil ? new Date(e.proUntil).toLocaleDateString(lang.value) : "";
+  return (
+    <div class="setting-row">
+      <span>{isPro.value ? t("proActiveUntil", { date: until }) : t("proInactive")}</span>
+      {isPro.value || e?.status ? (
+        <button onClick={() => void manageSubscription()}>{t("proManage")}</button>
+      ) : (
+        <a class="button" href={proPageUrl()} target="_blank" rel="noopener">
+          {t("proSeePlans")}
+        </a>
+      )}
+    </div>
+  );
+}
 
 /** Hosted web version: optional account that syncs My recipes, the card list and the camera. */
 function AccountRows({ onClose }: { onClose: () => void }) {
@@ -52,6 +71,7 @@ function AccountRows({ onClose }: { onClose: () => void }) {
           )}
         </p>
       )}
+      {me && <ProRow />}
       <p class="hint">
         {t("syncHint")}{" "}
         <a href="privacy.html" target="_blank" rel="noopener">

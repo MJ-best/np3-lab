@@ -14,7 +14,13 @@ const CONNECT_SRC = [
 ];
 const WEB_SCRIPTS = ["'self'", "https://apis.google.com"];
 const WEB_FRAMES = ["'self'", "https://*.firebaseapp.com"];
-const WEB_CONNECT = ["https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://firestore.googleapis.com"];
+const WEB_CONNECT = [
+  "https://identitytoolkit.googleapis.com",
+  "https://securetoken.googleapis.com",
+  "https://firestore.googleapis.com",
+  // Pro: checkout and subscription management (functions/index.js, Seoul region).
+  "https://asia-northeast3-np3-lab.cloudfunctions.net",
+];
 
 /**
  * Content Security Policy for the single-file build. Scripts are allowed by hash, so only

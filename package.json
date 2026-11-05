@@ -25,7 +25,8 @@
     "build:ios": "CAP_BUILD=1 vite build && cap sync ios",
     "build:android": "CAP_BUILD=1 vite build && cap sync android",
     "apk": "npm run build:android && cd android && ./gradlew assembleDebug",
-    "apk:release": "npm run build:android && cd android && ./gradlew assembleRelease"
+    "apk:release": "npm run build:android && cd android && ./gradlew assembleRelease",
+    "pages": "node scripts/build-pro-pages.mjs"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

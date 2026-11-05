@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self'" />
+<title>NP3 Lab Pro · Share your recipes with one link</title>
+<meta name="description" content="Share the Nikon Flexible Color recipes you make with a single link. Recipients add them without installing anything or signing up. $12 a year." />
+<meta property="og:title" content="NP3 Lab Pro · Share your recipes with one link" />
+<meta property="og:description" content="Share the Nikon Flexible Color recipes you make with a single link. Recipients add them without installing anything or signing up. $12 a year." />
+<meta property="og:image" content="https://np3-lab.web.app/pro/img/02-recipe-detail.jpg" />
+<link rel="icon" href="img/icon.png" />
+<link rel="alternate" hreflang="ko" href="https://np3-lab.web.app/pro/" />
+<link rel="alternate" hreflang="en" href="https://np3-lab.web.app/pro/en.html" />
+<link rel="alternate" hreflang="ja" href="https://np3-lab.web.app/pro/ja.html" />
+<style>
+  :root { --bg: #000; --panel: #111; --panel-2: #1a1a1a; --line: #2a2a2a; --text: #f3f3f3; --muted: #a3a3a3; --accent: #ffe100; --ink: #111; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Hiragino Sans", "Malgun Gothic", "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  header { display: flex; align-items: center; gap: 12px; padding: 18px 0; }
+  header .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; }
+  header img { width: 32px; height: 32px; border-radius: 8px; }
+  header nav { margin-left: auto; display: flex; gap: 14px; align-items: center; font-size: 14px; color: var(--muted); }
+  header nav a { text-decoration: none; }
+  header nav a[aria-current] { color: var(--text); }
+  header .open { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; color: var(--text); }
+  .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; padding: 56px 0 72px; }
+  .kicker { color: var(--accent); font-weight: 700; letter-spacing: 0.02em; margin: 0 0 12px; }
+  h1 { font-size: clamp(34px, 5vw, 56px); line-height: 1.12; margin: 0 0 20px; letter-spacing: -0.02em; }
+  .lead { color: var(--muted); font-size: 18px; margin: 0 0 28px; max-width: 34em; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn { display: inline-block; padding: 14px 26px; border-radius: 999px; font-weight: 700; text-decoration: none; }
+  .btn.primary { background: var(--accent); color: var(--ink); }
+  .btn.ghost { border: 1px solid var(--line); }
+  .note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+  .link-card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 18px; box-shadow: 0 30px 80px rgba(255, 225, 0, 0.08); }
+  .bubble { background: var(--panel-2); border-radius: 16px; padding: 12px 14px; font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .preview { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; background: #0b0b0b; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .preview img { width: 96px; height: 120px; object-fit: cover; object-position: center 35%; display: block; }
+  .preview b { display: block; font-size: 16px; }
+  .preview small { color: var(--muted); font-size: 13px; }
+  .preview .url { color: var(--accent); font-size: 12px; margin-top: 6px; display: block; }
+  section { padding: 64px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: clamp(24px, 3vw, 32px); margin: 0 0 28px; letter-spacing: -0.01em; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .step { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+  .step .n { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--ink); font-weight: 800; font-size: 14px; }
+  .step h3 { margin: 14px 0 6px; font-size: 18px; }
+  .step p { margin: 0; color: var(--muted); font-size: 15px; }
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .plan { border: 1px solid var(--line); border-radius: 18px; padding: 26px; background: var(--panel); }
+  .plan.pro { border-color: var(--accent); }
+  .plan h3 { margin: 0 0 4px; font-size: 22px; }
+  .plan .sub { color: var(--muted); margin: 0 0 14px; font-size: 14px; }
+  .plan ul { margin: 0; padding-left: 20px; }
+  .plan li { margin: 6px 0; }
+  .plan.pro .btn { margin-top: 18px; }
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .shots figure { margin: 0; }
+  .shots img { width: 100%; border-radius: 22px; border: 1px solid var(--line); display: block; }
+  .shots figcaption { color: var(--muted); text-align: center; margin-top: 10px; font-size: 14px; }
+  details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  summary { cursor: pointer; font-weight: 600; font-size: 17px; }
+  details p { color: var(--muted); margin: 10px 0 0; }
+  footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 13px; }
+  footer .links { display: flex; gap: 16px; margin-bottom: 14px; }
+  footer .biz { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 10px; }
+  footer b { color: var(--text); font-weight: 600; }
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; padding: 32px 0 48px; gap: 32px; }
+    .steps, .plans { grid-template-columns: 1fr; }
+    .shots { grid-template-columns: 1fr 1fr; }
+    .shots figure:last-child { display: none; }
+    header { gap: 8px; }
+    header nav { gap: 10px; font-size: 13px; }
+    header .brand span { display: none; }
+    header .open { padding: 5px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="../?lang=en"><img src="img/icon.png" alt="NP3 Lab" /><span>NP3 Lab</span></a>
+    <nav>
+        <a class="lang" href="index.html">한국어</a>
+        <a class="lang" href="en.html" aria-current="page">English</a>
+        <a class="lang" href="ja.html">日本語</a>
+        <a class="open" href="../?lang=en">Open the app</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div>
+      <p class="kicker">NP3 Lab Pro</p>
+      <h1>The recipes you make,<br />shared with one link.</h1>
+      <p class="lead">Send the Flexible Color recipe you worked on to a friend or your followers. They open the link, preview the recipe and add it right away.</p>
+      <div class="ctas">
+        <a class="btn primary" href="../?upgrade=1&lang=en">Get Pro</a>
+        <a class="btn ghost" href="../?lang=en">Use it free</a>
+      </div>
+      <p class="note">$12 a year · cancel anytime · full refund within 7 days</p>
+    </div>
+    <div class="link-card" aria-hidden="true">
+      <div class="bubble">🔗 np3-lab.web.app/?share=…</div>
+      <div class="preview">
+        <img src="img/02-recipe-detail.jpg" alt="" />
+        <div><b>Golden Hour Street</b><small>NP3 Lab recipe · preview, then add it</small><span class="url">np3-lab.web.app</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>How sharing works</h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><h3>Make a recipe</h3><p>Adjust tone, the color blender and grading in the editor, or pick one of your recipes from NX Studio or a card.</p></div>
+      <div class="step"><span class="n">2</span><h3>Tap Share link</h3><p>On the recipe, tap 🔗 Share link and the address is copied. Paste it into any chat or post.</p></div>
+      <div class="step"><span class="n">3</span><h3>They just open it</h3><p>The link opens a preview of the recipe with an Import button. No app to install, no account needed.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Free and Pro</h2>
+    <div class="plans">
+      <div class="plan">
+        <h3>Free</h3>
+        <p class="sub">Everything you use today</p>
+        <ul><li>SD card recipe manager (Mac, Android, iOS, web)</li><li>Preview 260+ community recipes</li><li>Editor and one-tap looks</li><li>Photo gallery and frames per recipe</li><li>Account sync</li></ul>
+        
+      </div>
+      <div class="plan pro">
+        <h3>Pro · $12/year</h3>
+        <p class="sub">Everything in Free, plus</p>
+        <ul><li>Share links for your own recipes</li><li>Recipients add them with no app or account</li><li>Pro features to come</li></ul>
+        <a class="btn primary" href="../?upgrade=1&lang=en">Get Pro</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What NP3 Lab does</h2>
+    <div class="shots">
+      <figure><img src="img/01-recipes.jpg" alt="Pick recipes" loading="lazy" /><figcaption>Pick recipes</figcaption></figure>
+      <figure><img src="img/02-recipe-detail.jpg" alt="Preview on real photos" loading="lazy" /><figcaption>Preview on real photos</figcaption></figure>
+      <figure><img src="img/03-sd-card.jpg" alt="Put them on the SD card" loading="lazy" /><figcaption>Put them on the SD card</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Questions</h2>
+    <details><summary>How do I pay?</summary><p>Sign in to the web app and press Get Pro to go to the Lemon Squeezy checkout. Pay by card, Apple Pay and more; the receipt comes by email.</p></details>
+    <details><summary>Can I cancel or get a refund?</summary><p>Cancel anytime under Settings › Account › Manage subscription; Pro stays on until the end of the paid period. Ask within 7 days of paying for a full refund.</p></details>
+    <details><summary>What happens to my links after Pro ends?</summary><p>Links you've made keep working. New links can be made while Pro is active.</p></details>
+    <details><summary>Can I share community recipes?</summary><p>No. Community recipes such as those by Nikon creators belong to their creators, so you can share only recipes you made or imported yourself.</p></details>
+    <details><summary>Will free features shrink?</summary><p>No. Everything so far stays free, with no ads. Pro is for new features.</p></details>
+  </section>
+
+  <footer>
+    <div class="links"><a href="../terms.html#en">Terms &amp; refunds</a><a href="../privacy.html#en">Privacy</a></div>
+    <div class="biz">
+        <span><b>Business</b> 은총</span>
+        <span><b>Owner</b> 김경아</span>
+        <span><b>Business reg. no.</b> 684-96-01187</span>
+        <span><b>Address</b> 경기도 의정부시 둔야로61번길 28-4, 1층 101호(가능동)</span>
+        <span><b>Contact</b> <a href="https://github.com/MJ-best/np3-lab/issues">GitHub Issues</a></span>
+    </div>
+    <p>Payments: Lemon Squeezy (merchant of record, issues receipts)</p>
+    <p>NP3 Lab is an unofficial tool, not affiliated with Nikon Corporation. Nikon is a trademark of Nikon Corporation.</p>
+  </footer>
+</div>
+</body>
+</html>

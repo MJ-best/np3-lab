@@ -174,6 +174,20 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 - 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `android/`·`src/androidBridge.ts`(Android: 저장소 접근 프레임워크로 카드 폴더 읽기·쓰기), `ios/`(iPhone·iPad: `SafFoldersPlugin.swift`로 같은 카드 기능), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기·증분 업데이트), `src/data/recipeNotes.ts`(레시피 설명), `src/look.ts`(수치로 컨셉 분석), `src/moods.ts`(원하는 느낌 버튼), `src/frame.ts`·`src/exif.ts`(프레임·촬영 정보), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
 - 버그 제보와 PR 환영합니다. Windows 지원(꺼내기, 안내 문구)은 도움이 필요한 부분입니다.
 
+### Pro (유료: 내 레시피 공유 링크)
+
+웹판에서 연 $12 구독으로 내 레시피 공유 링크를 만들 수 있습니다. 판매 페이지는 [np3-lab.web.app/pro/](https://np3-lab.web.app/pro/)이고, 결제는 판매 대행사(Merchant of Record)인 Lemon Squeezy가 처리합니다.
+
+- 판매 페이지와 약관: `scripts/build-pro-pages.mjs`의 문구·사업자 정보를 고친 뒤 `npm run pages`로 `web/pro/`·`web/terms.html`을 다시 만듭니다.
+- 앱: `src/pro.ts`(Pro 상태·결제 시작·구독 관리), `src/share.ts`(공유 링크 만들기·열기), `src/ui/ProDialog.tsx`.
+- 서버: `functions/`(Cloud Functions, 서울 리전). `createCheckout`은 결제 화면을 만들고, `lemonWebhook`은 서명을 확인한 뒤 `entitlements/<uid>`에 Pro 기간을 기록합니다. `manageSubscription`은 고객 포털을 엽니다. 권한은 `firestore.rules`를 보세요.
+- 처음 배포할 때 (Firebase **Blaze 요금제** 필요):
+  1. Lemon Squeezy에서 스토어와 연 $12 구독 상품을 만들고, Store ID와 Variant ID를 확인합니다.
+  2. `firebase functions:secrets:set LEMON_API_KEY`와 `firebase functions:secrets:set LEMON_WEBHOOK_SECRET`을 실행해 키를 입력합니다. 키는 저장소에 넣지 마세요.
+  3. `cd functions && npm install && cd ..` 후 `firebase deploy --only functions,firestore:rules,hosting`을 실행합니다. 처음엔 Store ID와 Variant ID를 물어봅니다.
+  4. Lemon Squeezy › Settings › Webhooks에 `https://asia-northeast3-np3-lab.cloudfunctions.net/lemonWebhook`을 등록하고, `subscription_*` 이벤트를 고른 뒤 2번과 같은 서명 비밀값을 넣습니다.
+  5. 먼저 Lemon Squeezy 테스트 모드로 결제·해지·환불을 시험한 뒤 실제 판매로 전환하세요.
+
 ## 라이선스
 
 코드는 [MIT](LICENSE)입니다. 사용한 오픈소스와 참고 자료, 상표 고지는 [NOTICE.md](NOTICE.md)에 정리했습니다.

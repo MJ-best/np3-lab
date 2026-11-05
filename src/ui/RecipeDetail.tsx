@@ -42,6 +42,7 @@ import { CardButton } from "./CardButton";
 import { RecipePhotos } from "./RecipePhotos";
 import { photosByRecipe } from "../photos";
 import { SceneChips } from "./SceneChips";
+import { canShare, shareBusy, shareRecipe } from "../share";
 import { formatValue } from "./Slider";
 
 const RANGE_KEYS: Record<string, MessageKey> = { shadows: "rangeShadows", midTone: "rangeMidTone", highlights: "rangeHighlights" };
@@ -326,6 +327,11 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
             <button onClick={() => downloadBytes(outBytes, `${fileBaseFor(recipe)}${pcExt(outBytes)}`)}>{t("downloadFile", { ext: pcExt(outBytes).slice(1) })}</button>
           )}
           {recipe.params && <button onClick={() => copyText(formatRecipeText(recipe.npName, recipe.params!))}>{t("copyText")}</button>}
+          {canShare(recipe) && (
+            <button disabled={shareBusy.value} onClick={() => void shareRecipe(recipe)}>
+              🔗 {shareBusy.value ? "…" : t("shareLink")} <span class="pro-tag">Pro</span>
+            </button>
+          )}
           {recipe.source !== "builtin" && inLibrary && (
             <button
               class="danger ghost"
