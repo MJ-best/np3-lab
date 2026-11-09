@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "NP3 Lab",
         "width": 1280,
         "height": 860,
@@ -43,9 +44,6 @@
     ],
     "category": "Photography",
     "macOS": {
-      "frameworks": [
-        "DiskArbitration"
-      ],
       "minimumSystemVersion": "12.0"
     }
   }
