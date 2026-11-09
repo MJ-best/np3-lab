@@ -1,7 +1,17 @@
 import { createHash } from "node:crypto";
 
-/** Hosts the page may talk to: GitHub and jsDelivr for the community recipes, nothing else. */
-const CONNECT_SRC = ["https://api.github.com", "https://data.jsdelivr.com", "https://cdn.jsdelivr.net", "https://raw.githubusercontent.com", "data:"];
+/** Hosts the page may talk to: GitHub and jsDelivr for the community recipes, plus Tauri IPC origins. */
+const CONNECT_SRC = [
+  "https://api.github.com",
+  "https://data.jsdelivr.com",
+  "https://cdn.jsdelivr.net",
+  "https://raw.githubusercontent.com",
+  "data:",
+  "ipc:",
+  "tauri:",
+  "https://tauri.localhost",
+  "http://tauri.localhost",
+];
 const WEB_SCRIPTS = ["'self'", "https://apis.google.com"];
 const WEB_FRAMES = ["'self'", "https://*.firebaseapp.com"];
 const WEB_CONNECT = ["https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://firestore.googleapis.com"];

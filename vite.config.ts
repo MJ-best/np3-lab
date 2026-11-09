@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import preact from "@preact/preset-vite";
 import { defineConfig, type Plugin } from "vite";
@@ -10,7 +10,7 @@ const OUTPUT_NAME = "NP3-Lab.html";
 /** The hosted web version (npm run build:web → dist-web/, served by Firebase Hosting). */
 const WEB = process.env.VITE_WEB === "1";
 
-/** Add the CSP, then rename dist/index.html so the single-file build has a self-explanatory name. */
+/** Add the CSP, then copy dist/index.html to NP3-Lab.html while preserving index.html for Tauri. */
 function renameOutput(): Plugin {
   return {
     name: "np3-lab:rename-output",
@@ -26,8 +26,8 @@ function renameOutput(): Plugin {
       const from = resolve(import.meta.dirname, "dist/index.html");
       if (!existsSync(from)) return;
       writeFileSync(from, withCsp(readFileSync(from, "utf8")));
-      renameSync(from, resolve(import.meta.dirname, "dist", OUTPUT_NAME));
-      console.log(`\n→ dist/${OUTPUT_NAME}  (open this file in Chrome / Safari)\n`);
+      copyFileSync(from, resolve(import.meta.dirname, "dist", OUTPUT_NAME));
+      console.log(`\n→ dist/${OUTPUT_NAME} and dist/index.html ready\n`);
     },
   };
 }
