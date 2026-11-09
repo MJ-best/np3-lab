@@ -67,21 +67,26 @@ export interface NativeBridge {
   onCardsChanged(callback: (cards: NativeCard[]) => void): () => void;
 }
 
-/** Mac app: injected by electron/preload.cjs. Android app: built on the SafFolders plugin. */
+import { createTauriBridge, isTauriEnvironment } from "./tauriBridge";
+
+/** Mac app: injected by electron/preload.cjs or Tauri v2. Android app: built on the SafFolders plugin. */
+const tauri = typeof window !== "undefined" && isTauriEnvironment() ? createTauriBridge() : undefined;
 const android = typeof window !== "undefined" ? createAndroidBridge() : undefined;
 
 export const native: NativeBridge | undefined =
-  typeof window !== "undefined" ? ((window as Window & { nikonPcLab?: NativeBridge }).nikonPcLab ?? android) : undefined;
+  typeof window !== "undefined"
+    ? ((window as Window & { nikonPcLab?: NativeBridge }).nikonPcLab ?? tauri ?? android)
+    : undefined;
 
-/** The app (Mac or Android), as opposed to the browser build. */
+/** The app (Mac or Android/Tauri), as opposed to the browser build. */
 export const isDesktop = native !== undefined;
 
 /** Android-only additions (picking the card folder); undefined elsewhere. */
 export const androidNative: AndroidExtras | undefined = android;
 /** The phone/tablet app (Android or iOS): same card bridge and touch UI. */
-export const isAndroid = android !== undefined;
+export const isAndroid = android !== undefined && tauri === undefined;
 /** iOS only, for wording that differs from Android (Files picker, no eject). */
-export const isIos = android?.platform === "ios";
+export const isIos = android?.platform === "ios" && tauri === undefined;
 
 /** Turn "Error invoking remote method 'card:write': Error: exists:X" into "exists:X". */
 export function nativeErrorMessage(err: unknown): string {

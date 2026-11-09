@@ -183,11 +183,17 @@ export function normalizeParams(p: Partial<RecipeParams>): RecipeParams {
 export function recipeToBytes(recipe: Recipe): Uint8Array {
   if (recipe.raw) return recipe.raw;
   if (!recipe.params) throw new Error(`Recipe ${recipe.id} has neither params nor raw bytes`);
-  return serialize({ name: sanitizeNpName(recipe.npName), ...normalizeParams(recipe.params) });
+  return paramsToBytes(recipe.npName, recipe.params);
 }
 
+import { wasmParseNp3, wasmSerializeNp3, wasmWithNpName } from "../wasmBridge";
+
 export function paramsToBytes(npName: string, params: RecipeParams): Uint8Array {
-  return serialize({ name: sanitizeNpName(npName), ...normalizeParams(params) });
+  const norm = normalizeParams(params);
+  const cleanName = sanitizeNpName(npName);
+  const accelerated = wasmSerializeNp3(cleanName, norm);
+  if (accelerated) return accelerated;
+  return serialize({ name: cleanName, ...norm });
 }
 
 /**
@@ -199,6 +205,9 @@ const nameOffset = (b: Uint8Array) => (b[18] === 0x02 && b[23] === NAME_FIELD ? 
 
 /** Copy of a Picture Control file with a different camera name; every other byte is kept as-is. */
 export function withNpName(bytes: Uint8Array, name: string): Uint8Array {
+  const accelerated = wasmWithNpName(bytes, name);
+  if (accelerated) return accelerated;
+
   const clean = sanitizeNpName(name);
   const out = new Uint8Array(bytes);
   const at = nameOffset(out);
@@ -238,6 +247,9 @@ export interface ParsedNp3 {
 
 /** Parse a Picture Control file (.NP3, .NP2, .NCP). Throws only when the bytes are clearly not one. */
 export function parseNp3(bytes: Uint8Array): ParsedNp3 {
+  const accelerated = wasmParseNp3(bytes);
+  if (accelerated) return accelerated;
+
   const format = pcFormat(bytes);
   if (!format) throw new Error("not-np3");
   const at = nameOffset(bytes);

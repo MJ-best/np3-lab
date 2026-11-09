@@ -1,0 +1,96 @@
+name: Release macOS DMG
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-mac:
+    name: Build macOS DMG (Tauri v2 + Rust Core)
+    runs-on: macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown, aarch64-apple-darwin
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install wasm-bindgen-cli
+        run: |
+          if ! command -v wasm-bindgen &> /dev/null; then
+            cargo install wasm-bindgen-cli --version 0.2.130
+          fi
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Run tests
+        run: |
+          cargo test
+          npm test
+
+      - name: Build Rust WASM Core
+        run: |
+          cargo build --release --target wasm32-unknown-unknown -p np3-core
+          wasm-bindgen target/wasm32-unknown-unknown/release/np3_core.wasm --out-dir src/wasm/pkg --target web
+
+      - name: Build Web / Standalone HTML
+        run: npm run build
+
+      - name: Build Tauri macOS App and DMG
+        run: npx tauri build --target aarch64-apple-darwin
+
+      - name: Prepare Release Assets
+        id: prepare
+        run: |
+          mkdir -p release-artifacts
+          # Copy DMG
+          find target/ -name "*.dmg" -exec cp {} release-artifacts/ \; 2>/dev/null || true
+          find src-tauri/target/ -name "*.dmg" -exec cp {} release-artifacts/ \; 2>/dev/null || true
+          # Copy Single-file HTML
+          if [ -f "dist/NP3-Lab.html" ]; then
+            cp dist/NP3-Lab.html release-artifacts/
+          fi
+          cd release-artifacts
+          shasum -a 256 * > SHA256SUMS.txt
+          ls -lh
+          echo "ARTIFACTS_DIR=$(pwd)" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.7.0' }}
+          files: |
+            release-artifacts/*.dmg
+            release-artifacts/NP3-Lab.html
+            release-artifacts/SHA256SUMS.txt
+          generate_release_notes: true
+          draft: false
+          prerelease: false

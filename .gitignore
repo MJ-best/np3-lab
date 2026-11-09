@@ -7,3 +7,5 @@ dist-web/
 .firebase/
 firebase-debug.log
 firestore-debug.log
+target/
+src-tauri/target/

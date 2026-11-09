@@ -102,7 +102,12 @@ export function parseNcp(b: Uint8Array): NcpParams | null {
   };
 }
 
+import { wasmNcpBytes, wasmToNcp } from "../wasmBridge";
+
 export function ncpBytes(name: string, p: NcpParams): Uint8Array {
+  const accelerated = wasmNcpBytes(name, p);
+  if (accelerated) return accelerated;
+
   const b = new Uint8Array(SIZE);
   b.set([0x4e, 0x43, 0x50, 0, 0, 0, 0, 1, 0, 0, 0, 0x24, ...ascii("0100")], 0);
   b.set(ascii(name.replace(/[^\x20-\x7e]/g, "").slice(0, 19)), 0x10);
@@ -130,6 +135,9 @@ const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
  * grading have no counterpart and are left out.
  */
 export function toNcp(p: RecipeParams): NcpParams {
+  const accelerated = wasmToNcp(p);
+  if (accelerated) return accelerated;
+
   const mono = (p.saturation ?? 0) <= -100;
   const curve = p.toneCurve?.raw.length === RAW_LENGTH ? p.toneCurve.raw.slice() : curveFrom((x) => toneAt(x, p));
   const bands = Object.values(p.colorBlender ?? {});
