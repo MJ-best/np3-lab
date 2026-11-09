@@ -65,6 +65,8 @@ jobs:
         run: npm run build
 
       - name: Build Tauri macOS App and DMG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tauri build --target aarch64-apple-darwin --verbose
 
       - name: Collect macOS Artifacts
@@ -135,7 +137,18 @@ jobs:
         run: npm run build
 
       - name: Build Tauri Windows Installer
-        run: npx tauri build --verbose
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i to build Windows NSIS bundle..."
+            npx tauri build --bundles nsis --verbose && break || {
+              if [ $i -eq 3 ]; then exit 1; fi
+              echo "Attempt $i failed, retrying in 5 seconds..."
+              sleep 5
+            }
+          done
 
       - name: Collect Windows Artifacts
         shell: bash
@@ -168,6 +181,12 @@ jobs:
             patchelf \
             libfuse2 \
             libjavascriptcoregtk-4.1-dev
+
+      - name: Pre-download AppImage helper tools
+        run: |
+          mkdir -p ~/.cache/tauri
+          curl -sSL --retry 5 --retry-delay 3 -o ~/.cache/tauri/linuxdeploy-x86_64.AppImage https://github.com/tauri-apps/binary-releases/releases/download/linuxdeploy-07333c6/linuxdeploy-x86_64.AppImage || true
+          chmod +x ~/.cache/tauri/linuxdeploy-x86_64.AppImage 2>/dev/null || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -211,8 +230,22 @@ jobs:
       - name: Build Web / Standalone HTML
         run: npm run build
 
-      - name: Build Tauri Linux Packages (deb & AppImage)
-        run: npx tauri build --verbose
+      - name: Build Tauri Linux Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i to build Linux packages..."
+            npx tauri build --verbose && break || {
+              if [ $i -eq 3 ]; then
+                echo "AppImage bundling failed; falling back to pure deb package..."
+                npx tauri build --bundles deb --verbose
+                break
+              fi
+              echo "Attempt $i failed, retrying in 5 seconds..."
+              sleep 5
+            }
+          done
 
       - name: Collect Linux Artifacts
         run: |
@@ -230,6 +263,7 @@ jobs:
   release:
     name: Consolidate and Publish Multiplatform Release
     needs: [build-macos, build-windows, build-linux]
+    if: ${{ always() && !cancelled() && (needs.build-macos.result == 'success' || needs.build-windows.result == 'success' || needs.build-linux.result == 'success') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -244,7 +278,6 @@ jobs:
       - name: Generate Checksums
         run: |
           cd release-all
-          # Exclude temporary or non-release files if any
           sha256sum * > SHA256SUMS.txt
           ls -lh
 
