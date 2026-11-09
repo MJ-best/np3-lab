@@ -19,37 +19,37 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::{AppHandle, Emitter, Manager};
 
 #[tauri::command]
-pub fn cmd_list_cards() -> Vec<NativeCard> {
+fn cmd_list_cards() -> Vec<NativeCard> {
     scan_cards()
 }
 
 #[tauri::command]
-pub fn cmd_read_card(card_path: String) -> Result<Vec<NativeCardFile>, String> {
+fn cmd_read_card(card_path: String) -> Result<Vec<NativeCardFile>, String> {
     read_card(&card_path)
 }
 
 #[tauri::command]
-pub fn cmd_write_files(card_path: String, files: Vec<WriteFileInput>) -> Result<bool, String> {
+fn cmd_write_files(card_path: String, files: Vec<WriteFileInput>) -> Result<bool, String> {
     write_files(&card_path, files)
 }
 
 #[tauri::command]
-pub fn cmd_trash_file(card_path: String, file_name: String) -> Result<bool, String> {
+fn cmd_trash_file(card_path: String, file_name: String) -> Result<bool, String> {
     trash_file(&card_path, &file_name)
 }
 
 #[tauri::command]
-pub fn cmd_eject(card_path: String) -> Result<bool, String> {
+fn cmd_eject(card_path: String) -> Result<bool, String> {
     eject_card(&card_path)
 }
 
 #[tauri::command]
-pub fn cmd_reveal(card_path: String) -> Result<bool, String> {
+fn cmd_reveal(card_path: String) -> Result<bool, String> {
     reveal_card(&card_path)
 }
 
 #[tauri::command]
-pub fn cmd_choose_export_folder(default_path: Option<String>) -> Result<Option<String>, String> {
+fn cmd_choose_export_folder(default_path: Option<String>) -> Result<Option<String>, String> {
     let _ = default_path;
     // Tauri dialog can be integrated or fallback to picture_dir
     let dir = dirs::picture_dir()
@@ -58,28 +58,28 @@ pub fn cmd_choose_export_folder(default_path: Option<String>) -> Result<Option<S
 }
 
 #[tauri::command]
-pub fn cmd_export_recipes(folder: String, files: Vec<ExportFileInput>) -> Result<ExportResult, String> {
+fn cmd_export_recipes(folder: String, files: Vec<ExportFileInput>) -> Result<ExportResult, String> {
     Ok(export_recipes(&folder, files))
 }
 
 #[tauri::command]
-pub fn cmd_reveal_export(folder: String) -> Result<bool, String> {
+fn cmd_reveal_export(folder: String) -> Result<bool, String> {
     open::that(folder).map_err(|e| e.to_string())?;
     Ok(true)
 }
 
 #[tauri::command]
-pub fn cmd_find_local_np3(since_ms: Option<f64>) -> Result<Vec<LocalNp3File>, String> {
+fn cmd_find_local_np3(since_ms: Option<f64>) -> Result<Vec<LocalNp3File>, String> {
     Ok(find_local_np3(since_ms.unwrap_or(0.0)))
 }
 
 #[tauri::command]
-pub fn cmd_get_settings() -> NativeSettings {
+fn cmd_get_settings() -> NativeSettings {
     load_settings()
 }
 
 #[tauri::command]
-pub fn cmd_set_settings(patch: SettingsPatch) -> NativeSettings {
+fn cmd_set_settings(patch: SettingsPatch) -> NativeSettings {
     save_settings(patch)
 }
 
