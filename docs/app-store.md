@@ -6,6 +6,7 @@ App Store Connect에 그대로 붙여 넣는 값입니다. 앱 이름은 30자, 
 
 | 항목 | 값 |
 |---|---|
+| 기기 | iPhone, iPad, Apple Silicon Mac (같은 앱이 Mac App Store에 "iPad용으로 설계됨"으로 올라감) |
 | 번들 ID | `io.github.mj-best.np3lab` |
 | SKU | `np3lab-ios` |
 | 기본 언어 | 한국어 |
@@ -19,7 +20,7 @@ App Store Connect에 그대로 붙여 넣는 값입니다. 앱 이름은 30자, 
 | 앱 개인정보 보호 | "데이터를 수집하지 않음" (계정·분석·광고 없음. 커뮤니티 레시피는 공개 GitHub에서 받기만 함) |
 | 암호화 | Info.plist에 `ITSAppUsesNonExemptEncryption = NO`. 따로 묻지 않음 |
 | 로그인 필요 | 없음 (심사용 계정 불필요) |
-| 스크린샷 | `screenshots/iphone-6.9/` (1320×2868), `screenshots/ipad-13/` (2064×2752) |
+| 스크린샷 | `screenshots/iphone-6.9/` (1320×2868), `screenshots/ipad-13/` (2064×2752). Mac App Store는 iPad 스크린샷을 씀 |
 
 ### 심사 메모 (App Review Information > Notes)
 
@@ -96,8 +97,12 @@ NP3 Labはニコンとは関係のない独立したアプリです。Nikon、�
 
 ## 올리는 순서
 
-1. Xcode 설치 → Xcode > Settings > Accounts에 Apple ID 추가 (팀 `29MWCVNN48`).
-2. App Store Connect > 앱 > 새로운 앱: 위 번들 ID, SKU, 이름으로 만들기.
-3. `npm run upload:ios`: 빌드, 서명(배포 인증서는 Xcode가 자동 생성), 업로드.
-4. 10~30분 뒤 TestFlight에 빌드가 보이면 내 기기에서 확인.
-5. 앱 버전 페이지에 위 문구와 스크린샷을 넣고 빌드를 고른 뒤 심사 제출.
+1. [Apple Developer Program](https://developer.apple.com/programs/enroll/)에 가입 (연 99달러). 무료 계정의 "Personal Team"(`29MWCVNN48`)과 개발용 인증서로는 App Store에 올릴 수 없습니다.
+2. Xcode > Settings > Accounts에 그 Apple ID로 로그인. 팀 목록에 "(Personal Team)"이 붙지 않은 팀이 생기면, App 타깃의 `DEVELOPMENT_TEAM`을 그 팀 ID로 바꿉니다.
+3. App Store Connect > 앱 > 새로운 앱: 플랫폼 iOS, 위 이름·기본 언어·번들 ID·SKU로 만들기. 번들 ID가 목록에 없으면 developer.apple.com > Identifiers에서 먼저 등록합니다.
+4. `npm run upload:ios`: 빌드, 서명(배포 인증서와 프로파일은 Xcode가 자동 생성), 업로드.
+5. 10~30분 뒤 TestFlight에 빌드가 보이면 iPhone·iPad·Mac의 TestFlight 앱으로 확인.
+6. 가격 및 사용 가능 여부 > "iPhone 및 iPad 앱을 Apple Silicon Mac에서 사용 가능"을 켜 둡니다(기본값). 이것으로 Mac App Store에도 나옵니다.
+7. 앱 버전 페이지에 위 문구와 스크린샷을 넣고, 앱 개인정보 보호("데이터를 수집하지 않음")와 연령 등급을 채운 뒤 빌드를 고르고 심사 제출.
+
+Mac 데스크톱 앱(카드를 꽂으면 저절로 읽기, Spotlight로 NP3 찾기)은 App Store 샌드박스 규칙에 맞지 않아 지금처럼 GitHub Releases로 배포합니다. App Store의 Mac판은 위의 iPad 앱이고, 카드는 파일 선택창에서 한 번 고릅니다.
