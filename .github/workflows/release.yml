@@ -67,7 +67,19 @@ jobs:
       - name: Build Tauri macOS App and DMG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx tauri build --target aarch64-apple-darwin --verbose
+          # Developer ID signing and notarization (docs/mac-signing.md lists the secrets).
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: Developer ID Application
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: 29MWCVNN48
+        run: |
+          # Without the secrets (a fork, or before they are set) the DMG is built unsigned, as before.
+          if [ -z "$APPLE_CERTIFICATE" ]; then
+            unset APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID
+          fi
+          npx tauri build --target aarch64-apple-darwin --verbose
 
       - name: Collect macOS Artifacts
         run: |
@@ -263,7 +275,8 @@ jobs:
   release:
     name: Consolidate and Publish Multiplatform Release
     needs: [build-macos, build-windows, build-linux]
-    if: ${{ always() && !cancelled() && (needs.build-macos.result == 'success' || needs.build-windows.result == 'success' || needs.build-linux.result == 'success') }}
+    # Only tag pushes publish; a manual run just leaves the build artifacts to download and check.
+    if: ${{ always() && !cancelled() && github.ref_type == 'tag' && (needs.build-macos.result == 'success' || needs.build-windows.result == 'success' || needs.build-linux.result == 'success') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -284,7 +297,7 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.7.0' }}
+          tag_name: ${{ github.ref_name }}
           files: release-all/*
           generate_release_notes: true
           draft: false

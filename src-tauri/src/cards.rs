@@ -314,7 +314,13 @@ pub fn trash_file(card_path: &str, file_name: &str) -> Result<bool, String> {
         return Err("file-not-found".to_string());
     }
 
-    trash::delete(&target).map_err(|e| e.to_string())?;
+    // On macOS, not through Finder (the trash crate's default): that is AppleScript, which makes
+    // macOS ask to let NP3 Lab control Finder, and signed builds would need an extra entitlement.
+    #[allow(unused_mut)]
+    let mut ctx = trash::TrashContext::default();
+    #[cfg(target_os = "macos")]
+    trash::macos::TrashContextExtMacos::set_delete_method(&mut ctx, trash::macos::DeleteMethod::NsFileManager);
+    ctx.delete(&target).map_err(|e| e.to_string())?;
     Ok(true)
 }
 
