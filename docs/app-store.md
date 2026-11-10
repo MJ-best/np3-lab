@@ -97,8 +97,8 @@ NP3 Labはニコンとは関係のない独立したアプリです。Nikon、�
 
 ## 올리는 순서
 
-1. [Apple Developer Program](https://developer.apple.com/programs/enroll/)에 가입 (연 99달러). 무료 계정의 "Personal Team"(`29MWCVNN48`)과 개발용 인증서로는 App Store에 올릴 수 없습니다.
-2. Xcode > Settings > Accounts에 그 Apple ID로 로그인. 팀 목록에 "(Personal Team)"이 붙지 않은 팀이 생기면, App 타깃의 `DEVELOPMENT_TEAM`을 그 팀 ID로 바꿉니다.
+1. [Apple Developer Program](https://developer.apple.com/programs/enroll/)에 가입 (연 99달러). 무료 "Personal Team"으로는 App Store에 올릴 수 없습니다.
+2. Xcode > Settings > Accounts에 그 Apple ID로 로그인. 팀 `29MWCVNN48`(Minjun Kim, Individual)이 보이면 됩니다. App 타깃의 `DEVELOPMENT_TEAM`이 이 팀입니다.
 3. App Store Connect > 앱 > 새로운 앱: 플랫폼 iOS, 위 이름·기본 언어·번들 ID·SKU로 만들기. 번들 ID가 목록에 없으면 developer.apple.com > Identifiers에서 먼저 등록합니다.
 4. `npm run upload:ios`: 빌드, 서명(배포 인증서와 프로파일은 Xcode가 자동 생성), 업로드.
 5. 10~30분 뒤 TestFlight에 빌드가 보이면 iPhone·iPad·Mac의 TestFlight 앱으로 확인.
