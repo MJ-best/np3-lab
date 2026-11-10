@@ -174,7 +174,7 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 
 - 직접 만든 레시피를 기본으로 넣으려면 `recipes/`에 JSON이나 `.NP3`를 두세요. 형식은 [recipes/README.md](recipes/README.md)를 보세요.
 - 미리보기 사진을 바꾸려면 `samples/`에 사진을 넣으세요. [samples/README.md](samples/README.md)를 보세요.
-- 아이폰·아이패드판은 개발 중입니다. `npm run build:ios`로 웹을 빌드해 `ios/App/App.xcodeproj`를 Xcode로 열고 기기에 설치합니다(Apple 개발자 계정 필요). 카드는 파일 앱 선택창으로 한 번 고르면 기억합니다.
+- 아이폰·아이패드판은 개발 중입니다. `npm run build:ios`로 웹을 빌드해 `ios/App/App.xcodeproj`를 Xcode로 열고 기기에 설치합니다(Apple 개발자 계정 필요). App Store 업로드는 `npm run upload:ios`, 제출 문구와 순서는 [docs/app-store.md](docs/app-store.md)에 있습니다. 카드는 파일 앱 선택창으로 한 번 고르면 기억합니다.
 - 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `android/`·`src/androidBridge.ts`(Android: 저장소 접근 프레임워크로 카드 폴더 읽기·쓰기), `ios/`(iPhone·iPad: `SafFoldersPlugin.swift`로 같은 카드 기능), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기·증분 업데이트), `src/data/recipeNotes.ts`(레시피 설명), `src/look.ts`(수치로 컨셉 분석), `src/moods.ts`(원하는 느낌 버튼), `src/frame.ts`·`src/exif.ts`(프레임·촬영 정보), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
 - 버그 제보와 PR 환영합니다. Windows 지원(꺼내기, 안내 문구)은 도움이 필요한 부분입니다.
 

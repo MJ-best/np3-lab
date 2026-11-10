@@ -11,3 +11,4 @@ target/
 src-tauri/target/
 functions/.secret.local
 functions/.runtimeconfig.json
+build/ios/
