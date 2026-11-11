@@ -1,4 +1,5 @@
 import { useEffect } from "preact/hooks";
+import { asLegacy, currentCamera, legacyBytes, legacyCamera } from "../camera";
 import { activeCard, addToActiveCard } from "../cards";
 import { t } from "../i18n";
 import { isAndroid, isDesktop } from "../native";
@@ -61,6 +62,7 @@ export function Editor() {
   const source = usePreparedSample(activeSample.value);
   const nameOk = isValidNpName(d.npName);
   const curveMode = d.toneMode === "curve";
+  const legacy = legacyCamera.value;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -91,7 +93,7 @@ export function Editor() {
       <section class="editor-preview">
         <SceneChips />
         {/* One column (phones): a shorter preview, so it stays in view with the looks right below it. */}
-        <CompareSlider source={source} params={draftParams.value} maxHeight={matchMedia("(max-width: 980px)").matches ? Math.round(innerHeight * 0.48) : 560} />
+        <CompareSlider source={source} params={legacy ? asLegacy(draftParams.value) : draftParams.value} maxHeight={matchMedia("(max-width: 980px)").matches ? Math.round(innerHeight * 0.48) : 560} />
         <p class="hint">{t("approxPreview")}</p>
       </section>
 
@@ -134,10 +136,15 @@ export function Editor() {
               {isDesktop && !activeCard.value ? t("noCardShort") : t("addToCard")}
             </button>
             <button
-              onClick={() => downloadBytes(paramsToBytes(d.npName, draftParams.value), `${d.npName.replace(/ /g, "_") || "RECIPE"}.NP3`)}
+              onClick={() =>
+                downloadBytes(
+                  legacy ? legacyBytes(d.npName, draftParams.value) : paramsToBytes(d.npName, draftParams.value),
+                  `${d.npName.replace(/ /g, "_") || "RECIPE"}.${legacy ? "NCP" : "NP3"}`,
+                )
+              }
               disabled={!nameOk}
             >
-              {t("downloadNp3")}
+              {t("downloadFile", { ext: legacy ? "NCP" : "NP3" })}
             </button>
             <button class="ghost" onClick={() => confirm(t("confirmReset")) && resetDraft()}>
               {t("resetDraft")}
@@ -145,13 +152,15 @@ export function Editor() {
           </div>
         </div>
 
+        {legacy && <p class="legacy-banner">{t("legacyEditorNote", { model: currentCamera.value.label || t("otherZ") })}</p>}
+
         <MoodPanel />
 
         <details class="panel" open>
           <summary>{t("secDetail")}</summary>
           <ScalarSlider k="sharpning" />
-          <ScalarSlider k="midRangeSharpning" />
-          <ScalarSlider k="clarity" />
+          {!legacy && <ScalarSlider k="midRangeSharpning" />}
+          {!legacy && <ScalarSlider k="clarity" />}
         </details>
 
         <details class="panel" open>
@@ -179,15 +188,20 @@ export function Editor() {
           <ScalarSlider k="saturation" />
         </details>
 
-        <details class="panel" open>
-          <summary>{t("secBlender")}</summary>
-          <ColorBlenderPanel value={d.params.colorBlender ?? {}} onChange={(colorBlender) => updateDraftParams({ colorBlender })} />
-        </details>
+        {/* Older bodies have no colour blender or grading: the settings are kept for newer ones, just not shown. */}
+        {!legacy && (
+          <details class="panel" open>
+            <summary>{t("secBlender")}</summary>
+            <ColorBlenderPanel value={d.params.colorBlender ?? {}} onChange={(colorBlender) => updateDraftParams({ colorBlender })} />
+          </details>
+        )}
 
-        <details class="panel" open>
-          <summary>{t("secGrading")}</summary>
-          <ColorGradingPanel value={d.params.colorGrading ?? {}} onChange={(colorGrading) => updateDraftParams({ colorGrading })} />
-        </details>
+        {!legacy && (
+          <details class="panel" open>
+            <summary>{t("secGrading")}</summary>
+            <ColorGradingPanel value={d.params.colorGrading ?? {}} onChange={(colorGrading) => updateDraftParams({ colorGrading })} />
+          </details>
+        )}
 
         <details class="panel">
           <summary>{t("secText")}</summary>

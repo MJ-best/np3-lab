@@ -1,4 +1,5 @@
 import { useState } from "preact/hooks";
+import { forCard } from "../camera";
 import { t, tx } from "../i18n";
 import { canUseCardFolder, pickCardFolder, writeRecipesToCard } from "../pack/cardWriter";
 import { downloadBytes } from "../pack/download";
@@ -30,11 +31,13 @@ function LoadGuide() {
 
 export function Cart() {
   const items = cartRecipes.value;
+  // As they go onto the card for the chosen camera (original Picture Controls for older bodies).
+  const outgoing = items.map(forCard);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const direct = canUseCardFolder();
   // File names as they will appear in the ZIP (one CARD-n folder per 99 recipes).
-  const groups = chunk(items, MAX_PER_CARD);
+  const groups = chunk(outgoing, MAX_PER_CARD);
   const previewNames = groups.flatMap((group, ci) =>
     planCardFiles(group, { mode: naming.value }).files.map((f) => (groups.length > 1 ? `CARD-${ci + 1}/` : "") + f.fileName),
   );
@@ -45,7 +48,7 @@ export function Cart() {
     try {
       const folder = await pickCardFolder("readwrite");
       if (!folder.looksLikeCard && !confirm(t("notACard"))) return;
-      const res = await writeRecipesToCard(folder, items, naming.value);
+      const res = await writeRecipesToCard(folder, outgoing, naming.value);
       const lines = [t("writeDone", { n: res.written.length, path: folder.label })];
       if (res.existingCount > 0) lines.push(t("existingOnCard", { n: res.existingCount }));
       if (res.overflow.length > 0) lines.push(t("writeOverflow", { n: res.overflow.length }));
@@ -65,7 +68,7 @@ export function Cart() {
     setBusy(true);
     setOutcome(null);
     try {
-      const { data, cards } = await buildZip(items, { mode: naming.value });
+      const { data, cards } = await buildZip(outgoing, { mode: naming.value });
       downloadBytes(data, zipFileName(), "application/zip");
       const lines = [t("zipDone")];
       if (cards.length > 1) lines.push(t("over99"));

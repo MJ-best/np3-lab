@@ -1,0 +1,291 @@
+name: Multiplatform Release (macOS, Windows, Linux)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    name: Build macOS DMG (Tauri v2 + Rust)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown, aarch64-apple-darwin
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install wasm-bindgen-cli
+        run: |
+          if ! command -v wasm-bindgen &> /dev/null; then
+            cargo install wasm-bindgen-cli --version 0.2.130
+          fi
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Run tests
+        run: |
+          cargo test
+          npm test
+
+      - name: Build Rust WASM Core
+        run: |
+          cargo build --release --target wasm32-unknown-unknown -p np3-core
+          wasm-bindgen target/wasm32-unknown-unknown/release/np3_core.wasm --out-dir src/wasm/pkg --target web
+
+      - name: Build Web / Standalone HTML
+        run: npm run build
+
+      - name: Build Tauri macOS App and DMG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx tauri build --target aarch64-apple-darwin --verbose
+
+      - name: Collect macOS Artifacts
+        run: |
+          mkdir -p macos-artifacts
+          find src-tauri/target/ -name "*.dmg" -exec cp {} macos-artifacts/ \; 2>/dev/null || true
+          find target/ -name "*.dmg" -exec cp {} macos-artifacts/ \; 2>/dev/null || true
+          if [ -f "dist/NP3-Lab.html" ]; then
+            cp dist/NP3-Lab.html macos-artifacts/
+          fi
+          ls -lh macos-artifacts/
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-macos
+          path: macos-artifacts/*
+
+  build-windows:
+    name: Build Windows App (Tauri v2 + Rust)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown, x86_64-pc-windows-msvc
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install wasm-bindgen-cli
+        shell: bash
+        run: |
+          if ! command -v wasm-bindgen &> /dev/null; then
+            cargo install wasm-bindgen-cli --version 0.2.130
+          fi
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build Rust WASM Core
+        shell: bash
+        run: |
+          cargo build --release --target wasm32-unknown-unknown -p np3-core
+          wasm-bindgen target/wasm32-unknown-unknown/release/np3_core.wasm --out-dir src/wasm/pkg --target web
+
+      - name: Build Web / Standalone HTML
+        run: npm run build
+
+      - name: Build Tauri Windows Installer
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i to build Windows NSIS bundle..."
+            npx tauri build --bundles nsis --verbose && break || {
+              if [ $i -eq 3 ]; then exit 1; fi
+              echo "Attempt $i failed, retrying in 5 seconds..."
+              sleep 5
+            }
+          done
+
+      - name: Collect Windows Artifacts
+        shell: bash
+        run: |
+          mkdir -p windows-artifacts
+          find src-tauri/target/ -name "*.exe" -exec cp {} windows-artifacts/ \; 2>/dev/null || true
+          find src-tauri/target/ -name "*.msi" -exec cp {} windows-artifacts/ \; 2>/dev/null || true
+          ls -lh windows-artifacts/
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows
+          path: windows-artifacts/*
+
+  build-linux:
+    name: Build Linux App (Tauri v2 + Rust)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libfuse2 \
+            libjavascriptcoregtk-4.1-dev
+
+      - name: Pre-download AppImage helper tools
+        run: |
+          mkdir -p ~/.cache/tauri
+          curl -sSL --retry 5 --retry-delay 3 -o ~/.cache/tauri/linuxdeploy-x86_64.AppImage https://github.com/tauri-apps/binary-releases/releases/download/linuxdeploy-07333c6/linuxdeploy-x86_64.AppImage || true
+          chmod +x ~/.cache/tauri/linuxdeploy-x86_64.AppImage 2>/dev/null || true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown, x86_64-unknown-linux-gnu
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install wasm-bindgen-cli
+        run: |
+          if ! command -v wasm-bindgen &> /dev/null; then
+            cargo install wasm-bindgen-cli --version 0.2.130
+          fi
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build Rust WASM Core
+        run: |
+          cargo build --release --target wasm32-unknown-unknown -p np3-core
+          wasm-bindgen target/wasm32-unknown-unknown/release/np3_core.wasm --out-dir src/wasm/pkg --target web
+
+      - name: Build Web / Standalone HTML
+        run: npm run build
+
+      - name: Build Tauri Linux Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i to build Linux packages..."
+            npx tauri build --verbose && break || {
+              if [ $i -eq 3 ]; then
+                echo "AppImage bundling failed; falling back to pure deb package..."
+                npx tauri build --bundles deb --verbose
+                break
+              fi
+              echo "Attempt $i failed, retrying in 5 seconds..."
+              sleep 5
+            }
+          done
+
+      - name: Collect Linux Artifacts
+        run: |
+          mkdir -p linux-artifacts
+          find src-tauri/target/ -name "*.deb" -exec cp {} linux-artifacts/ \; 2>/dev/null || true
+          find src-tauri/target/ -name "*.AppImage" -exec cp {} linux-artifacts/ \; 2>/dev/null || true
+          ls -lh linux-artifacts/
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-linux
+          path: linux-artifacts/*
+
+  release:
+    name: Consolidate and Publish Multiplatform Release
+    needs: [build-macos, build-windows, build-linux]
+    if: ${{ always() && !cancelled() && (needs.build-macos.result == 'success' || needs.build-windows.result == 'success' || needs.build-linux.result == 'success') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-all
+          merge-multiple: true
+
+      - name: Generate Checksums
+        run: |
+          cd release-all
+          sha256sum * > SHA256SUMS.txt
+          ls -lh
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.7.0' }}
+          files: release-all/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false

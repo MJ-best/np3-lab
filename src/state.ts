@@ -1,6 +1,7 @@
 import { computed, signal } from "@preact/signals";
 import { BUILTIN_RECIPES, loadBundledNp3 } from "./builtinRecipes";
 import { recipeFromBackup } from "./backup";
+import { legacyBytes } from "./camera";
 import { downloadCommunityRecipes, forgetCommunityRecipes, isCommunityRecipe, storedCommunityRecipes } from "./community";
 import { t, tx } from "./i18n";
 import { isDesktop } from "./native";
@@ -10,6 +11,9 @@ import {
   isValidNpName,
   newId,
   normalizeParams,
+  PC_FILE_RE,
+  classicTags,
+  isFlexible,
   parseNp3,
   recipeToBytes,
   sameBytes,
@@ -121,9 +125,10 @@ const retired = new Set(readStore<string[]>("retired") ?? []);
 /** Remember a version that is leaving My recipes (deleted, or changed), so auto-backup won't copy it back from a card. */
 function retire(r: Recipe) {
   try {
-    const key = bytesKey(recipeToBytes(r));
-    if (retired.has(key)) return;
-    retired.add(key);
+    // Both forms it can take on a card: as itself, and as the original Picture Control written for older bodies.
+    const keys = [recipeToBytes(r), ...(isFlexible(r) && r.params ? [legacyBytes(r.npName, r.params)] : [])].map(bytesKey);
+    if (keys.every((k) => retired.has(k))) return;
+    for (const k of keys) retired.add(k);
     writeStore("retired", [...retired].slice(-500));
   } catch {
     /* no bytes: nothing a card could hold */
@@ -150,6 +155,20 @@ export function deleteMine(id: string) {
   if (draft.value.editingId === id) draft.value = { ...draft.value, editingId: null, dirty: true };
 }
 
+/** My recipes as they are stored (bytes in base64), for account sync. */
+export const storedMine = () => myRecipes.value.map(toStored);
+
+/**
+ * Take My recipes from account sync. Versions that leave are retired, so a card won't bring them
+ * back; photos stay (a deleted recipe's photos show as photos without a recipe).
+ */
+export function setMine(list: Recipe[]) {
+  const incoming = new Map(list.map((r) => [r.id, JSON.stringify(toStored(r))]));
+  for (const r of myRecipes.value) if (incoming.get(r.id) !== JSON.stringify(toStored(r))) retire(r);
+  myRecipes.value = list;
+  persistMine();
+  if (draft.value.editingId && !incoming.has(draft.value.editingId)) draft.value = { ...draft.value, editingId: null, dirty: true };
+}
 
 export function updateMine(id: string, patch: Partial<Pick<Recipe, "title" | "origin" | "npName" | "raw">>) {
   const r = myRecipes.value.find((x) => x.id === id);
@@ -182,7 +201,7 @@ export interface ImportSession {
 export const importSession = signal<ImportSession | null>(null);
 
 function reviewFile(f: { name: string; bytes: Uint8Array }, earlier: ImportEntry[]): ImportEntry {
-  const stem = f.name.replace(/\.np3$/i, "");
+  const stem = f.name.replace(PC_FILE_RE, "");
   const key = `${f.name}:${f.bytes.length}:${Math.random().toString(36).slice(2, 7)}`;
   let parsed;
   try {
@@ -234,7 +253,7 @@ export function commitImport(): Recipe[] {
       source: "imported",
       title: e.title.trim() || e.npName,
       npName: e.npName,
-      tags: [],
+      tags: classicTags(e.bytes),
       params: e.params,
       raw: e.bytes,
       origin,

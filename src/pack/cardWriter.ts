@@ -1,4 +1,4 @@
-import { recipeToBytes, type Recipe } from "../np3/recipe";
+import { PC_FILE_RE, recipeToBytes, type Recipe } from "../np3/recipe";
 import { planCardFiles, type FileNameMode, type PlannedFile } from "./naming";
 
 /*
@@ -117,7 +117,7 @@ export async function writeRecipesToCard(
   return {
     written: plan.files,
     overflow: plan.overflow,
-    existingCount: existing.filter((n) => /\.NP3$/i.test(n)).length,
+    existingCount: existing.filter((n) => PC_FILE_RE.test(n)).length,
   };
 }
 
@@ -125,7 +125,7 @@ export async function readNp3Files(folder: CardFolder): Promise<{ name: string; 
   if (!folder.customPc) return [];
   const out: { name: string; bytes: Uint8Array }[] = [];
   for await (const entry of folder.customPc.values()) {
-    if (entry.kind !== "file" || !/\.NP3$/i.test(entry.name) || entry.name.startsWith("._")) continue;
+    if (entry.kind !== "file" || !PC_FILE_RE.test(entry.name) || entry.name.startsWith("._")) continue;
     const file = await entry.getFile();
     out.push({ name: entry.name, bytes: new Uint8Array(await file.arrayBuffer()) });
   }

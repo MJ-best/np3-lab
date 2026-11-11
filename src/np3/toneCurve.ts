@@ -78,8 +78,13 @@ export function makeInterpolator(points: readonly CurvePoint[]): (x: number) => 
   };
 }
 
+import { wasmPointsToRaw } from "../wasmBridge";
+
 /** 257-entry LUT (0..32767) sampled at input i/256, as stored in the NP3 file. */
 export function pointsToRaw(points: readonly CurvePoint[]): number[] {
+  const accelerated = wasmPointsToRaw(points);
+  if (accelerated) return accelerated;
+
   const f = makeInterpolator(points);
   return Array.from({ length: RAW_LENGTH }, (_, i) => {
     const y = f((i / 256) * 255) / 255;

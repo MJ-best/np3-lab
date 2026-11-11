@@ -7,6 +7,7 @@
  *   NikonPC/<Recipe>.NP3
  *   Third Party Creators/<Creator>/[<Series>/]<Recipe>.NP3
  */
+import { PC_FILE_RE } from "./np3/recipe";
 
 export interface CommunityMeta {
   title: string;
@@ -21,7 +22,7 @@ const isMono = (s: string) =>
 export function describeCommunityFile(relPath: string, sourceId = "shouryan01"): CommunityMeta {
   const parts = relPath.split("/");
   const file = parts[parts.length - 1];
-  let title = file.replace(/\.np3$/i, "").trim();
+  let title = file.replace(PC_FILE_RE, "").trim();
   if (sourceId === "serbanjpg") {
     // "Modern-Chrome-Std" → "Modern Chrome Std", "Onipan-HC--R" → "Onipan HC R"
     title = title.replace(/-+/g, " ").trim();

@@ -29,8 +29,8 @@ export interface CameraGuide {
   altPath?: Path;
   /** Two card slots: the card must be in the primary slot. */
   twoSlots: boolean;
-  /** Can't load Flexible Color recipes at all. */
-  unsupported?: boolean;
+  /** No Flexible Color: recipes go to it as original Picture Controls (.NCP). */
+  legacy?: boolean;
 }
 
 export const CAMERA_GUIDES: CameraGuide[] = [
@@ -41,7 +41,16 @@ export const CAMERA_GUIDES: CameraGuide[] = [
   { id: "zr", label: "ZR", path: LOAD_SAVE, twoSlots: false },
   { id: "z8", label: "Z8", firmware: "3.00", path: LOAD_SAVE, twoSlots: true },
   { id: "z9", label: "Z9", firmware: "5.30", path: LOAD_SAVE, twoSlots: true },
-  { id: "other", label: "", path: LOAD_SAVE, twoSlots: false, unsupported: true },
+  // Older bodies load original Picture Controls only (Nikon: NCP works on every camera with custom Picture Controls).
+  { id: "z6ii", label: "Z6II", path: LOAD_SAVE, twoSlots: true, legacy: true },
+  { id: "z7ii", label: "Z7II", path: LOAD_SAVE, twoSlots: true, legacy: true },
+  { id: "z5", label: "Z5", path: LOAD_SAVE, twoSlots: true, legacy: true },
+  { id: "z6", label: "Z6", path: LOAD_SAVE, twoSlots: false, legacy: true },
+  { id: "z7", label: "Z7", path: LOAD_SAVE, twoSlots: false, legacy: true },
+  { id: "z50", label: "Z50", path: LOAD_SAVE, twoSlots: false, legacy: true },
+  { id: "zfc", label: "Z fc", path: LOAD_SAVE, twoSlots: false, legacy: true },
+  { id: "z30", label: "Z30", path: LOAD_SAVE, twoSlots: false, legacy: true },
+  { id: "other", label: "", path: LOAD_SAVE, twoSlots: false, legacy: true },
 ];
 
 export const DEFAULT_CAMERA = "zf";

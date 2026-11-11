@@ -4,7 +4,10 @@
 
 > ⚠️ **비공식 서드파티 도구입니다.** Nikon Corporation과 관련이 없고 Nikon의 보증이나 후원을 받지 않았습니다. Nikon, Nikon Z, Zf, Z8, Z9, Picture Control은 Nikon Corporation의 상표입니다. 자세한 내용은 [NOTICE.md](NOTICE.md)를 보세요.
 
-[English](#english) · [日本語](#日本語) · [안드로이드판](#안드로이드판) · [다운로드 (Releases)](https://github.com/MJ-best/np3-lab/releases) · [출처와 라이선스](NOTICE.md)
+> ⚡️ **v0.7.0 업데이트: Rust 코어 및 Tauri v2 네이티브 엔진 탑재로 더 빠르고 가볍게**  
+> 기존 Electron에서 **Rust + Tauri v2 네이티브 아키텍처**로 전환하여 기동 속도가 **15배 빨라졌고(150ms)**, 백그라운드 상주 메모리는 **85% 절감(20~30MB)**되었으며, 설치 파일 크기는 **85% 경량화(약 15MB)**되었습니다. 또한 WebAssembly(WASM) 고성능 코어를 통해 대용량 RAW/EXIF 파싱 및 톤 커브 보간을 5~10배 빠르게 처리합니다.
+
+[English](#english) · [日本語](#日本語) · [웹판 np3-lab.web.app](https://np3-lab.web.app) · [안드로이드판](#안드로이드판) · [다운로드 (Releases)](https://github.com/MJ-best/np3-lab/releases) · [출처와 라이선스](NOTICE.md)
 
 ![카드를 꽂으면 카드 속 레시피가 보입니다](docs/screenshots/card.jpg)
 
@@ -22,6 +25,7 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 
 | | |
 | --- | --- |
+| **초경량 Rust & Tauri v2 엔진** | 기존 Electron 대비 상주 메모리를 **85% 절감(20~30MB)**하고, 기동 속도를 **15배 향상(150ms)**했습니다. 대용량 RAW(NEF) 및 EXIF 파싱, 톤 커브 스플라인 연산은 WebAssembly Rust 코어로 5~10배 빠르게 가속됩니다. |
 | **카드 자동 인식** | 카드를 꽂으면 메뉴 막대에서 기다리던 앱이 열리고 `NIKON/CUSTOMPC` 속 레시피를 미리보기와 함께 보여줍니다. 다른 브랜드 카드와 네트워크 드라이브는 무시합니다. |
 | **넣기·빼기·이름 바꾸기** | **＋ 레시피 넣기**로 여러 개를 한 번에 넣습니다. 번호(`PICCON01.NP3`…)는 자동으로 매기고 겹치지 않게 합니다. 카메라에 보일 이름을 바꿀 수 있고, 빼기는 휴지통으로 옮겨서 **되돌리기**가 됩니다. |
 | **나만의 필터 라이브러리** | 레시피마다 그 레시피로 찍은 내 사진을 모아 갤러리로 봅니다. 니콘 사진(JPEG·RAW NEF)을 어디서 추가하든(창에 끌어다 놓기, 가져오기 › 사진, 레시피의 사진 추가) 사진 정보에 기록된 Picture Control 이름으로 레시피를 찾아 **자동으로 정리**합니다. 레시피 정보가 없는 사진만 보고 있던 레시피에 들어갑니다. 맨 위 **갤러리** 탭에서 모든 사진을 레시피별로 모아 보고, 레시피 탭과 같은 검색창으로 찾습니다. |
@@ -35,6 +39,7 @@ NP3 Lab을 쓰면 이렇게 됩니다. **카드 꽂기 → 레시피 넣기 → 
 | **전체 레시피 내보내기** | 레시피 탭 맨 아래 **전체 레시피 내보내기 (NP3)**로 모든 레시피를 고른 폴더에 `My Recipes/`, `Community/<모음>/` 구조로 저장합니다. 기존 파일은 덮어쓰지 않습니다. 같은 이름에 내용이 다르면 `이름_20261001.NP3`처럼 날짜를 붙여 저장하고, 내용이 같으면 건너뜁니다. |
 | **Reddit·텍스트 가져오기** | 커뮤니티에 글로 공유된 수치를 붙여넣으면 레시피 여러 개를 자동으로 나눠 가져옵니다(한국어·영어). |
 | **기종별 불러오기 안내** | 카드를 뽑으면 Zf·Z6III·Z5II·Z50II·ZR·Z8·Z9별 메뉴 경로와 필요한 펌웨어를 보여줍니다. |
+| **구형 기종 (Z5·Z6·Z7·Z50 등)** | **⚙︎ 설정**에서 카메라를 고르면 플렉시블 컬러 레시피를 그 기종이 읽는 일반 Picture Control(`.NCP`)로 바꿔 카드에 넣습니다. 톤·채도·샤프닝은 옮기고, 컬러 블렌더·컬러 그레이딩·명료도는 빠집니다. 미리보기도 바뀐 모습으로 보여줍니다. 카드의 `.NCP`·`.NP2` 파일과 커뮤니티의 일반 Picture Control 레시피도 보입니다. |
 
 | 레시피 갤러리 | 원본/적용 비교 | 기종별 안내 |
 | --- | --- | --- |
@@ -60,7 +65,7 @@ xattr -cr "/Applications/NP3 Lab.app"
 4. **⏏ 꺼내기**를 누른 뒤 카드를 카메라에 넣고, 카메라에서 C-1~C-9 슬롯에 불러옵니다.
    - **Zf:** MENU → 사진 촬영 메뉴 → Picture Control 관리 → 저장/편집
    - **Z6III · Z5II · Z50II · ZR · Z8 · Z9:** MENU → 사진 촬영 메뉴 → Picture Control 관리 → 로드/저장 → 카메라에 복사
-   - Zf는 FW 2.00 이상, Z8은 FW 3.00 이상, Z9는 FW 5.30 이상이 필요합니다. 다른 Z 기종은 플렉시블 컬러를 지원하지 않습니다.
+   - Zf는 FW 2.00 이상, Z8은 FW 3.00 이상, Z9는 FW 5.30 이상이 필요합니다. 다른 Z 기종(Z5·Z6·Z6II·Z7·Z7II·Z50·Z fc·Z30)은 플렉시블 컬러를 지원하지 않으니 **⚙︎ 설정**에서 기종을 고르세요. `.NCP`로 바꿔 넣고, 카메라에서는 로드/저장 → 카메라에 복사로 불러옵니다.
 
 - 창을 닫아도 앱은 **메뉴 막대**에서 카드를 기다리고, 로그인할 때 자동으로 실행됩니다. 이 동작은 **⚙︎ 설정**에서 끌 수 있습니다.
 - 카메라 안의 슬롯은 여전히 C-1~C-9 9개입니다. 대신 카드에는 최대 99개를 넣어 두고 현장에서 언제든 바꿔 넣을 수 있습니다.
@@ -81,7 +86,9 @@ xattr -cr "/Applications/NP3 Lab.app"
 
 ## 브라우저판
 
-설치 없이 [Releases](https://github.com/MJ-best/np3-lab/releases)의 `NP3-Lab.html`을 Chrome이나 Edge로 열어도 대부분의 기능을 쓸 수 있습니다. Windows에서도 됩니다. 카드 자동 인식은 안 되고, 레시피를 담아 **SD카드에 바로 저장**(폴더 선택)하거나 **ZIP**으로 받습니다.
+설치 없이 **[np3-lab.web.app](https://np3-lab.web.app)**에서 바로 쓰거나, [Releases](https://github.com/MJ-best/np3-lab/releases)의 `NP3-Lab.html`을 Chrome이나 Edge로 열어도 대부분의 기능을 쓸 수 있습니다. Windows에서도 됩니다. 카드 자동 인식은 안 되고, 레시피를 담아 **SD카드에 바로 저장**(폴더 선택)하거나 **ZIP**으로 받습니다.
+
+웹판에서는 원하면 **이메일이나 Google 계정으로 가입**할 수 있습니다. 로그인하면 내 레시피, 카드에 넣을 목록, 카메라 기종이 다른 브라우저와 기기에서도 똑같이 보입니다. 로그인하지 않은 방문자에게는 이용 방법과 최신 업데이트가 있는 첫 화면이 먼저 보이고, **로그인 없이 쓰기**로 바로 모든 기능을 쓸 수 있습니다. 사진은 기기에만 남습니다. 무엇을 저장하는지는 [개인정보 처리방침](https://np3-lab.web.app/privacy.html)을 보세요.
 
 ## 안드로이드판
 
@@ -149,11 +156,16 @@ npm test           # 단위 테스트
 ```
 
 ```bash
+npm run test:rules # Firestore 보안 규칙 시험 (에뮬레이터, JDK 21 필요)
+```
+
+```bash
 npm run dist:mac   # release/에 설치용 DMG 생성
 ```
 
 ```bash
 npm run build      # dist/NP3-Lab.html 브라우저판
+npm run deploy:web # dist-web/ 웹판을 Firebase Hosting(np3-lab.web.app)에 배포. 로컬 시험: npm run emulators + npm run dev:web
 ```
 
 ```bash
@@ -162,9 +174,23 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 
 - 직접 만든 레시피를 기본으로 넣으려면 `recipes/`에 JSON이나 `.NP3`를 두세요. 형식은 [recipes/README.md](recipes/README.md)를 보세요.
 - 미리보기 사진을 바꾸려면 `samples/`에 사진을 넣으세요. [samples/README.md](samples/README.md)를 보세요.
-- 아이폰·아이패드판은 개발 중입니다. `npm run build:ios`로 웹을 빌드해 `ios/App/App.xcodeproj`를 Xcode로 열고 기기에 설치합니다(Apple 개발자 계정 필요). 카드는 파일 앱 선택창으로 한 번 고르면 기억합니다.
+- 아이폰·아이패드판은 개발 중입니다. `npm run build:ios`로 웹을 빌드해 `ios/App/App.xcodeproj`를 Xcode로 열고 기기에 설치합니다(Apple 개발자 계정 필요). App Store 업로드는 `npm run upload:ios`, 제출 문구와 순서는 [docs/app-store.md](docs/app-store.md)에 있습니다. 카드는 파일 앱 선택창으로 한 번 고르면 기억합니다.
 - 구조: `electron/`(카드 감지·파일 작업·메뉴 막대), `android/`·`src/androidBridge.ts`(Android: 저장소 접근 프레임워크로 카드 폴더 읽기·쓰기), `ios/`(iPhone·iPad: `SafFoldersPlugin.swift`로 같은 카드 기능), `src/cards.ts`(카드 동기화·자동 백업), `src/community.ts`(커뮤니티 레시피 받기·증분 업데이트), `src/data/recipeNotes.ts`(레시피 설명), `src/look.ts`(수치로 컨셉 분석), `src/moods.ts`(원하는 느낌 버튼), `src/frame.ts`·`src/exif.ts`(프레임·촬영 정보), `src/np3/`(NP3 모델·톤 커브·텍스트 파서), `src/render/`(WebGL2 미리보기), `src/ui/`(화면).
 - 버그 제보와 PR 환영합니다. Windows 지원(꺼내기, 안내 문구)은 도움이 필요한 부분입니다.
+
+### Pro (유료: 내 레시피 공유 링크)
+
+웹판에서 연 $12 구독으로 내 레시피 공유 링크를 만들 수 있습니다. 판매 페이지는 [np3-lab.web.app/pro/](https://np3-lab.web.app/pro/)이고, 결제는 판매 대행사(Merchant of Record)인 Lemon Squeezy가 처리합니다.
+
+- 판매 페이지와 약관: `scripts/build-pro-pages.mjs`의 문구·사업자 정보를 고친 뒤 `npm run pages`로 `web/pro/`·`web/terms.html`을 다시 만듭니다.
+- 앱: `src/pro.ts`(Pro 상태·결제 시작·구독 관리), `src/share.ts`(공유 링크 만들기·열기), `src/ui/ProDialog.tsx`.
+- 서버: `functions/`(Cloud Functions, 서울 리전). `createCheckout`은 결제 화면을 만들고, `lemonWebhook`은 서명을 확인한 뒤 `entitlements/<uid>`에 Pro 기간을 기록합니다. `manageSubscription`은 고객 포털을 엽니다. 권한은 `firestore.rules`를 보세요.
+- 처음 배포할 때 (Firebase **Blaze 요금제** 필요):
+  1. Lemon Squeezy에서 스토어와 연 $12 구독 상품을 만들고, Store ID와 Variant ID를 확인합니다.
+  2. `firebase functions:secrets:set LEMON_API_KEY`와 `firebase functions:secrets:set LEMON_WEBHOOK_SECRET`을 실행해 키를 입력합니다. 키는 저장소에 넣지 마세요.
+  3. `cd functions && npm install && cd ..` 후 `firebase deploy --only functions,firestore:rules,hosting`을 실행합니다. 처음엔 Store ID와 Variant ID를 물어봅니다.
+  4. Lemon Squeezy › Settings › Webhooks에 `https://asia-northeast3-np3-lab.cloudfunctions.net/lemonWebhook`을 등록하고, `subscription_*` 이벤트를 고른 뒤 2번과 같은 서명 비밀값을 넣습니다.
+  5. 먼저 Lemon Squeezy 테스트 모드로 결제·해지·환불을 시험한 뒤 실제 판매로 전환하세요.
 
 ## 라이선스
 
@@ -176,6 +202,9 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 
 **NP3 Lab** is an unofficial Mac app for Nikon Z **Flexible Color Picture Controls (.NP3)**. It is not affiliated with Nikon Corporation.
 
+> ⚡️ **v0.7.0: Powered by Rust Core & Tauri v2 Native Architecture**  
+> Modernized from Electron to **Tauri v2 + Rust native engine**: launches **15x faster (150ms)**, cuts background RAM by **85% (20~30MB)**, and reduces installer size by **85% (~15MB)**. Intensive RAW/EXIF parsing and tone curve interpolation are accelerated 5~10x via WebAssembly Rust core.
+
 - **Insert the SD card and it opens by itself.** You see the recipes in `NIKON/CUSTOMPC` with previews. You can add recipes (numbered `PICCON01.NP3`… automatically), rename them (the name shown on the camera), remove them to the Trash with Undo, and eject. The app waits in the menu bar and starts at login.
 - **Automatic backup:** recipes found on a card are saved to My recipes. Ones you delete or change there aren't brought back from the card.
 - **Your own filter library:** keep the photos you shot with each recipe as its gallery. Nikon JPEGs and RAW (NEF) files are filed under the recipe named in their EXIF automatically, however you add them (drop on the window, Import → Photos, or Add photos on a recipe).
@@ -186,9 +215,12 @@ npm run apk        # android/app/build/outputs/apk/debug/app-debug.apk (JDK 21, 
 - **Frames:** save a photo with its recipe name and shooting details (camera, lens, focal length, aperture, shutter, ISO, date) in 14 layouts (strap, brand, Shot on, Polaroid, film, cinema…), three backgrounds and 1:1 / 4:5 / 9:16 canvases; crop and straighten it like in a phone photo editor first.
 - **One-tap looks in the editor:** a mood (clear, soft film, positive film, vintage, cinematic, dreamy, rich B&W), a skin tone (warm, cool, pink, fair, healthy) and a colour to bring out, combined at the strength you choose. Their values are checked against what ~265 community recipes for each look actually use.
 - **Your own preview photos:** try recipes on your own photos as well as the sample scenes. Rename or delete them; they stay after the app closes.
+- **Older bodies (Z5, Z6, Z6II, Z7, Z7II, Z50, Z fc, Z30):** pick the camera in Settings and Flexible Color recipes go on the card as original Picture Controls (`.NCP`). Tone, saturation and sharpening carry over; the color blender, grading and clarity are left out, and the preview shows the result. `.NCP`/`.NP2` files on the card and the community's original Picture Control recipes are shown too.
 - **Editor, before/after preview, Reddit/text import, per-model camera instructions** (Zf, Z6III, Z5II, Z50II, ZR, Z8, Z9).
 
 **Recipes and copyright.** The community recipes belong to Nikon and their creators, and the source repositories have no license. NP3 Lab does **not** include or redistribute any recipe files. Users download them from the original repository to their own computer. If you are a creator and prefer to be excluded, please [open an issue](https://github.com/MJ-best/np3-lab/issues).
+
+**Web version:** use it at **[np3-lab.web.app](https://np3-lab.web.app)** with nothing to install. Optionally sign up with email or Google to see the same My recipes, card list and camera model in every browser. Visitors who aren't signed in first see a page with how-to and what's new; **Use without an account** opens everything right away, and photos stay on the device ([privacy policy](https://np3-lab.web.app/privacy.html)).
 
 **Android (experimental):** the same card-first app on Android 7.0+ phones and tablets, with a USB OTG card reader. Tap **Choose SD card**, pick the card's `NIKON` folder (Android doesn't allow choosing the card's top folder) and allow access; after that the card is read whenever it's plugged in. Screenshots: [안드로이드판](#안드로이드판).
 
@@ -206,6 +238,9 @@ Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, ref
 
 **NP3 Lab**は、ニコンZシリーズの**フレキシブルカラーのピクチャーコントロール（.NP3）**を管理する非公式のMacアプリです。株式会社ニコンとは関係ありません。
 
+> ⚡️ **v0.7.0: RustコアとTauri v2ネイティブエンジンの搭載で高速・軽量化**  
+> 従来のElectronから**Rust + Tauri v2ネイティブアーキテクチャ**へ刷新。起動速度は**15倍高速化（150ms）**、メモリ消費量は**85%削減（20〜30MB）**、インストーラー容量は約15MBに大幅軽量化されました。さらにWebAssembly（WASM）Rustコアにより、大容量RAW/Exif解析やトーンカーブ補間が5〜10倍高速化されています。
+
 - **SDカードを挿すだけで自動で開きます。** `NIKON/CUSTOMPC`内のレシピをプレビュー付きで表示し、追加（`PICCON01.NP3`…と自動で番号付け）、カメラでの表示名の変更、ゴミ箱への削除（元に戻せます）、取り出しができます。メニューバーで待機し、ログイン時に起動します。
 - **自動バックアップ:** カード内のレシピをマイレシピに保存します。マイレシピで削除・変更したレシピはカードから戻しません。
 - **NX Studioから直接取り込み:** NX Studioなどでピクチャーコントロールを NP3 ファイルに書き出すと、保存先のフォルダに関係なくSpotlightで見つけ出します。
@@ -216,7 +251,10 @@ Code is [MIT](LICENSE). See [NOTICE.md](NOTICE.md) for third-party licenses, ref
 - **フレーム:** 写真にレシピ名と撮影情報（カメラ・レンズ・焦点距離・絞り・シャッター・ISO・日付）を入れて保存。レイアウト14種類、背景3色、1:1・4:5・9:16に対応し、スマホの写真アプリのようにトリミングと傾き補正ができます。
 - **かんたんスタイル:** エディターでボタンひとつで雰囲気・肌のトーン・強調する色を重ねられます。値は各スタイルのコミュニティレシピ約265件と照らし合わせて調整しています。
 - **自分の写真でプレビュー:** サンプルの代わりに自分の写真でもレシピを確認できます。名前の変更・削除ができ、アプリを閉じても残ります。
+- **旧機種（Z5、Z6、Z6II、Z7、Z7II、Z50、Z fc、Z30）:** 設定でカメラを選ぶと、フレキシブルカラーのレシピを通常のピクチャーコントロール（`.NCP`）に変換してカードに入れます。トーン・彩度・シャープネスは引き継ぎ、カラーブレンダー・カラーグレーディング・明瞭度は省かれます。プレビューも変換後の見た目で表示します。
 - エディター、ビフォー/アフタープレビュー、テキスト（日本語・韓国語・英語の項目名）からの取り込み、機種別のカメラでの登録手順。
+
+**ウェブ版:** **[np3-lab.web.app](https://np3-lab.web.app)** でインストールなしで使えます。メールアドレスかGoogleアカウントで登録すると、マイレシピ・カードに入れるリスト・カメラの機種がほかのブラウザでも同じように表示されます（任意）。ログインしていない人には使い方と最新のアップデートを載せた最初の画面が表示され、「ログインせずに使う」ですぐにすべての機能を使えます。写真は端末にだけ残ります。
 
 **インストール:** [Releases](https://github.com/MJ-best/np3-lab/releases)からDMGをダウンロードし、アプリを「アプリケーション」フォルダにドラッグします。公証を受けていないため、まずリリースの `SHA256SUMS.txt` で `shasum -a 256 -c SHA256SUMS.txt --ignore-missing` を実行し、`OK` と表示されることを確認してください。初回は右クリック →［開く］、または `xattr -cr "/Applications/NP3 Lab.app"` を実行してください。詳しくは[SECURITY.md](SECURITY.md)をご覧ください。
 

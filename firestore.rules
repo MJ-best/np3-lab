@@ -1,0 +1,51 @@
+rules_version = '2';
+// Each signed-in user reads and writes only their own synced items (see src/account.ts):
+// users/<uid>/recipes/<id> and users/<uid>/prefs/<cart|camera>, each { t, data } or { t, deleted }.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{col}/{id} {
+      function owner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+      function valid() {
+        let d = request.resource.data;
+        return col in ['recipes', 'prefs']
+          && d.keys().hasOnly(['t', 'data', 'deleted'])
+          && d.t is number
+          && (d.keys().hasAny(['data'])
+            ? d.data is string && d.data.size() < 200000 && !d.keys().hasAny(['deleted'])
+            : d.deleted == true);
+      }
+      allow read, delete: if owner();
+      allow create, update: if owner() && valid();
+    }
+
+    // Pro status, written only by Cloud Functions (functions/index.js) from Lemon Squeezy webhooks.
+    match /entitlements/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Pro: share links to your own recipes (src/share.ts). Anyone with the link can open one;
+    // nobody can list them. Only a Pro user creates them, only the owner deletes them.
+    match /shares/{id} {
+      function isPro() {
+        let e = /databases/$(database)/documents/entitlements/$(request.auth.uid);
+        return exists(e) && get(e).data.proUntil is timestamp && get(e).data.proUntil > request.time;
+      }
+      function validShare() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['owner', 'title', 'np3', 't'])
+          && d.owner == request.auth.uid
+          && d.title is string && d.title.size() > 0 && d.title.size() <= 100
+          && d.np3 is string && d.np3.size() > 0 && d.np3.size() <= 90000
+          && d.t is number;
+      }
+      allow get: if true;
+      allow list: if request.auth != null && resource.data.owner == request.auth.uid;
+      allow create: if request.auth != null && validShare() && isPro();
+      allow delete: if request.auth != null && resource.data.owner == request.auth.uid;
+      allow update: if false;
+    }
+  }
+}

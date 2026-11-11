@@ -18,8 +18,11 @@ export function looksLikeNikonCard(rootNames, dcimNames) {
   return folders.some((n) => /^\d{3}N/i.test(n));
 }
 
+/** Picture Control files in CUSTOMPC: .NP3 (Flexible Color and newer), .NP2, .NCP (every camera). */
+export const PC_FILE_RE = /\.(np3|np2|ncp)$/i;
+
 /**
- * A file name the page may write or delete: a plain *.NP3 name inside CUSTOMPC, any characters.
+ * A file name the page may write or delete: a plain Picture Control file name inside CUSTOMPC, any characters.
  * @param {unknown} name
  * @returns {name is string}
  */
@@ -28,7 +31,7 @@ export function isSafeNp3Name(name) {
     typeof name === "string" &&
     name.length >= 5 &&
     name.length <= 255 &&
-    /\.np3$/i.test(name) &&
+    PC_FILE_RE.test(name) &&
     !name.startsWith(".") &&
     !/[\\/\0]/.test(name)
   );
@@ -53,6 +56,16 @@ export function isNp3Bytes(bytes) {
     bytes[2] === 0x50 &&
     bytes[3] === 0x00
   );
+}
+
+/**
+ * Extension for Picture Control bytes, from the version in the header:
+ * 01xx → .NCP, 02xx → .NP2, otherwise .NP3.
+ * @param {Uint8Array} bytes
+ */
+export function pcExtOf(bytes) {
+  const v = String.fromCharCode(bytes[12], bytes[13]);
+  return v === "01" ? ".NCP" : v === "02" ? ".NP2" : ".NP3";
 }
 
 /** 2026-10-01 → "20261001" (local time). */

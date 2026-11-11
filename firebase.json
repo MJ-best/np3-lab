@@ -1,0 +1,19 @@
+{
+  "hosting": {
+    "public": "dist-web",
+    "ignore": ["firebase.json", "**/.*"],
+    "headers": [
+      { "source": "**", "headers": [{ "key": "Cache-Control", "value": "no-cache" }, { "key": "X-Content-Type-Options", "value": "nosniff" }] },
+      { "source": "assets/**", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
+    ]
+  },
+  "firestore": { "rules": "firestore.rules" },
+  "functions": [{ "source": "functions", "codebase": "default", "runtime": "nodejs22", "ignore": ["node_modules", ".git", "*.log"] }],
+  "emulators": {
+    "auth": { "port": 9099 },
+    "firestore": { "port": 8080 },
+    "functions": { "port": 5001 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

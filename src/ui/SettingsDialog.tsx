@@ -1,8 +1,98 @@
 import { useEffect, useState } from "preact/hooks";
+import { account, accountsEnabled, deleteAccount, guest, lastSynced, signOutAccount, syncNow, syncStatus } from "../account";
 import { autoBackup, setAutoBackup } from "../cards";
 import { lang, setLang, t, LANGS } from "../i18n";
 import { isAndroid, native, type NativeSettings } from "../native";
+import { entitlement, isPro, manageSubscription, proPageUrl } from "../pro";
+import { CameraSelect } from "./CameraGuide";
 import { Overlay } from "./RecipeDetail";
+
+/** Pro status: the paid-until date and subscription management, or where to learn about Pro. */
+function ProRow() {
+  const e = entitlement.value;
+  const until = e?.proUntil ? new Date(e.proUntil).toLocaleDateString(lang.value) : "";
+  return (
+    <div class="setting-row">
+      <span>{isPro.value ? t("proActiveUntil", { date: until }) : t("proInactive")}</span>
+      {isPro.value || e?.status ? (
+        <button onClick={() => void manageSubscription()}>{t("proManage")}</button>
+      ) : (
+        <a class="button" href={proPageUrl()} target="_blank" rel="noopener">
+          {t("proSeePlans")}
+        </a>
+      )}
+    </div>
+  );
+}
+
+/** Hosted web version: optional account that syncs My recipes, the card list and the camera. */
+function AccountRows({ onClose }: { onClose: () => void }) {
+  const me = account.value;
+  const status = syncStatus.value;
+  const time = lastSynced.value ? new Date(lastSynced.value).toLocaleTimeString(lang.value, { hour: "2-digit", minute: "2-digit" }) : "";
+  return (
+    <div class="account">
+      <div class="setting-row">
+        <span>{t("account")}</span>
+        {me ? (
+          <button
+            onClick={() => {
+              onClose();
+              void signOutAccount();
+            }}
+          >
+            {t("signOut")}
+          </button>
+        ) : (
+          <button
+            class="primary"
+            onClick={() => {
+              onClose();
+              guest.value = false;
+            }}
+          >
+            {t("signInOrUp")}
+          </button>
+        )}
+      </div>
+      {me && (
+        <p class="hint">
+          {me.email}
+          {" · "}
+          {status === "syncing" && t("syncSyncing")}
+          {status === "ok" && t("syncOk", { time })}
+          {status === "error" && (
+            <>
+              {t("syncError")}{" "}
+              <button class="link" onClick={() => void syncNow()}>
+                {t("syncRetry")}
+              </button>
+            </>
+          )}
+        </p>
+      )}
+      {me && <ProRow />}
+      <p class="hint">
+        {t("syncHint")}{" "}
+        <a href="privacy.html" target="_blank" rel="noopener">
+          {t("privacyPolicy")}
+        </a>
+      </p>
+      {me && (
+        <button
+          class="danger ghost"
+          onClick={() => {
+            if (!confirm(t("deleteAccountConfirm"))) return;
+            onClose();
+            void deleteAccount();
+          }}
+        >
+          {t("deleteAccount")}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const [s, setS] = useState<NativeSettings | null>(null);
@@ -44,6 +134,11 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </div>
+        <div class="setting-row">
+          <span>{t("cameraModel")}</span>
+          <CameraSelect />
+        </div>
+        {accountsEnabled && <AccountRows onClose={onClose} />}
         {native && (
           <>
             <label class="toggle">

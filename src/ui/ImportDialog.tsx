@@ -1,4 +1,5 @@
 import { useRef } from "preact/hooks";
+import { PC_FILE_RE } from "../np3/recipe";
 import { t, type MessageKey } from "../i18n";
 import { isAndroid, isDesktop } from "../native";
 import { canUseCardFolder, pickCardFolder, readNp3Files } from "../pack/cardWriter";
@@ -13,7 +14,7 @@ const STATUS_KEYS: Record<ImportEntry["status"], MessageKey> = {
 };
 
 export async function np3FromFiles(files: File[]): Promise<{ name: string; bytes: Uint8Array }[]> {
-  const np3 = files.filter((f) => /\.np3$/i.test(f.name));
+  const np3 = files.filter((f) => PC_FILE_RE.test(f.name));
   return Promise.all(np3.map(async (f) => ({ name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) })));
 }
 
@@ -80,7 +81,7 @@ export function ImportDialog() {
           <input
             ref={fileRef}
             type="file"
-            accept=".np3,.NP3"
+            accept=".np3,.NP3,.np2,.NP2,.ncp,.NCP"
             multiple
             hidden
             onChange={async (e) => {

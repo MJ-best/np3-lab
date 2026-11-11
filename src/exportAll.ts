@@ -2,7 +2,7 @@ import JSZip from "jszip";
 import { communitySourceOf, isCommunityRecipe } from "./community";
 import { t } from "./i18n";
 import { isAndroid, native, nativeErrorMessage, type ExportFile } from "./native";
-import { recipeToBytes, type Recipe } from "./np3/recipe";
+import { pcExt, recipeToBytes, type Recipe } from "./np3/recipe";
 import { downloadBytes } from "./pack/download";
 import { fileBaseFor } from "./pack/naming";
 import { allRecipes, showToast } from "./state";
@@ -45,8 +45,9 @@ async function exportZip(files: ExportFile[]) {
   const zip = new JSZip();
   const used = new Set<string>();
   for (const f of files) {
-    let path = `NP3-Lab-Export/${f.dir}/${f.base}.NP3`;
-    for (let n = 2; used.has(path.toLowerCase()); n++) path = `NP3-Lab-Export/${f.dir}/${f.base}_${today()}-${n}.NP3`;
+    const ext = pcExt(f.bytes);
+    let path = `NP3-Lab-Export/${f.dir}/${f.base}${ext}`;
+    for (let n = 2; used.has(path.toLowerCase()); n++) path = `NP3-Lab-Export/${f.dir}/${f.base}_${today()}-${n}${ext}`;
     used.add(path.toLowerCase());
     zip.file(path, f.bytes, { binary: true });
   }

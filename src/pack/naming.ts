@@ -1,4 +1,4 @@
-import { sanitizeNpName, type LocalizedText, type Recipe } from "../np3/recipe";
+import { PC_FILE_RE, pcExt, sanitizeNpName, type LocalizedText, type Recipe } from "../np3/recipe";
 
 /** Nikon reads at most 99 files of each picture-control type per card (01–99). */
 export const MAX_PER_CARD = 99;
@@ -17,16 +17,18 @@ export interface PackPlan {
   overflow: Recipe[];
 }
 
-export const picconName = (n: number) => `PICCON${String(n).padStart(2, "0")}.NP3`;
+export const picconName = (n: number, ext = ".NP3") => `PICCON${String(n).padStart(2, "0")}${ext}`;
 
-const PICCON_RE = /^PICCON(\d{2})\.NP3$/i;
-const NP3_RE = /\.NP3$/i;
+const PICCON_RE = /^PICCON(\d{2})(\.(?:NP3|NP2|NCP))$/i;
 
-export function usedPicconNumbers(existing: Iterable<string>): Set<number> {
+/** The extension a recipe goes onto the card with: its own bytes decide; one made in the editor is an .NP3. */
+const extOf = (r: Recipe) => (r.raw ? pcExt(r.raw) : ".NP3");
+
+export function usedPicconNumbers(existing: Iterable<string>, ext = ".NP3"): Set<number> {
   const used = new Set<number>();
   for (const name of existing) {
     const m = PICCON_RE.exec(name);
-    if (m) used.add(Number(m[1]));
+    if (m && m[2].toUpperCase() === ext) used.add(Number(m[1]));
   }
   return used;
 }
@@ -38,7 +40,8 @@ export function fileBaseFor(recipe: Recipe): string {
 
 /**
  * Decide the file name of every recipe on one card, avoiding names that are
- * already present (compared case-insensitively, as FAT/exFAT do).
+ * already present (compared case-insensitively, as FAT/exFAT do). Nikon reads up to
+ * 99 files of each type (.NP3, .NP2, .NCP), numbered separately.
  */
 export function planCardFiles(
   recipes: readonly Recipe[],
@@ -46,38 +49,38 @@ export function planCardFiles(
 ): PackPlan {
   const existing = [...(opts.existing ?? [])];
   const taken = new Set(existing.map((n) => n.toUpperCase()));
-  const existingNp3 = existing.filter((n) => NP3_RE.test(n)).length;
+  const count = new Map<string, number>();
+  for (const name of existing) {
+    const ext = PC_FILE_RE.exec(name)?.[0].toUpperCase();
+    if (ext) count.set(ext, (count.get(ext) ?? 0) + 1);
+  }
+  const start = Math.min(MAX_PER_CARD, Math.max(1, Math.round(opts.startAt ?? 1)));
+  const order = [
+    ...Array.from({ length: MAX_PER_CARD - start + 1 }, (_, i) => start + i),
+    ...Array.from({ length: start - 1 }, (_, i) => i + 1),
+  ];
   const files: PlannedFile[] = [];
   const overflow: Recipe[] = [];
-
-  if (opts.mode === "piccon") {
-    const used = usedPicconNumbers(existing);
-    const start = Math.min(MAX_PER_CARD, Math.max(1, Math.round(opts.startAt ?? 1)));
-    const order = [
-      ...Array.from({ length: MAX_PER_CARD - start + 1 }, (_, i) => start + i),
-      ...Array.from({ length: start - 1 }, (_, i) => i + 1),
-    ];
-    const free = order.filter((n) => !used.has(n) && !taken.has(picconName(n)));
-    // Non-PICCON .NP3 files on the card also count towards the 99-file limit.
-    const capacity = Math.max(0, Math.min(free.length, MAX_PER_CARD - existingNp3));
-    recipes.forEach((recipe, i) => {
-      if (i < capacity) files.push({ fileName: picconName(free[i]), recipe });
-      else overflow.push(recipe);
-    });
-    return { files, overflow };
-  }
-
-  const capacity = Math.max(0, MAX_PER_CARD - existingNp3);
   for (const recipe of recipes) {
-    if (files.length >= capacity) {
+    const ext = extOf(recipe);
+    let fileName: string | undefined;
+    if ((count.get(ext) ?? 0) < MAX_PER_CARD) {
+      if (opts.mode === "piccon") {
+        const n = order.find((k) => !taken.has(picconName(k, ext)));
+        fileName = n === undefined ? undefined : picconName(n, ext);
+      } else {
+        const base = fileBaseFor(recipe);
+        fileName = `${base}${ext}`;
+        for (let i = 2; taken.has(fileName.toUpperCase()); i++) fileName = `${base}_${i}${ext}`;
+      }
+    }
+    if (!fileName) {
       overflow.push(recipe);
       continue;
     }
-    const base = fileBaseFor(recipe);
-    let candidate = `${base}.NP3`;
-    for (let i = 2; taken.has(candidate.toUpperCase()); i++) candidate = `${base}_${i}.NP3`;
-    taken.add(candidate.toUpperCase());
-    files.push({ fileName: candidate, recipe });
+    taken.add(fileName.toUpperCase());
+    count.set(ext, (count.get(ext) ?? 0) + 1);
+    files.push({ fileName, recipe });
   }
   return { files, overflow };
 }
@@ -106,9 +109,9 @@ export function manifestText(cards: PlannedFile[][], generatedAt = new Date()): 
     "\uFEFFNP3 Lab - Picture Control package",
     `Generated: ${localStamp(generatedAt)}`,
     "",
-    "[KO] 카드의 NIKON/CUSTOMPC 폴더에 .NP3 파일을 복사한 뒤,",
+    "[KO] 카드의 NIKON/CUSTOMPC 폴더에 .NP3·.NCP 파일을 복사한 뒤,",
     "     MENU > 사진 촬영 메뉴 > Picture Control 관리 > 로드/저장 > 카메라에 복사 (Zf: 저장/편집)",
-    "[EN] Copy the .NP3 files into NIKON/CUSTOMPC on the card, then on the camera:",
+    "[EN] Copy the .NP3/.NCP files into NIKON/CUSTOMPC on the card, then on the camera:",
     "     MENU > Photo shooting menu > Manage Picture Control > Load/save > Copy to camera (Zf: Save/edit)",
     "",
   ];

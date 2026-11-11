@@ -25,8 +25,13 @@ export interface NefPreview {
   orientation: number;
 }
 
+import { wasmFindNefPreview } from "./wasmBridge";
+
 /** Find the largest embedded JPEG and the orientation in a NEF's TIFF header. Bounds-checked: the file is untrusted. */
 export function findNefPreview(head: Uint8Array, fileSize: number): NefPreview | null {
+  const accelerated = wasmFindNefPreview(head, fileSize);
+  if (accelerated) return accelerated;
+
   if (head.length < 16) return null;
   const le = head[0] === 0x49 && head[1] === 0x49;
   const be = head[0] === 0x4d && head[1] === 0x4d;

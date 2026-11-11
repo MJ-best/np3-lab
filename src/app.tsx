@@ -1,4 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
+import { account, accountsEnabled, guest, showLanding, startAccount } from "./account";
+import { watchPro } from "./pro";
+import { openSharedFromUrl } from "./share";
 import { handleAndroidBack } from "./androidBack";
 import { activeCard, startCardSync } from "./cards";
 import { lang, t, type MessageKey } from "./i18n";
@@ -13,7 +16,10 @@ import { CardView } from "./ui/CardView";
 import { Editor } from "./ui/Editor";
 import { Gallery } from "./ui/Gallery";
 import { ImportDialog, np3FromFiles } from "./ui/ImportDialog";
+import { Landing } from "./ui/Landing";
+import { Logo } from "./ui/Logo";
 import { PhotoGallery } from "./ui/PhotoGallery";
+import { ProDialog } from "./ui/ProDialog";
 import { RecipeDetail } from "./ui/RecipeDetail";
 import { SettingsDialog } from "./ui/SettingsDialog";
 import { TextImportDialog } from "./ui/TextImportDialog";
@@ -84,6 +90,10 @@ export function App() {
   useEffect(() => {
     document.documentElement.lang = lang.value;
     void loadPhotoIndex();
+    startAccount();
+    // Hosted web version: Pro status, and recipes shared by link (?share=…).
+    watchPro();
+    void openSharedFromUrl();
     if (isDesktop) {
       document.documentElement.classList.add("desktop");
       if (isAndroid) document.documentElement.classList.add(native!.platform);
@@ -101,32 +111,20 @@ export function App() {
   }, []);
   useEffect(() => window.scrollTo(0, 0), [route.value]);
 
+  // accountsEnabled first: a constant, so the other builds leave the sign-up page out.
+  if (accountsEnabled && showLanding.value)
+    return (
+      <div class="app">
+        <Landing />
+        <Toasts />
+      </div>
+    );
+
   return (
     <div class="app">
       <header class="topbar">
         <div class="brand">
-          {/* Same artwork as the app icon (scripts/make-icons.mjs). */}
-          <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
-            <defs>
-              <linearGradient id="np3-tile" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#F2B200" />
-                <stop offset=".75" stop-color="#FFD600" />
-              </linearGradient>
-              <radialGradient id="np3-dome" cx="16" cy="27.2" r="18" gradientUnits="userSpaceOnUse">
-                <stop offset=".25" stop-color="#FFCD00" />
-                <stop offset="1" stop-color="#FFFCE8" />
-              </radialGradient>
-              <clipPath id="np3-clip">
-                <rect width="32" height="32" rx="7.2" />
-              </clipPath>
-            </defs>
-            <g clip-path="url(#np3-clip)">
-              <rect width="32" height="32" fill="url(#np3-tile)" />
-              <ellipse cx="16" cy="28.35" rx="18.25" ry="17.48" fill="url(#np3-dome)" />
-              <ellipse cx="12.73" cy="21.73" rx="2.17" ry="2.95" fill="#161616" transform="rotate(-4.6 12.73 21.73)" />
-              <ellipse cx="19.34" cy="20.34" rx="2.17" ry="2.95" fill="#161616" transform="rotate(4.6 19.34 20.34)" />
-            </g>
-          </svg>
+          <Logo />
           <div>
             <strong>NP3 Lab</strong>
             <span class="tagline">{t("appTagline")}</span>
@@ -148,6 +146,11 @@ export function App() {
           ))}
         </nav>
         <div class="topbar-actions">
+          {accountsEnabled && !account.value && (
+            <button class="lang" onClick={() => (guest.value = false)}>
+              {t("signIn")}
+            </button>
+          )}
           <button class="lang" aria-label={t("settingsTitle")} title={t("settingsTitle")} onClick={() => setSettingsOpen(true)}>
             ⚙︎
           </button>
@@ -169,6 +172,7 @@ export function App() {
       </footer>
 
       <RecipeDetail />
+      {accountsEnabled && <ProDialog />}
       <TextImportDialog />
       <ImportDialog />
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
@@ -178,24 +182,30 @@ export function App() {
           <div>{t("dropHint")}</div>
         </div>
       )}
-      <div class="toasts" aria-live="polite">
-        {toasts.value.map((toast) => (
-          <div key={toast.id} class={`toast ${toast.kind}`}>
-            {toast.text}
-            {toast.action && (
-              <button
-                class="toast-action"
-                onClick={() => {
-                  toast.action!.run();
-                  dismissToast(toast.id);
-                }}
-              >
-                {toast.action.label}
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+      <Toasts />
+    </div>
+  );
+}
+
+function Toasts() {
+  return (
+    <div class="toasts" aria-live="polite">
+      {toasts.value.map((toast) => (
+        <div key={toast.id} class={`toast ${toast.kind}`}>
+          {toast.text}
+          {toast.action && (
+            <button
+              class="toast-action"
+              onClick={() => {
+                toast.action!.run();
+                dismissToast(toast.id);
+              }}
+            >
+              {toast.action.label}
+            </button>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

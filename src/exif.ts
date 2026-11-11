@@ -35,7 +35,12 @@ function tiffStart(b: Uint8Array): number {
   return -1;
 }
 
+import { wasmReadExif } from "./wasmBridge";
+
 export function readExif(bytes: Uint8Array): PhotoExif | null {
+  const accelerated = wasmReadExif(bytes);
+  if (accelerated) return accelerated;
+
   const base = tiffStart(bytes);
   if (base < 0 || base + 8 > bytes.length) return null;
   const le = bytes[base] === 0x49;

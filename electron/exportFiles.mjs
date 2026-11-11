@@ -1,7 +1,7 @@
 // Exports recipes to a folder without ever overwriting a file that's already there.
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { dateTag, exportNames, safeSegment, sameBytes } from "./cardRules.mjs";
+import { dateTag, exportNames, pcExtOf, safeSegment, sameBytes } from "./cardRules.mjs";
 
 /**
  * Write `bytes` as `<base><ext>` in `dir`, keeping every existing file:
@@ -50,7 +50,7 @@ export async function exportRecipes(root, files, tag = dateTag()) {
   for (const f of files) {
     const dir = join(root, ...String(f.dir).split("/").filter(Boolean).map(safeSegment));
     try {
-      const r = await writeWithoutOverwrite(dir, safeSegment(f.base), f.bytes, { tag });
+      const r = await writeWithoutOverwrite(dir, safeSegment(f.base), f.bytes, { ext: pcExtOf(f.bytes), tag });
       result[r.status]++;
     } catch {
       result.failed++;

@@ -1,7 +1,7 @@
 import { signal } from "@preact/signals";
 import { noteFor } from "./data/recipeNotes";
 import { lookOf } from "./look";
-import { parseNp3, type Recipe } from "./np3/recipe";
+import { PC_FILE_RE, classicTags, parseNp3, pcFormat, type Recipe } from "./np3/recipe";
 import { communitySourceUrl, describeCommunityFile } from "./recipeSources";
 import { base64ToBytes, bytesToBase64, readStore, writeStore } from "./storage";
 
@@ -53,6 +53,8 @@ interface StoredSource {
 
 interface Stored {
   v: 2;
+  /** Which files a listing keeps (see listSource); a download with an older rule lists again. */
+  listing?: number;
   fetchedAt: string;
   sources: Record<string, StoredSource>;
   /** base64 NP3 bytes by SHA-256 (base64, as jsDelivr reports it). */
@@ -79,11 +81,10 @@ export const communityProgress = signal<{ done: number; total: number } | null>(
 const recipeId = (source: CommunitySource, path: string) =>
   source.id === COMMUNITY_SOURCES[0].id ? `community:${path}` : `community:${source.id}/${path.slice(source.prefix.length)}`;
 
-const stemOf = (path: string) => (path.split("/").pop() ?? path).replace(/\.np3$/i, "");
+const stemOf = (path: string) => (path.split("/").pop() ?? path).replace(PC_FILE_RE, "");
 
-/** Only Flexible Color NP3 files (header NCP, version 0310) can go on a Z-series card. */
-const isFlexibleColor = (raw: Uint8Array) =>
-  raw.length > 16 && String.fromCharCode(...raw.slice(0, 3)) === "NCP" && String.fromCharCode(...raw.slice(12, 16)) === "0310";
+/** 2: original Picture Controls (.NCP, some without an extension) are kept too, not only .NP3. */
+const LISTING = 2;
 
 export function toCommunityRecipe(source: CommunitySource, commit: string, path: string, raw: Uint8Array): Recipe | null {
   try {
@@ -101,7 +102,7 @@ export function toCommunityRecipe(source: CommunitySource, commit: string, path:
       use: note?.use,
       released: note?.released,
       noteCredit: note?.credit,
-      tags: [...new Set([...meta.tags, ...(look?.tags ?? [])])],
+      tags: [...new Set([...meta.tags, ...(look?.tags ?? []), ...classicTags(raw)])],
       author: creator,
       params: parsed.params,
       raw,
@@ -209,7 +210,8 @@ export async function listSource(source: CommunitySource, commit: string): Promi
   );
   return listing.files
     .map((f) => ({ path: f.name.replace(/^\//, ""), hash: f.hash }))
-    .filter((f) => f.path.startsWith(source.prefix) && /\.np3$/i.test(f.path))
+    // Picture Control files, and files without an extension (some .NCP are shared that way): the header decides later.
+    .filter((f) => f.path.startsWith(source.prefix) && (PC_FILE_RE.test(f.path) || !(f.path.split("/").pop() ?? "").includes(".")))
     .sort((a, b) => a.path.localeCompare(b.path));
 }
 
@@ -260,7 +262,7 @@ export async function downloadCommunityRecipes(force = false): Promise<Recipe[] 
   const previous = readStore<Stored>(STORE_KEY);
   const commits = await Promise.all(COMMUNITY_SOURCES.map((s) => resolveCommit(s.repo)));
   const unchanged = COMMUNITY_SOURCES.every((s, i) => commits[i] !== "main" && previous?.sources[s.id]?.commit === commits[i]);
-  if (!force && previous?.v === 2 && unchanged) return null;
+  if (!force && previous?.v === 2 && previous.listing === LISTING && unchanged) return null;
 
   const listings = await Promise.allSettled(COMMUNITY_SOURCES.map((s, i) => listSource(s, commits[i])));
   const blobs = await knownBlobs();
@@ -293,7 +295,7 @@ export async function downloadCommunityRecipes(force = false): Promise<Recipe[] 
     for (let item = queue.shift(); item; item = queue.shift()) {
       try {
         const raw = await fetchVerified(item.repo, item.commit, item.path, item.hash);
-        if (raw && isFlexibleColor(raw)) blobs[item.hash] = bytesToBase64(raw);
+        if (raw && pcFormat(raw)) blobs[item.hash] = bytesToBase64(raw);
       } finally {
         communityProgress.value = { done: ++done, total: missing.length };
       }
@@ -311,7 +313,7 @@ export async function downloadCommunityRecipes(force = false): Promise<Recipe[] 
     s.files = s.files.filter((f) => blobs[f.hash]);
     for (const f of s.files) used[f.hash] = blobs[f.hash];
   }
-  const stored: Stored = { v: 2, fetchedAt: new Date().toISOString(), sources, blobs: used };
+  const stored: Stored = { v: 2, listing: LISTING, fetchedAt: new Date().toISOString(), sources, blobs: used };
   const recipes = build(stored);
   if (recipes.length === 0) throw new Error("no recipes");
   recipes.sort((a, b) => a.id.localeCompare(b.id));

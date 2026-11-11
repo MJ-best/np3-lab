@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
+import { legacyCamera, viewParams } from "../camera";
 import { t } from "../i18n";
 import { sanitizeNpName, type RecipeParams } from "../np3/recipe";
 import { extractSourceMeta, parseRecipes, type ParsedBlock } from "../np3/textFormat";
@@ -33,11 +34,11 @@ function Thumb({ source, params }: { source: PreparedSource | null; params: Reci
   useEffect(() => {
     if (!source) return;
     let alive = true;
-    renderThumbnail(source, params, 240).then((u) => alive && setUrl(u));
+    renderThumbnail(source, viewParams({ params }), 240).then((u) => alive && setUrl(u));
     return () => {
       alive = false;
     };
-  }, [source, params]);
+  }, [source, params, legacyCamera.value]);
   return url ? <img class="block-thumb" src={url} alt="" /> : <div class="block-thumb" />;
 }
 

@@ -2,4 +2,13 @@ node_modules/
 dist/
 .DS_Store
 *.log
-release/
+/release/
+dist-web/
+.firebase/
+firebase-debug.log
+firestore-debug.log
+target/
+src-tauri/target/
+functions/.secret.local
+functions/.runtimeconfig.json
+build/ios/
