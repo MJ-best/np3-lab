@@ -26,6 +26,7 @@
     "build:android": "CAP_BUILD=1 vite build && cap sync android",
     "apk": "npm run build:android && cd android && ./gradlew assembleDebug",
     "apk:release": "npm run build:android && cd android && ./gradlew assembleRelease",
+    "aab:release": "npm run build:android && cd android && ./gradlew bundleRelease",
     "pages": "node scripts/build-pro-pages.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project demo-np3lab \"vitest run tests/rules.test.ts\"",
     "upload:ios": "sh scripts/ios-upload.sh"
