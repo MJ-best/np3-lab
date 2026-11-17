@@ -154,8 +154,10 @@ jobs:
         shell: bash
         run: |
           mkdir -p windows-artifacts
-          find src-tauri/target/ -name "*.exe" -exec cp {} windows-artifacts/ \; 2>/dev/null || true
-          find src-tauri/target/ -name "*.msi" -exec cp {} windows-artifacts/ \; 2>/dev/null || true
+          find target/ -path "*/bundle/*" -name "*.exe" -exec cp {} windows-artifacts/ \; 2>/dev/null || true
+          find target/ -path "*/bundle/*" -name "*.msi" -exec cp {} windows-artifacts/ \; 2>/dev/null || true
+          find src-tauri/target/ -path "*/bundle/*" -name "*.exe" -exec cp {} windows-artifacts/ \; 2>/dev/null || true
+          find src-tauri/target/ -path "*/bundle/*" -name "*.msi" -exec cp {} windows-artifacts/ \; 2>/dev/null || true
           ls -lh windows-artifacts/
 
       - name: Upload Windows Artifacts
@@ -250,8 +252,10 @@ jobs:
       - name: Collect Linux Artifacts
         run: |
           mkdir -p linux-artifacts
-          find src-tauri/target/ -name "*.deb" -exec cp {} linux-artifacts/ \; 2>/dev/null || true
-          find src-tauri/target/ -name "*.AppImage" -exec cp {} linux-artifacts/ \; 2>/dev/null || true
+          find target/ -path "*/bundle/*" -name "*.deb" -exec cp {} linux-artifacts/ \; 2>/dev/null || true
+          find target/ -path "*/bundle/*" -name "*.AppImage" -exec cp {} linux-artifacts/ \; 2>/dev/null || true
+          find src-tauri/target/ -path "*/bundle/*" -name "*.deb" -exec cp {} linux-artifacts/ \; 2>/dev/null || true
+          find src-tauri/target/ -path "*/bundle/*" -name "*.AppImage" -exec cp {} linux-artifacts/ \; 2>/dev/null || true
           ls -lh linux-artifacts/
 
       - name: Upload Linux Artifacts
