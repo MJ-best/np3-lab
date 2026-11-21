@@ -1,4 +1,5 @@
 import { useRef } from "preact/hooks";
+import { t } from "../i18n";
 
 interface Props {
   label: string;
@@ -6,7 +7,7 @@ interface Props {
   min: number;
   max: number;
   step: number;
-  /** Double-click the label or value to return here. */
+  /** Double-click the label or tap reset to return here. */
   defaultValue?: number;
   onChange: (v: number) => void;
   disabled?: boolean;
@@ -27,10 +28,17 @@ export function Slider({ label, value, min, max, step, defaultValue, onChange, d
   // (touch-action: pan-y), the browser cancels the pointer and the old value is put back.
   const before = useRef<number | null>(null);
   return (
-    <label class={`slider${disabled ? " disabled" : ""}${changed ? " changed" : ""}`}>
-      <span class="slider-label" onDblClick={reset} title={defaultValue !== undefined ? "Double-click to reset" : undefined}>
-        {label}
-      </span>
+    <div class={`slider${disabled ? " disabled" : ""}${changed ? " changed" : ""}`}>
+      <div class="slider-label-wrap">
+        <span class="slider-label" onDblClick={reset} title={defaultValue !== undefined ? t("resetSlider") : undefined}>
+          {label}
+        </span>
+        {changed && !disabled && (
+          <button type="button" class="slider-reset" onClick={reset} aria-label={`${label} ${t("resetSlider")}`} title={t("resetSlider")}>
+            ↺
+          </button>
+        )}
+      </div>
       <input
         type="range"
         min={min}
@@ -40,6 +48,7 @@ export function Slider({ label, value, min, max, step, defaultValue, onChange, d
         disabled={disabled}
         style={track ? { "--track": track } : undefined}
         class={track ? "custom-track" : undefined}
+        aria-label={label}
         onInput={(e) => onChange(Number(e.currentTarget.value))}
         onPointerDown={() => (before.current = value)}
         onPointerUp={() => (before.current = null)}
@@ -63,6 +72,6 @@ export function Slider({ label, value, min, max, step, defaultValue, onChange, d
         }}
         aria-label={label}
       />
-    </label>
+    </div>
   );
 }

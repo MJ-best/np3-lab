@@ -23,6 +23,7 @@ import { ProDialog } from "./ui/ProDialog";
 import { RecipeDetail } from "./ui/RecipeDetail";
 import { SettingsDialog } from "./ui/SettingsDialog";
 import { TextImportDialog } from "./ui/TextImportDialog";
+import { useMediaQuery } from "./ui/hooks";
 
 // The desktop app is card-first; the browser build keeps the basket + ZIP flow.
 const TABS: { id: Route; key: MessageKey }[] = isDesktop
@@ -38,6 +39,44 @@ const TABS: { id: Route; key: MessageKey }[] = isDesktop
       { id: "editor", key: "tabEditor" },
       { id: "card", key: "tabCard" },
     ];
+
+function TabIcon({ id }: { id: Route }) {
+  if (id === "card") {
+    return (
+      <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+        <path d="M7 3h7l5 5v12a1.5 1.5 0 0 1-1.5 1.5h-10.5A1.5 1.5 0 0 1 5.5 20V4.5A1.5 1.5 0 0 1 7 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <path d="M9.5 3v4M12.5 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </svg>
+    );
+  }
+  if (id === "gallery") {
+    return (
+      <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="7" height="7" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="13.5" y="3.5" width="7" height="7" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="3.5" y="13.5" width="7" height="7" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <rect x="13.5" y="13.5" width="7" height="7" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" />
+      </svg>
+    );
+  }
+  if (id === "photos") {
+    return (
+      <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+        <rect x="3" y="4.5" width="18" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="8.5" cy="9.5" r="1.6" fill="currentColor" />
+        <path d="M4 17l5-4.5 3.5 3 3-2.5L20 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+      <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      <circle cx="9" cy="7" r="2.2" fill="var(--bg)" stroke="currentColor" stroke-width="1.8" />
+      <circle cx="15.5" cy="12" r="2.2" fill="var(--bg)" stroke="currentColor" stroke-width="1.8" />
+      <circle cx="10.5" cy="17" r="2.2" fill="var(--bg)" stroke="currentColor" stroke-width="1.8" />
+    </svg>
+  );
+}
 
 /** Accept NP3 files and photos dropped anywhere on the window. */
 function useWindowDrop() {
@@ -87,6 +126,7 @@ export function App() {
   const dropping = useWindowDrop();
   const [gl] = useState(() => webglAvailable());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const mobileNav = useMediaQuery("(max-width: 760px)");
   useEffect(() => {
     document.documentElement.lang = lang.value;
     void loadPhotoIndex();
@@ -111,6 +151,13 @@ export function App() {
   }, []);
   useEffect(() => window.scrollTo(0, 0), [route.value]);
 
+  const cardBadge =
+    !isDesktop && cartRecipes.value.length > 0
+      ? cartRecipes.value.length
+      : isDesktop && activeCard.value
+        ? activeCard.value.np3Count
+        : null;
+
   // accountsEnabled first: a constant, so the other builds leave the sign-up page out.
   if (accountsEnabled && showLanding.value)
     return (
@@ -130,28 +177,29 @@ export function App() {
             <span class="tagline">{t("appTagline")}</span>
           </div>
         </div>
-        <nav class="tabs" role="tablist">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={route.value === tab.id}
-              class={route.value === tab.id ? "active" : ""}
-              onClick={() => (route.value = tab.id)}
-            >
-              {t(tab.key)}
-              {tab.id === "card" && !isDesktop && cartRecipes.value.length > 0 && <span class="count">{cartRecipes.value.length}</span>}
-              {tab.id === "card" && isDesktop && activeCard.value && <span class="count">{activeCard.value.np3Count}</span>}
-            </button>
-          ))}
-        </nav>
+        {!mobileNav && (
+          <nav class="tabs" role="tablist">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={route.value === tab.id}
+                class={route.value === tab.id ? "active" : ""}
+                onClick={() => (route.value = tab.id)}
+              >
+                {t(tab.key)}
+                {tab.id === "card" && cardBadge !== null && <span class="count">{cardBadge}</span>}
+              </button>
+            ))}
+          </nav>
+        )}
         <div class="topbar-actions">
           {accountsEnabled && !account.value && (
             <button class="lang" onClick={() => (guest.value = false)}>
               {t("signIn")}
             </button>
           )}
-          <button class="lang" aria-label={t("settingsTitle")} title={t("settingsTitle")} onClick={() => setSettingsOpen(true)}>
+          <button class="lang settings-btn" aria-label={t("settingsTitle")} title={t("settingsTitle")} onClick={() => setSettingsOpen(true)}>
             ⚙︎
           </button>
         </div>
@@ -170,6 +218,26 @@ export function App() {
         <span>{t("unofficial")}</span>
         <span>{t("credits")}</span>
       </footer>
+
+      {mobileNav && (
+        <nav class="bottom-tabs" role="tablist">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={route.value === tab.id}
+              class={`bottom-tab${route.value === tab.id ? " active" : ""}`}
+              onClick={() => (route.value = tab.id)}
+            >
+              <span class="bottom-tab-icon">
+                <TabIcon id={tab.id} />
+                {tab.id === "card" && cardBadge !== null && <span class="count">{cardBadge}</span>}
+              </span>
+              <span class="bottom-tab-label">{t(tab.key)}</span>
+            </button>
+          ))}
+        </nav>
+      )}
 
       <RecipeDetail />
       {accountsEnabled && <ProDialog />}

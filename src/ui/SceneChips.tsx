@@ -9,7 +9,7 @@ import { activeSample, activeSampleId, addUserPhoto, allSamples, deleteScene, se
  * Row of preview scenes. "My photo" comes first, so it never scrolls out of reach, followed by
  * your own photos (newest first; the chosen one can be renamed and deleted) and the built-in scenes.
  */
-export function SceneChips({ showHint = false }: { showHint?: boolean }) {
+export function SceneChips({ showHint = false, compact = false }: { showHint?: boolean; compact?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const own = activeSample.value?.kind === "user" ? activeSample.value : null;
   return (
@@ -44,7 +44,7 @@ export function SceneChips({ showHint = false }: { showHint?: boolean }) {
           </button>
         ))}
       </div>
-      {own && (
+      {own && !compact && (
         <div class="scene-edit">
           <input
             key={own.id}

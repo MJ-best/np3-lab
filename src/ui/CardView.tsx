@@ -6,6 +6,7 @@ import {
   addToActiveCard,
   cardLoading,
   cards,
+  disconnectActiveCard,
   ejectActiveCard,
   formatBytes,
   onActiveCard,
@@ -251,6 +252,7 @@ export function CardView() {
               {card.freeBytes !== null && ` · ${t("freeSpace", { size: formatBytes(card.freeBytes) })}`}
             </span>
           </div>
+          {isIos && <p class="hint ios-unplug-hint">{t("iosUnplugHint")}</p>}
         </div>
         <div class="card-head-actions">
           <button class="primary" onClick={() => setPicking(true)} disabled={count >= MAX_PER_CARD}>
@@ -261,7 +263,13 @@ export function CardView() {
           ) : (
             <button onClick={() => revealActiveCard()}>{t("revealInFinder")}</button>
           )}
-          <button onClick={() => ejectActiveCard()}>⏏ {t("eject")}</button>
+          {isIos ? (
+            <button class="ghost" onClick={() => void disconnectActiveCard()}>
+              {t("disconnectCard")}
+            </button>
+          ) : (
+            <button onClick={() => ejectActiveCard()}>⏏ {t("eject")}</button>
+          )}
         </div>
       </div>
 

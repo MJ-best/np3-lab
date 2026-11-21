@@ -152,6 +152,8 @@ export type PickCardResult = { card: NativeCard } | { cancelled: true } | { notA
 export interface AndroidExtras {
   /** Ask the user for the SD card folder; remembered for later inserts. */
   pickCard(): Promise<PickCardResult>;
+  /** Forget a remembered SD card folder bookmark. */
+  forgetCard(uri: string): Promise<void>;
   /** "Save as" dialog for one file; false if cancelled. */
   saveFile(bytes: Uint8Array, fileName: string, mime: string): Promise<boolean>;
 }
@@ -181,6 +183,11 @@ export function createAndroidBridge(): (NativeBridge & AndroidExtras) | undefine
       }
       changed();
       return { card };
+    },
+
+    async forgetCard(uri) {
+      await Saf.forget({ uri });
+      changed();
     },
 
     async saveFile(bytes, fileName, mime) {

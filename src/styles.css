@@ -19,6 +19,12 @@
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", "Pretendard", "Segoe UI", "Malgun Gothic",
     system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --safe-top: max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
+  --safe-left: max(env(safe-area-inset-left), var(--safe-area-inset-left, 0px));
+  --safe-right: max(env(safe-area-inset-right), var(--safe-area-inset-right, 0px));
+  --topbar-h: 58px;
+  --bottom-bar-h: 60px;
   color-scheme: dark;
 }
 
@@ -964,6 +970,56 @@ button.on:hover:not(:disabled) {
   flex-direction: column;
   gap: 12px;
 }
+.editor-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.editor-preview-bar .scenes {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.editor-quick-save {
+  flex: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.editor-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.editor-tab {
+  flex: 1 0 auto;
+  border: none;
+  background: none;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 13px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.editor-tab.active {
+  background: var(--panel-3);
+  color: var(--text);
+  font-weight: 600;
+}
+.dirty-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
 .editor-controls {
   display: flex;
   flex-direction: column;
@@ -1001,13 +1057,36 @@ button.on:hover:not(:disabled) {
 .slider.disabled {
   opacity: 0.4;
 }
+.slider-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
 .slider-label {
   font-size: 13px;
   color: var(--muted);
   user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .slider.changed .slider-label {
   color: var(--text);
+}
+.slider-reset {
+  flex: none;
+  border: none;
+  background: none;
+  padding: 2px 4px;
+  line-height: 1;
+  font-size: 12px;
+  color: var(--muted);
+  border-radius: 4px;
+}
+.slider-reset:hover:not(:disabled) {
+  color: var(--accent);
+  background: rgba(255, 225, 0, 0.12);
 }
 .slider-number {
   width: 100%;
@@ -1326,57 +1405,143 @@ input[type="range"].custom-track::-moz-range-thumb {
   .detail {
     grid-template-columns: minmax(0, 1fr);
   }
-  .editor-preview {
-    position: static;
+  .editor.compact {
+    gap: 12px;
   }
-  /* One column: the looks come right under the preview, so a tap's effect is in view. */
-  .editor-controls {
-    display: contents;
+  /* Sticky live preview + category tabs: controls scroll beneath while the photo stays visible. */
+  .editor.compact .editor-preview {
+    position: sticky;
+    top: var(--topbar-h);
+    z-index: 15;
+    gap: 8px;
+    margin: -20px -20px 0;
+    padding: 10px 20px 10px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
   }
-  .editor-preview {
-    order: -2;
+  .editor.compact .scenes .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
-  .editor .mood-panel {
-    order: -1;
+  .editor.compact .scenes .chip {
+    flex: none;
+    white-space: nowrap;
   }
 }
-/* Narrow windows and phones: one row, tabs between the logo and the settings button. */
+
+/* Mobile bottom navigation bar (<= 760px) */
+.bottom-tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 4px calc(6px + var(--safe-right)) calc(4px + var(--safe-bottom)) calc(6px + var(--safe-left));
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--line);
+  -webkit-app-region: no-drag;
+}
+.bottom-tab {
+  border: none;
+  background: none;
+  border-radius: 10px;
+  padding: 5px 4px;
+  min-height: 52px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition: color 0.14s, background 0.14s;
+}
+.bottom-tab:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+}
+.bottom-tab.active {
+  color: var(--accent);
+}
+.bottom-tab.active .bottom-tab-label {
+  font-weight: 600;
+}
+.bottom-tab-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+}
+.bottom-tab-icon .count {
+  position: absolute;
+  top: -4px;
+  right: -12px;
+  min-width: 17px;
+  padding: 0 5px;
+  line-height: 16px;
+  font-size: 10.5px;
+  text-align: center;
+}
+.bottom-tab-label {
+  font-size: 11px;
+  line-height: 1.15;
+  letter-spacing: -0.1px;
+}
+
 @media (max-width: 760px) {
+  :root {
+    --topbar-h: 52px;
+  }
   .topbar {
+    height: var(--topbar-h);
+    padding: 0 14px;
     gap: 10px;
   }
-  .tabs {
-    position: static;
-    transform: none;
-    margin: 0 auto;
+  .brand strong {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .settings-btn {
+    min-width: 38px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .app {
+    padding-bottom: calc(var(--bottom-bar-h) + var(--safe-bottom));
+  }
+  .toasts {
+    bottom: calc(var(--bottom-bar-h) + var(--safe-bottom) + 12px);
   }
 }
-/* Phones: the app name alone (no icon), so the three tabs fit. */
+
+@media (max-width: 600px) {
+  .content {
+    padding: 14px;
+  }
+  .editor.compact .editor-preview {
+    margin: -14px -14px 0;
+    padding: 8px 14px 8px;
+  }
+  .scene-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .slider {
+    grid-template-columns: 98px 1fr 56px;
+  }
+  .cart-file {
+    width: 110px;
+  }
+}
+
 @media (max-width: 480px) {
-  .topbar {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-  .brand svg {
-    display: none;
-  }
-  .tabs button {
-    padding: 6px 10px;
-    white-space: nowrap;
-  }
-  /* Four tabs: the name stays on one line, a little smaller. */
-  .brand strong {
-    font-size: 14px;
-    white-space: nowrap;
-  }
-  .topbar {
-    gap: 8px;
-  }
-  html.android .topbar,
-  html.ios .topbar {
-    padding-left: calc(14px + max(env(safe-area-inset-left), var(--safe-area-inset-left, 0px)));
-    padding-right: calc(14px + max(env(safe-area-inset-right), var(--safe-area-inset-right, 0px)));
-  }
   /* Recipes: search and buttons on one line, chip rows scroll sideways, two cards per row. */
   .toolbar,
   .toolbar-actions {
@@ -1429,21 +1594,6 @@ input[type="range"].custom-track::-moz-range-thumb {
 @media (max-width: 1200px) {
   .tagline {
     display: none;
-  }
-}
-@media (max-width: 600px) {
-  .content {
-    padding: 14px;
-  }
-  .scene-row {
-    flex-direction: column;
-    gap: 6px;
-  }
-  .slider {
-    grid-template-columns: 92px 1fr 56px;
-  }
-  .cart-file {
-    width: 110px;
   }
 }
 
@@ -1646,36 +1796,52 @@ html.desktop .topbar {
   user-select: none;
 }
 /* Android and iOS apps: no traffic lights; keep clear of the status and navigation bars (edge-to-edge). */
+html.android,
+html.ios {
+  --topbar-h: calc(58px + var(--safe-top));
+  touch-action: manipulation;
+}
 html.android .topbar,
 html.ios .topbar {
-  padding: calc(10px + max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px))) calc(20px + max(env(safe-area-inset-right), var(--safe-area-inset-right, 0px))) 10px calc(20px + max(env(safe-area-inset-left), var(--safe-area-inset-left, 0px)));
+  padding: calc(10px + var(--safe-top)) calc(20px + var(--safe-right)) 10px calc(20px + var(--safe-left));
   -webkit-app-region: no-drag;
 }
 /* Wide screens (tablets): the centred tabs sit below the status bar, like the rest of the bar. */
 html.android .tabs,
 html.ios .tabs {
-  top: calc(50% + max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px)) / 2);
+  top: calc(50% + var(--safe-top) / 2);
 }
 html.android body,
 html.ios body {
-  padding-bottom: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
+  padding-bottom: var(--safe-bottom);
 }
-/* An app, not a web page: double-tap doesn't zoom (pinch still works, for accessibility). */
-html.android,
-html.ios {
-  touch-action: manipulation;
+@media (max-width: 760px) {
+  html.android,
+  html.ios {
+    --topbar-h: calc(52px + var(--safe-top));
+  }
+  html.android .topbar,
+  html.ios .topbar {
+    height: var(--topbar-h);
+    padding: var(--safe-top) calc(14px + var(--safe-right)) 0 calc(14px + var(--safe-left));
+  }
+  /* Bottom tab bar already absorbs the home indicator safe area on narrow screens. */
+  html.android body,
+  html.ios body {
+    padding-bottom: 0;
+  }
 }
 /* Dialogs and the recipe detail stay clear of the status bar / Dynamic Island and the home bar. */
 html.android .overlay,
 html.ios .overlay,
 html.android .lightbox,
 html.ios .lightbox {
-  padding-top: calc(24px + max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px)));
-  padding-bottom: calc(24px + max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px)));
+  padding-top: calc(16px + var(--safe-top));
+  padding-bottom: calc(16px + var(--safe-bottom));
 }
 html.android .detail,
 html.ios .detail {
-  max-height: calc(100vh - 48px - max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px)) - max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px)));
+  max-height: calc(100vh - 48px - var(--safe-top) - var(--safe-bottom));
 }
 /* iOS zooms the page into any focused field under 16px and doesn't zoom back. */
 html.ios input,
@@ -1747,6 +1913,9 @@ html.desktop .topbar input {
 .card-head-main {
   min-width: 260px;
 }
+.ios-unplug-hint {
+  margin: 6px 0 0;
+}
 .card-head-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1772,24 +1941,28 @@ html.desktop .topbar input {
 .card-npname {
   border: none;
   background: none;
-  padding: 0;
+  padding: 2px 0;
   font-weight: 600;
   font-size: 14px;
   color: var(--text);
   text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .card-npname span {
-  color: var(--faint);
+  color: var(--muted);
   font-size: 12px;
-  margin-left: 4px;
-  opacity: 0;
+  opacity: 0.45;
   transition: opacity 0.15s;
 }
-.card-npname:hover:not(:disabled) {
+.card-npname:hover:not(:disabled),
+.card-npname:focus-visible {
   background: none;
   color: var(--accent);
 }
-.card-npname:hover span {
+.card-npname:hover span,
+.card-npname:focus-visible span {
   opacity: 1;
 }
 .rename-input {
@@ -1810,6 +1983,23 @@ html.desktop .topbar input {
   border-color: transparent;
   background: transparent;
   opacity: 0.6;
+}
+@media (hover: none), (pointer: coarse) {
+  .card-npname {
+    min-height: 32px;
+  }
+  .card-npname span {
+    opacity: 0.85;
+  }
+  .icon-btn.subtle {
+    opacity: 0.85;
+    min-width: 34px;
+    min-height: 34px;
+  }
+}
+html.android .card-npname span,
+html.ios .card-npname span {
+  opacity: 0.85;
 }
 .icon-btn.subtle:hover:not(:disabled) {
   opacity: 1;
@@ -2149,21 +2339,111 @@ html.desktop .topbar input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 24px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px;
   -webkit-app-region: no-drag;
+}
+.lightbox-top {
+  width: 100%;
+  max-width: 1120px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.lightbox-counter {
+  flex: none;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.lightbox-name {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lightbox-close {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.lightbox-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .lightbox img {
   max-width: 100%;
-  max-height: calc(100vh - 110px);
+  max-height: 100%;
   object-fit: contain;
   border-radius: 6px;
+  transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+  will-change: transform;
+}
+.lightbox-stage.dragging img {
+  transition: none;
+}
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(15, 15, 15, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox-nav:hover:not(:disabled) {
+  background: rgba(40, 40, 40, 0.85);
+}
+.lightbox-nav.prev {
+  left: 8px;
+}
+.lightbox-nav.next {
+  right: 8px;
 }
 .lightbox-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+  flex: none;
+}
+button.danger.confirm-active {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #111;
+  font-weight: 600;
+}
+button.danger.confirm-active:hover:not(:disabled) {
+  background: #ff8585;
 }
 .lightbox.frame-view {
   justify-content: flex-start;
@@ -2381,11 +2661,57 @@ html.desktop .topbar input {
   color: var(--muted);
 }
 
-/* Narrower phones (most Android, smaller iPhones): the four tabs and settings need the whole row. */
-@media (max-width: 420px) {
-  .topbar .brand {
-    display: none;
-  }
+/* Gallery empty onboarding hero & empty search reset */
+.empty-hero {
+  max-width: 520px;
+  margin: 8vh auto 40px;
+  text-align: center;
+  padding: 28px 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.empty-hero-icon {
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.empty-hero h2 {
+  margin: 0 0 10px;
+  font-size: 21px;
+  text-wrap: balance;
+}
+.empty-hero p {
+  color: var(--muted);
+  margin: 0 0 18px;
+  line-height: 1.6;
+}
+.empty-features {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.empty-features li {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+.empty-search {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 0;
+  gap: 10px;
+}
+.empty-search .empty {
+  padding: 0;
+  margin: 0;
 }
 
 /* Editor looks: one row per group, chips scroll sideways on narrow screens. */

@@ -38,8 +38,10 @@ export const detailId = signal<string | null>(null);
 export const detailTab = signal<"photos" | "preview" | null>(null);
 
 export type GalleryFilter = "all" | "mine" | "reddit" | "imaging-cloud" | `tag:${string}`;
-/** Search text, shared by the Recipes and Gallery tabs so it carries over between them. */
+/** Recipes-tab search text. */
 export const recipeQuery = signal("");
+/** Gallery-tab search text, kept independent so searching recipes never hides archived photos. */
+export const photoQuery = signal("");
 /** Recipes-tab filter. */
 export const galleryFilter = signal<GalleryFilter>("all");
 

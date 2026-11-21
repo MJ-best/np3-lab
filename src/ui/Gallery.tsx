@@ -165,7 +165,23 @@ export function Gallery() {
       </div>
 
       {visible.length === 0 ? (
-        <p class="empty">{recipes.length === 0 ? t("libraryEmpty") : t("noResults")}</p>
+        recipes.length === 0 ? (
+          <p class="empty">{t("libraryEmpty")}</p>
+        ) : (
+          <div class="empty-search">
+            <p class="empty">{t("noResults")}</p>
+            {(query.trim() || filter !== "all") && (
+              <button
+                onClick={() => {
+                  setQuery("");
+                  setFilter("all");
+                }}
+              >
+                {t("clearSearch")}
+              </button>
+            )}
+          </div>
+        )
       ) : (
         <div class="grid">
           {visible.map((r) => (

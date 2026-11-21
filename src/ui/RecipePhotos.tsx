@@ -8,7 +8,20 @@ import { FrameView } from "./FrameView";
 export function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThumb[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
   const photo = photos[index];
   const [url, setUrl] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [drag, setDrag] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const pointers = useRef(new Set<number>());
+  const swipe = useRef<{ id: number; startX: number; startY: number; axis: "x" | "y" | null; moved: boolean } | null>(null);
+  const justSwiped = useRef(false);
+  const hasMany = photos.length > 1;
+  const goPrev = () => onIndex((index - 1 + photos.length) % photos.length);
+  const goNext = () => onIndex((index + 1) % photos.length);
+
   useEffect(() => {
+    setConfirmDelete(false);
+    setDrag({ x: 0, y: 0 });
+    setDragging(false);
     let alive = true;
     let current: string | null = null;
     void fullPhotoUrl(photo.id).then((u) => {
@@ -21,42 +34,170 @@ export function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThu
       setUrl(null);
     };
   }, [photo.id]);
+
+  useEffect(() => {
+    if (!confirmDelete) return;
+    const timer = setTimeout(() => setConfirmDelete(false), 3500);
+    return () => clearTimeout(timer);
+  }, [confirmDelete]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopImmediatePropagation();
         onClose();
       }
-      if (e.key === "ArrowRight") onIndex((index + 1) % photos.length);
-      if (e.key === "ArrowLeft") onIndex((index - 1 + photos.length) % photos.length);
+      if (hasMany && e.key === "ArrowRight") goNext();
+      if (hasMany && e.key === "ArrowLeft") goPrev();
     };
     // Capture phase so Escape closes the photo before the recipe dialog underneath.
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
   }, [index, photos.length]);
+
   const [framing, setFraming] = useState(false);
   if (framing) return <FrameView photo={photo} onBack={() => setFraming(false)} />;
+
+  const onPointerDown = (e: PointerEvent) => {
+    if ((e.target as HTMLElement | null)?.closest("button")) return;
+    pointers.current.add(e.pointerId);
+    if (pointers.current.size !== 1) {
+      swipe.current = null;
+      setDragging(false);
+      setDrag({ x: 0, y: 0 });
+      return;
+    }
+    justSwiped.current = false;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    swipe.current = { id: e.pointerId, startX: e.clientX, startY: e.clientY, axis: null, moved: false };
+    setDragging(true);
+  };
+
+  const onPointerMove = (e: PointerEvent) => {
+    const s = swipe.current;
+    if (!s || s.id !== e.pointerId) return;
+    const dx = e.clientX - s.startX;
+    const dy = e.clientY - s.startY;
+    if (!s.axis && Math.hypot(dx, dy) > 10) {
+      s.axis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
+      s.moved = true;
+    }
+    if (s.axis === "x") {
+      setDrag({ x: hasMany ? dx : dx * 0.2, y: 0 });
+    } else if (s.axis === "y") {
+      setDrag({ x: 0, y: dy > 0 ? dy : dy * 0.15 });
+    }
+  };
+
+  const finishSwipe = (e: PointerEvent, commit: boolean) => {
+    pointers.current.delete(e.pointerId);
+    const s = swipe.current;
+    if (!s || s.id !== e.pointerId) return;
+    const dx = e.clientX - s.startX;
+    const dy = e.clientY - s.startY;
+    const { axis, moved } = s;
+    justSwiped.current = moved;
+    swipe.current = null;
+    setDragging(false);
+    setDrag({ x: 0, y: 0 });
+    if (!commit) return;
+    if (axis === "x" && hasMany && Math.abs(dx) > 50) {
+      if (dx < 0) goNext();
+      else goPrev();
+    } else if (axis === "y" && dy > 90) {
+      onClose();
+    }
+  };
+
+  const dismissFade = drag.y > 0 ? Math.max(0.35, 1 - drag.y / 380) : 1;
+
   return (
-    <div class="lightbox" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <img src={url ?? photo.thumbUrl} alt={photo.name} />
-      <div class="lightbox-bar">
-        <span class="muted small">
-          {index + 1} / {photos.length} · {photo.name}
+    <div
+      class="lightbox"
+      style={{ background: `rgba(0, 0, 0, ${(0.94 * dismissFade).toFixed(2)})` }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div class="lightbox-top">
+        <span class="lightbox-counter mono">
+          {index + 1} / {photos.length}
         </span>
-        <button
-          class="danger ghost"
-          onClick={async () => {
-            await deletePhoto(photo.id);
-            if (photos.length <= 1) onClose();
-            else onIndex(Math.min(index, photos.length - 2));
-          }}
-        >
-          {t("deletePhoto")}
+        <span class="lightbox-name">{photo.name}</span>
+        <button class="icon-btn lightbox-close" aria-label={t("close")} onClick={onClose}>
+          ✕
         </button>
+      </div>
+      <div
+        class={`lightbox-stage${dragging ? " dragging" : ""}`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={(e) => finishSwipe(e, true)}
+        onPointerCancel={(e) => finishSwipe(e, false)}
+        onClick={(e) => {
+          if (e.target === e.currentTarget && !justSwiped.current) onClose();
+          justSwiped.current = false;
+        }}
+      >
+        {hasMany && (
+          <button
+            class="lightbox-nav prev"
+            aria-label={t("prevPhoto")}
+            title={t("prevPhoto")}
+            onClick={(e) => {
+              e.stopPropagation();
+              goPrev();
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        )}
+        <img
+          src={url ?? photo.thumbUrl}
+          alt={photo.name}
+          draggable={false}
+          style={{
+            transform: `translate3d(${drag.x}px, ${drag.y}px, 0)`,
+            opacity: dismissFade,
+          }}
+        />
+        {hasMany && (
+          <button
+            class="lightbox-nav next"
+            aria-label={t("nextPhoto")}
+            title={t("nextPhoto")}
+            onClick={(e) => {
+              e.stopPropagation();
+              goNext();
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        )}
+      </div>
+      <div class="lightbox-bar">
+        {confirmDelete ? (
+          <button
+            class="danger confirm-active"
+            onClick={async () => {
+              setConfirmDelete(false);
+              await deletePhoto(photo.id);
+              if (photos.length <= 1) onClose();
+              else onIndex(Math.min(index, photos.length - 2));
+            }}
+          >
+            {t("confirmDeletePhoto")}
+          </button>
+        ) : (
+          <button class="danger ghost" onClick={() => setConfirmDelete(true)}>
+            {t("deletePhoto")}
+          </button>
+        )}
         <button class="primary" onClick={() => setFraming(true)}>
           {t("frameBtn")}
         </button>
-        <button onClick={onClose}>{t("close")}</button>
       </div>
     </div>
   );

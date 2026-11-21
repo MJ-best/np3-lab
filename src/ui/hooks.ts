@@ -36,3 +36,32 @@ export function useElementWidth<T extends HTMLElement>(ref: { current: T | null 
   }, [ref.current]);
   return width;
 }
+
+/** Reactive CSS media query hook; safe when matchMedia is unavailable. */
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function" ? window.matchMedia(query).matches : false,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia(query);
+    setMatches(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+}
+
+/** Track window innerHeight so mobile preview sizing adapts on orientation/resize. */
+export function useViewportHeight(): number {
+  const [height, setHeight] = useState(() => (typeof window !== "undefined" ? window.innerHeight : 800));
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setHeight(window.innerHeight);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return height;
+}
+

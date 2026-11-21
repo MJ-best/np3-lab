@@ -33,7 +33,7 @@ const GROUP_LABEL: Record<MoodGroup, MessageKey> = { look: "moodLook", skin: "mo
 const STRENGTH_LABEL: Record<MoodStrength, MessageKey> = { soft: "moodSoft", normal: "moodNormal", strong: "moodStrong" };
 
 /** One-tap looks in the editor: a mood, a skin tone and a colour to bring out, at a chosen strength. */
-export function MoodPanel() {
+export function MoodPanel({ embedded = false }: { embedded?: boolean }) {
   const d = draft.value;
   const st = moodState.value;
   const live = st && d.params === st.applied ? st : null;
@@ -60,9 +60,8 @@ export function MoodPanel() {
   };
   const described = live?.last ? moodById(live.last, live.picks[live.last]) : undefined;
 
-  return (
-    <details class="panel mood-panel" open>
-      <summary>{t("moodTitle")}</summary>
+  const body = (
+    <>
       {/* Skin tones and colour pops live in the colour blender and grading, which older bodies don't have. */}
       {MOOD_GROUPS.filter((g) => g === "look" || !legacyCamera.value).map((group) => (
         <div class="mood-row" key={group}>
@@ -99,6 +98,15 @@ export function MoodPanel() {
       </div>
       <p class="hint">{described ? tx(described.hint) : t("moodHint")}</p>
       {curve && live && <p class="hint">{t("moodCurveNote")}</p>}
+    </>
+  );
+
+  if (embedded) return <div class="panel mood-panel">{body}</div>;
+
+  return (
+    <details class="panel mood-panel" open>
+      <summary>{t("moodTitle")}</summary>
+      {body}
     </details>
   );
 }

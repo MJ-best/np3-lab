@@ -270,6 +270,18 @@ export async function pickAndroidCard() {
   }
 }
 
+export async function disconnectActiveCard() {
+  const card = activeCard.value;
+  if (!androidNative || !native || !card) return;
+  try {
+    await androidNative.forgetCard(card.path);
+    applyCards(await native.listCards());
+    showToast(t("cardDisconnected", { name: card.name }), "info", 5000);
+  } catch (err) {
+    fail(err);
+  }
+}
+
 export async function ejectActiveCard() {
   const card = activeCard.value;
   if (!native || !card) return;
