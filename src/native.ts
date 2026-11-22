@@ -88,6 +88,17 @@ export const isAndroid = android !== undefined && tauri === undefined;
 /** iOS only, for wording that differs from Android (Files picker, no eject). */
 export const isIos = android?.platform === "ios" && tauri === undefined;
 
+export type HapticStyle = "selection" | "light" | "medium" | "success" | "warning";
+
+/** Fire lightweight tactile feedback on iOS/Android; silent no-op on desktop and browsers. */
+export function haptic(style: HapticStyle = "light"): void {
+  try {
+    androidNative?.haptic?.(style);
+  } catch {
+    /* ignore on platforms without haptic support */
+  }
+}
+
 /** Turn "Error invoking remote method 'card:write': Error: exists:X" into "exists:X". */
 export function nativeErrorMessage(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);

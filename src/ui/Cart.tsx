@@ -6,7 +6,7 @@ import { downloadBytes } from "../pack/download";
 import { MAX_PER_CARD, chunk, planCardFiles } from "../pack/naming";
 import { buildZip, zipFileName } from "../pack/zip";
 import { CameraGuide } from "./CameraGuide";
-import { cartRecipes, clearCart, detailId, moveInCart, naming, removeFromCart, route, setNaming, showToast } from "../state";
+import { askConfirm, cartRecipes, clearCart, detailId, moveInCart, naming, removeFromCart, route, setNaming, showToast } from "../state";
 
 interface Outcome {
   kind: "card" | "zip";
@@ -47,7 +47,7 @@ export function Cart() {
     setOutcome(null);
     try {
       const folder = await pickCardFolder("readwrite");
-      if (!folder.looksLikeCard && !confirm(t("notACard"))) return;
+      if (!folder.looksLikeCard && !(await askConfirm({ message: t("notACard") }))) return;
       const res = await writeRecipesToCard(folder, outgoing, naming.value);
       const lines = [t("writeDone", { n: res.written.length, path: folder.label })];
       if (res.existingCount > 0) lines.push(t("existingOnCard", { n: res.existingCount }));

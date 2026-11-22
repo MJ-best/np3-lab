@@ -65,3 +65,19 @@ export function useViewportHeight(): number {
   return height;
 }
 
+let lockCount = 0;
+
+/** Lock document scrolling while a modal overlay or lightbox is mounted (safe for nested modals). */
+export function useScrollLock() {
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    lockCount++;
+    if (lockCount === 1) document.documentElement.classList.add("scroll-locked");
+    return () => {
+      lockCount = Math.max(0, lockCount - 1);
+      if (lockCount === 0) document.documentElement.classList.remove("scroll-locked");
+    };
+  }, []);
+}
+
+

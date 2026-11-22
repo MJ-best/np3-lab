@@ -1,6 +1,6 @@
 import { COMMUNITY_SOURCES, communityInfo, communityProgress } from "../community";
 import { lang, t } from "../i18n";
-import { refreshCommunityRecipes, removeCommunityRecipes } from "../state";
+import { askConfirm, refreshCommunityRecipes, removeCommunityRecipes } from "../state";
 
 const SourceLinks = ({ sources }: { sources: { id: string; label: string; home: string; count?: number }[] }) => (
   <>
@@ -38,7 +38,14 @@ export function CommunityPanel() {
         {!busy && (
           <>
             {" · "}
-            <button class="link" onClick={() => confirm(t("confirmCommunityRemove", { n: info.count })) && removeCommunityRecipes()}>
+            <button
+              class="link"
+              onClick={async () => {
+                if (await askConfirm({ message: t("confirmCommunityRemove", { n: info.count }), confirmLabel: t("communityRemove"), danger: true })) {
+                  removeCommunityRecipes();
+                }
+              }}
+            >
               {t("communityRemove")}
             </button>
           </>

@@ -5,7 +5,7 @@ import { openSharedFromUrl } from "./share";
 import { handleAndroidBack } from "./androidBack";
 import { activeCard, startCardSync } from "./cards";
 import { lang, t, type MessageKey } from "./i18n";
-import { isAndroid, isDesktop, native } from "./native";
+import { haptic, isAndroid, isDesktop, native } from "./native";
 import { webglAvailable } from "./render/renderer";
 import { loadPhotoIndex } from "./photos";
 import { importPhotos } from "./photoImport";
@@ -13,11 +13,13 @@ import { checkForNewLocalNp3 } from "./localNp3";
 import { builtinsReady, cartRecipes, dismissToast, importSession, openImport, route, toasts, type Route } from "./state";
 import { Cart } from "./ui/Cart";
 import { CardView } from "./ui/CardView";
+import { ConfirmDialog } from "./ui/ConfirmDialog";
 import { Editor } from "./ui/Editor";
 import { Gallery } from "./ui/Gallery";
 import { ImportDialog, np3FromFiles } from "./ui/ImportDialog";
 import { Landing } from "./ui/Landing";
 import { Logo } from "./ui/Logo";
+import { PhotoAssignDialog } from "./ui/PhotoAssignDialog";
 import { PhotoGallery } from "./ui/PhotoGallery";
 import { ProDialog } from "./ui/ProDialog";
 import { RecipeDetail } from "./ui/RecipeDetail";
@@ -25,20 +27,21 @@ import { SettingsDialog } from "./ui/SettingsDialog";
 import { TextImportDialog } from "./ui/TextImportDialog";
 import { useMediaQuery } from "./ui/hooks";
 
-// The desktop app is card-first; the browser build keeps the basket + ZIP flow.
-const TABS: { id: Route; key: MessageKey }[] = isDesktop
-  ? [
-      { id: "card", key: "tabCard" },
-      { id: "gallery", key: "tabLibrary" },
-      { id: "photos", key: "tabPhotos" },
-      { id: "editor", key: "tabEditor" },
-    ]
-  : [
-      { id: "gallery", key: "tabLibrary" },
-      { id: "photos", key: "tabPhotos" },
-      { id: "editor", key: "tabEditor" },
-      { id: "card", key: "tabCard" },
-    ];
+// Mac desktop is card-first; mobile apps and the browser build lead with Recipes.
+const TABS: { id: Route; key: MessageKey }[] =
+  isDesktop && !isAndroid
+    ? [
+        { id: "card", key: "tabCard" },
+        { id: "gallery", key: "tabLibrary" },
+        { id: "photos", key: "tabPhotos" },
+        { id: "editor", key: "tabEditor" },
+      ]
+    : [
+        { id: "gallery", key: "tabLibrary" },
+        { id: "photos", key: "tabPhotos" },
+        { id: "editor", key: "tabEditor" },
+        { id: "card", key: "tabCard" },
+      ];
 
 function TabIcon({ id }: { id: Route }) {
   if (id === "card") {
@@ -167,6 +170,11 @@ export function App() {
       </div>
     );
 
+  const switchTab = (id: Route) => {
+    if (route.value !== id) haptic("selection");
+    route.value = id;
+  };
+
   return (
     <div class="app">
       <header class="topbar">
@@ -185,7 +193,7 @@ export function App() {
                 role="tab"
                 aria-selected={route.value === tab.id}
                 class={route.value === tab.id ? "active" : ""}
-                onClick={() => (route.value = tab.id)}
+                onClick={() => switchTab(tab.id)}
               >
                 {t(tab.key)}
                 {tab.id === "card" && cardBadge !== null && <span class="count">{cardBadge}</span>}
@@ -214,10 +222,12 @@ export function App() {
         {route.value === "card" && (isDesktop ? <CardView /> : <Cart />)}
       </main>
 
-      <footer class="footer">
-        <span>{t("unofficial")}</span>
-        <span>{t("credits")}</span>
-      </footer>
+      {!isAndroid && (
+        <footer class="footer">
+          <span>{t("unofficial")}</span>
+          <span>{t("credits")}</span>
+        </footer>
+      )}
 
       {mobileNav && (
         <nav class="bottom-tabs" role="tablist">
@@ -227,7 +237,7 @@ export function App() {
               role="tab"
               aria-selected={route.value === tab.id}
               class={`bottom-tab${route.value === tab.id ? " active" : ""}`}
-              onClick={() => (route.value = tab.id)}
+              onClick={() => switchTab(tab.id)}
             >
               <span class="bottom-tab-icon">
                 <TabIcon id={tab.id} />
@@ -243,7 +253,9 @@ export function App() {
       {accountsEnabled && <ProDialog />}
       <TextImportDialog />
       <ImportDialog />
+      <PhotoAssignDialog />
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
+      <ConfirmDialog />
 
       {dropping && (
         <div class="drop-overlay">

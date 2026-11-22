@@ -1,5 +1,6 @@
 import { useRef } from "preact/hooks";
 import { t } from "../i18n";
+import { haptic } from "../native";
 
 interface Props {
   label: string;
@@ -22,7 +23,11 @@ export function formatValue(v: number, step: number, signed = true): string {
 }
 
 export function Slider({ label, value, min, max, step, defaultValue, onChange, disabled, track }: Props) {
-  const reset = () => defaultValue !== undefined && !disabled && onChange(defaultValue);
+  const reset = () => {
+    if (defaultValue === undefined || disabled) return;
+    haptic("selection");
+    onChange(defaultValue);
+  };
   const changed = defaultValue !== undefined && Math.abs(value - defaultValue) > 1e-9;
   // Touch: the thumb jumps to the finger on touch-down. If the finger then scrolls the page
   // (touch-action: pan-y), the browser cancels the pointer and the old value is put back.
@@ -49,7 +54,13 @@ export function Slider({ label, value, min, max, step, defaultValue, onChange, d
         style={track ? { "--track": track } : undefined}
         class={track ? "custom-track" : undefined}
         aria-label={label}
-        onInput={(e) => onChange(Number(e.currentTarget.value))}
+        onInput={(e) => {
+          const next = Number(e.currentTarget.value);
+          if (defaultValue !== undefined && Math.abs(next - defaultValue) < 1e-9 && Math.abs(value - defaultValue) > 1e-9) {
+            haptic("selection");
+          }
+          onChange(next);
+        }}
         onPointerDown={() => (before.current = value)}
         onPointerUp={() => (before.current = null)}
         onPointerCancel={() => {

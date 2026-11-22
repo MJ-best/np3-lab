@@ -4,7 +4,7 @@ import { recipeFromBackup } from "./backup";
 import { legacyBytes } from "./camera";
 import { downloadCommunityRecipes, forgetCommunityRecipes, isCommunityRecipe, storedCommunityRecipes } from "./community";
 import { t, tx } from "./i18n";
-import { isDesktop } from "./native";
+import { haptic, isAndroid, isDesktop } from "./native";
 import {
   TONE_KEYS,
   defaultParams,
@@ -32,7 +32,8 @@ import { base64ToBytes, bytesToBase64, readStore, writeStore } from "./storage";
 // Navigation & UI
 
 export type Route = "gallery" | "photos" | "editor" | "card";
-export const route = signal<Route>(isDesktop ? "card" : "gallery");
+// Mac desktop is card-first; mobile/tablet & web open on Recipes so first-time users see content immediately.
+export const route = signal<Route>(isDesktop && !isAndroid ? "card" : "gallery");
 export const detailId = signal<string | null>(null);
 /** Which side of the recipe dialog to open on; null lets it decide (photos first when there are any). */
 export const detailTab = signal<"photos" | "preview" | null>(null);
@@ -51,6 +52,30 @@ export function openRecipePhotos(id: string) {
   detailId.value = id;
 }
 export const pasteOpen = signal(false);
+
+export interface ConfirmRequest {
+  message: string;
+  confirmLabel?: string;
+  danger?: boolean;
+}
+export const confirmModal = signal<ConfirmRequest | null>(null);
+let confirmResolver: ((ok: boolean) => void) | null = null;
+
+/** Open a themed confirmation modal (replaces native browser window.confirm). */
+export function askConfirm(req: ConfirmRequest): Promise<boolean> {
+  if (confirmResolver) confirmResolver(false);
+  confirmModal.value = req;
+  return new Promise((resolve) => {
+    confirmResolver = resolve;
+  });
+}
+
+export function resolveConfirm(ok: boolean) {
+  const resolve = confirmResolver;
+  confirmResolver = null;
+  confirmModal.value = null;
+  resolve?.(ok);
+}
 
 export interface Toast {
   id: number;
@@ -517,6 +542,7 @@ export function saveDraft(asNew = false): Recipe | null {
   upsertMine(recipe);
   draft.value = { ...d, editingId: recipe.id, dirty: false };
   writeStore("draft", draft.value);
+  haptic("success");
   showToast(t("saved", { name: tx(recipe.title) }), "ok");
   return recipe;
 }

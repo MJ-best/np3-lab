@@ -17,13 +17,23 @@ import {
   type FrameOptions,
 } from "../frame";
 import { t, tx, type MessageKey } from "../i18n";
+import { haptic } from "../native";
 import { BLENDER_COLORS, GRADING_RANGES, RANGES, SCALAR_KEYS, TONE_KEYS, type Recipe } from "../np3/recipe";
 import { downloadBytes } from "../pack/download";
 import { fullPhoto, fullPhotoUrl, type PhotoThumb } from "../photos";
 import { recipeById } from "../state";
 import { readStore, writeStore } from "../storage";
 import { BAND_HUES } from "./ColorPanels";
+import { useMediaQuery, useScrollLock } from "./hooks";
 import { formatValue } from "./Slider";
+
+type FrameTab = "layout" | "style" | "crop" | "info";
+const FRAME_TABS: { id: FrameTab; key: MessageKey }[] = [
+  { id: "layout", key: "frameTabLayout" },
+  { id: "style", key: "frameTabStyle" },
+  { id: "crop", key: "frameTabCrop" },
+  { id: "info", key: "frameTabInfo" },
+];
 
 const LAYOUT_LABEL: Record<FrameOptions["layout"], MessageKey> = {
   strap: "frameStrap",
@@ -224,6 +234,9 @@ function CropEditor({ src, crop, onChange, onDone }: { src: string; crop: Crop; 
 
 /** The photo framed with its recipe name and shooting details, ready to save and share. */
 export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => void }) {
+  useScrollLock();
+  const compact = useMediaQuery("(max-width: 760px)");
+  const [tab, setTab] = useState<FrameTab>("layout");
   const recipe = recipeById.value.get(photo.recipeId);
   const [opts, setOpts] = useState<FrameOptions>(() => ({ ...DEFAULT_FRAME, ...readStore<Partial<FrameOptions>>("frameOptions") }));
   const [frame, setFrame] = useState<{ url: string; blob: Blob } | null>(null);
@@ -243,6 +256,7 @@ export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => 
   const set = (patch: Partial<FrameOptions>) => {
     // Any other choice goes back to the framed preview, so its effect is visible.
     setCropping(false);
+    haptic("selection");
     setOpts((o) => {
       const next = { ...o, ...patch };
       writeStore("frameOptions", next);
@@ -288,6 +302,7 @@ export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => 
     typeof navigator.canShare === "function" &&
     navigator.canShare({ files: [new File([], "x.jpg", { type: "image/jpeg" })] });
   const save = (blob: Blob) => {
+    haptic("success");
     if (!shareToSave) return downloadBytes(blob, fileName, "image/jpeg");
     void navigator.share({ files: [new File([blob], fileName, { type: "image/jpeg" })] }).catch((err: unknown) => {
       // Closing the sheet is a choice, not a failure; anything else falls back to a download.
@@ -297,8 +312,96 @@ export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => 
   const fileName = `${photo.name.replace(/\.[^.]+$/, "")}-${recipe?.npName ?? "frame"}.jpg`.replace(/[^\w.\-]+/g, "_");
   const toneFixed = FIXED_TONE.includes(opts.layout);
 
+  const cropRow = (
+    <div class="frame-row">
+      <span class="frame-label">{t("frameCrop")}</span>
+      <div class="chips frame-chips" role="radiogroup" aria-label={t("frameCrop")}>
+        {crop.ratio !== "none" && !cropping && (
+          <button class="chip ghost" onClick={() => setCropping(true)}>
+            {t("frameCropAdjust")}
+          </button>
+        )}
+        {CROP_RATIOS.map((r) => (
+          <button
+            key={r}
+            role="radio"
+            aria-checked={r === crop.ratio}
+            class={`chip${r === crop.ratio ? " active" : ""}`}
+            onClick={() => {
+              // A new shape starts centred and fully zoomed out.
+              haptic("selection");
+              setCrop({ ...NO_CROP, ratio: r });
+              setCropping(r !== "none");
+            }}
+          >
+            {r === "none" ? t("frameCropNone") : r === "original" ? t("frameCropOriginal") : r}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const layoutRow = (
+    <div class="frame-row">
+      <span class="frame-label">{t("frameLayout")}</span>
+      <div class="chips frame-chips" role="radiogroup" aria-label={t("frameLayout")}>
+        {FRAME_LAYOUTS.map((l) => (
+          <button key={l} role="radio" aria-checked={l === opts.layout} class={`chip${l === opts.layout ? " active" : ""}`} onClick={() => set({ layout: l })}>
+            {t(LAYOUT_LABEL[l])}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const toneRow = (
+    <div class="frame-row">
+      <span class="frame-label">{t("frameTone")}</span>
+      <div class="chips" role="radiogroup" aria-label={t("frameTone")}>
+        {FRAME_TONES.map((tone) => (
+          <button
+            key={tone}
+            role="radio"
+            aria-checked={tone === opts.tone}
+            disabled={toneFixed}
+            class={`chip${tone === opts.tone && !toneFixed ? " active" : ""}`}
+            onClick={() => set({ tone })}
+          >
+            <span class={`tone-dot ${tone}`} /> {t(TONE_LABEL[tone])}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const ratioRow = (
+    <div class="frame-row">
+      <span class="frame-label">{t("frameRatio")}</span>
+      <div class="chips" role="radiogroup" aria-label={t("frameRatio")}>
+        {FRAME_RATIOS.map((r) => (
+          <button key={r} role="radio" aria-checked={r === opts.ratio} class={`chip${r === opts.ratio ? " active" : ""}`} onClick={() => set({ ratio: r })}>
+            {r === "auto" ? t("frameRatioAuto") : r}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const showRow = (
+    <div class="frame-row">
+      <span class="frame-label">{t("frameShow")}</span>
+      <div class="chips">
+        {SHOW.map(([k, label]) => (
+          <button key={k} aria-pressed={opts[k]} class={`chip${opts[k] ? " active" : ""}`} onClick={() => set({ [k]: !opts[k] })}>
+            {t(label)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <div class="lightbox frame-view">
+    <div class={`lightbox frame-view${compact ? " compact" : ""}`}>
       <div class="frame-preview">
         {cropping && fullUrl ? (
           <CropEditor src={fullUrl} crop={crop} onChange={setCrop} onDone={() => setCropping(false)} />
@@ -310,78 +413,45 @@ export function FrameView({ photo, onBack }: { photo: PhotoThumb; onBack: () => 
       </div>
       {!photo.exif && <p class="muted small frame-note">{t("frameNoExif")}</p>}
       <div class="frame-controls">
-        <div class="frame-row">
-          <span class="frame-label">{t("frameCrop")}</span>
-          <div class="chips frame-chips" role="radiogroup" aria-label={t("frameCrop")}>
-            {crop.ratio !== "none" && !cropping && (
-              <button class="chip ghost" onClick={() => setCropping(true)}>
-                {t("frameCropAdjust")}
-              </button>
-            )}
-            {CROP_RATIOS.map((r) => (
+        {compact && (
+          <div class="editor-tabs frame-tabs" role="tablist">
+            {FRAME_TABS.map((item) => (
               <button
-                key={r}
-                role="radio"
-                aria-checked={r === crop.ratio}
-                class={`chip${r === crop.ratio ? " active" : ""}`}
+                key={item.id}
+                role="tab"
+                aria-selected={tab === item.id}
+                class={`editor-tab${tab === item.id ? " active" : ""}`}
                 onClick={() => {
-                  // A new shape starts centred and fully zoomed out.
-                  setCrop({ ...NO_CROP, ratio: r });
-                  setCropping(r !== "none");
+                  if (tab !== item.id) haptic("selection");
+                  setTab(item.id);
                 }}
               >
-                {r === "none" ? t("frameCropNone") : r === "original" ? t("frameCropOriginal") : r}
+                {t(item.key)}
               </button>
             ))}
           </div>
-        </div>
-        <div class="frame-row">
-          <span class="frame-label">{t("frameLayout")}</span>
-          <div class="chips frame-chips" role="radiogroup" aria-label={t("frameLayout")}>
-            {FRAME_LAYOUTS.map((l) => (
-              <button key={l} role="radio" aria-checked={l === opts.layout} class={`chip${l === opts.layout ? " active" : ""}`} onClick={() => set({ layout: l })}>
-                {t(LAYOUT_LABEL[l])}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div class="frame-row">
-          <span class="frame-label">{t("frameTone")}</span>
-          <div class="chips" role="radiogroup" aria-label={t("frameTone")}>
-            {FRAME_TONES.map((tone) => (
-              <button
-                key={tone}
-                role="radio"
-                aria-checked={tone === opts.tone}
-                disabled={toneFixed}
-                class={`chip${tone === opts.tone && !toneFixed ? " active" : ""}`}
-                onClick={() => set({ tone })}
-              >
-                <span class={`tone-dot ${tone}`} /> {t(TONE_LABEL[tone])}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div class="frame-row">
-          <span class="frame-label">{t("frameRatio")}</span>
-          <div class="chips" role="radiogroup" aria-label={t("frameRatio")}>
-            {FRAME_RATIOS.map((r) => (
-              <button key={r} role="radio" aria-checked={r === opts.ratio} class={`chip${r === opts.ratio ? " active" : ""}`} onClick={() => set({ ratio: r })}>
-                {r === "auto" ? t("frameRatioAuto") : r}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div class="frame-row">
-          <span class="frame-label">{t("frameShow")}</span>
-          <div class="chips">
-            {SHOW.map(([k, label]) => (
-              <button key={k} aria-pressed={opts[k]} class={`chip${opts[k] ? " active" : ""}`} onClick={() => set({ [k]: !opts[k] })}>
-                {t(label)}
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
+        {compact ? (
+          <>
+            {tab === "layout" && layoutRow}
+            {tab === "style" && (
+              <>
+                {toneRow}
+                {ratioRow}
+              </>
+            )}
+            {tab === "crop" && cropRow}
+            {tab === "info" && showRow}
+          </>
+        ) : (
+          <>
+            {cropRow}
+            {layoutRow}
+            {toneRow}
+            {ratioRow}
+            {showRow}
+          </>
+        )}
       </div>
       <div class="lightbox-bar">
         <button onClick={onBack}>← {t("frameBack")}</button>

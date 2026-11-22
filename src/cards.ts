@@ -1,11 +1,11 @@
 import { computed, signal } from "@preact/signals";
 import { t } from "./i18n";
-import { androidNative, isAndroid, isIos, native, nativeErrorMessage, type NativeCard } from "./native";
+import { androidNative, haptic, isAndroid, isIos, native, nativeErrorMessage, type NativeCard } from "./native";
 import { legacyBytes, forCard } from "./camera";
 import { PC_FILE_RE, classicTags, isFlexible, newId, parseNp3, recipeToBytes, sameBytes, withNpName, type Recipe } from "./np3/recipe";
 import { planCardFiles } from "./pack/naming";
 import { readStore, writeStore } from "./storage";
-import { allRecipes, builtinsReady, isRetired, myRecipes, naming, showToast, upsertMine } from "./state";
+import { allRecipes, builtinsReady, isRetired, myRecipes, naming, route, showToast, upsertMine } from "./state";
 
 /*
  * Desktop-only: memory cards reported by the Electron main process, what's in
@@ -140,8 +140,13 @@ function applyCards(next: NativeCard[]) {
   cardItems.value = Object.fromEntries(Object.entries(cardItems.value).filter(([id]) => ids.has(id)));
   // Switch to a newly inserted card; keep the current one otherwise.
   const inserted = next.find((c) => !prevIds.has(c.id));
-  if (inserted) activeCardId.value = inserted.id;
-  else if (!next.some((c) => c.id === activeCardId.value)) activeCardId.value = next[0]?.id ?? null;
+  if (inserted) {
+    activeCardId.value = inserted.id;
+    // On mobile, jump straight to the SD Card tab as soon as a card is recognised.
+    if (isAndroid) route.value = "card";
+  } else if (!next.some((c) => c.id === activeCardId.value)) {
+    activeCardId.value = next[0]?.id ?? null;
+  }
   for (const c of next) {
     const known = cardItems.value[c.id];
     if (!known || known.length !== c.np3Count) void refreshCard(c);
@@ -160,6 +165,7 @@ export function startCardSync() {
 }
 
 function fail(err: unknown) {
+  haptic("warning");
   showToast(t("cardError", { msg: nativeErrorMessage(err) }), "error", 8000);
 }
 
@@ -180,6 +186,7 @@ export async function addToActiveCard(recipes: Recipe[]): Promise<void> {
         card.path,
         plan.files.map((f) => ({ fileName: f.fileName, bytes: recipeToBytes(f.recipe) })),
       );
+      haptic("success");
       showToast(t("addedToCard", { n: written.length }), "ok", 6000, {
         label: t("undo"),
         run: () => void undoAdd(card, written),
@@ -228,6 +235,7 @@ export async function removeFromActiveCard(item: CardItem) {
   try {
     await native.trashFile(card.path, item.fileName);
     await refreshCard(card, true);
+    haptic("light");
     showToast(t("removedFromCard", { name: item.recipe.npName }), "ok", 6000, {
       label: t("undo"),
       run: () => void restoreToCard(card, item),

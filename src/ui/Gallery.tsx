@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "preact/hooks";
+import { useEffect, useMemo, useRef } from "preact/hooks";
 import { currentCamera, legacyCamera } from "../camera";
 import { CameraSelect } from "./CameraGuide";
 import { t, tagLabel, tx } from "../i18n";
@@ -53,6 +53,23 @@ export function Gallery() {
   const source = usePreparedSample(activeSample.value);
   const recipes = allRecipes.value;
 
+  // Close the Import dropdown when tapping outside or pressing Escape.
+  useEffect(() => {
+    const onPointerDown = (e: PointerEvent) => {
+      const el = menuRef.current;
+      if (el?.open && e.target instanceof Node && !el.contains(e.target)) el.removeAttribute("open");
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && menuRef.current?.open) menuRef.current.removeAttribute("open");
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   const tags = useMemo(() => [...new Set(recipes.flatMap((r) => r.tags))], [recipes]);
   const hasMine = recipes.some((r) => r.source !== "builtin");
   const hasReddit = recipes.some((r) => r.origin?.kind === "reddit");
@@ -106,7 +123,7 @@ export function Gallery() {
             const input = e.currentTarget;
             const files = Array.from(input.files ?? []);
             input.value = "";
-            await importPhotos(files);
+            await importPhotos(files, { askOnUnknown: true });
           }}
         />
         <input

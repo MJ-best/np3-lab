@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { t } from "../i18n";
+import { haptic, isAndroid } from "../native";
 import { deletePhoto, fullPhotoUrl, photosByRecipe, type PhotoThumb } from "../photos";
-import { importPhotos } from "../photoImport";
+import { importPhotos, photoImportProgress } from "../photoImport";
 import { PHOTO_ACCEPT } from "../raw";
 import { FrameView } from "./FrameView";
+import { useScrollLock } from "./hooks";
 
 export function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThumb[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
+  useScrollLock();
   const photo = photos[index];
   const [url, setUrl] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -15,8 +18,14 @@ export function Lightbox({ photos, index, onClose, onIndex }: { photos: PhotoThu
   const swipe = useRef<{ id: number; startX: number; startY: number; axis: "x" | "y" | null; moved: boolean } | null>(null);
   const justSwiped = useRef(false);
   const hasMany = photos.length > 1;
-  const goPrev = () => onIndex((index - 1 + photos.length) % photos.length);
-  const goNext = () => onIndex((index + 1) % photos.length);
+  const goPrev = () => {
+    haptic("selection");
+    onIndex((index - 1 + photos.length) % photos.length);
+  };
+  const goNext = () => {
+    haptic("selection");
+    onIndex((index + 1) % photos.length);
+  };
 
   useEffect(() => {
     setConfirmDelete(false);
@@ -214,6 +223,8 @@ export function RecipePhotos({ recipeId, layout = "compact" }: { recipeId: strin
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const progress = photoImportProgress.value;
+  const busyLabel = progress ? t("analyzingPhotos", { done: progress.done, total: progress.total }) : "…";
 
   const add = async (files: File[]) => {
     if (files.length === 0) return;
@@ -245,7 +256,7 @@ export function RecipePhotos({ recipeId, layout = "compact" }: { recipeId: strin
           {t("myPhotosTitle")} {photos.length > 0 && <span class="count">{photos.length}</span>}
         </h3>
         <button class="small-btn" disabled={busy} onClick={() => input.current?.click()}>
-          {busy ? "…" : `＋ ${t("addPhotos")}`}
+          {busy ? busyLabel : `＋ ${t("addPhotos")}`}
         </button>
         <input
           ref={input}
@@ -261,7 +272,7 @@ export function RecipePhotos({ recipeId, layout = "compact" }: { recipeId: strin
         />
       </div>
       {photos.length === 0 ? (
-        <p class="hint">{t("myPhotosEmpty")}</p>
+        <p class="hint">{t(isAndroid ? "myPhotosEmptyMobile" : "myPhotosEmpty")}</p>
       ) : (
         <div class={layout === "wall" ? "photo-wall" : "photo-grid"}>
           {photos.map((p, i) => (

@@ -4,6 +4,7 @@ import { autoBackup, setAutoBackup } from "../cards";
 import { lang, setLang, t, LANGS } from "../i18n";
 import { isAndroid, native, type NativeSettings } from "../native";
 import { entitlement, isPro, manageSubscription, proPageUrl } from "../pro";
+import { askConfirm } from "../state";
 import { CameraSelect } from "./CameraGuide";
 import { Overlay } from "./RecipeDetail";
 
@@ -81,8 +82,8 @@ function AccountRows({ onClose }: { onClose: () => void }) {
       {me && (
         <button
           class="danger ghost"
-          onClick={() => {
-            if (!confirm(t("deleteAccountConfirm"))) return;
+          onClick={async () => {
+            if (!(await askConfirm({ message: t("deleteAccountConfirm"), confirmLabel: t("deleteAccount"), danger: true }))) return;
             onClose();
             void deleteAccount();
           }}
@@ -179,6 +180,13 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
               </>
             )}
           </>
+        )}
+        {isAndroid && (
+          <div class="settings-about">
+            <strong>{t("aboutApp")}</strong>
+            <p class="hint">{t("unofficial")}</p>
+            <p class="hint">{t("creditsMobile")}</p>
+          </div>
         )}
       </div>
     </Overlay>

@@ -1,19 +1,26 @@
 import { activeCard, addToActiveCard, onActiveCard, removeFromActiveCard } from "../cards";
 import { t } from "../i18n";
-import { isDesktop } from "../native";
+import { haptic, isDesktop } from "../native";
 import type { Recipe } from "../np3/recipe";
-import { cart, toggleCart } from "../state";
+import { cart, detailId, route, showToast, toggleCart } from "../state";
 
 /**
  * "Add" toggle used on recipe cards and in the detail view.
- * Desktop: writes to / removes from the inserted card right away.
+ * Desktop/mobile app: writes to / removes from the inserted card right away, or guides to connect one.
  * Browser: adds to the basket that becomes a ZIP.
  */
 export function CardButton({ recipe, className, big = false }: { recipe: Recipe; className: string; big?: boolean }) {
   if (!isDesktop) {
     const on = cart.value.includes(recipe.id);
     return (
-      <button class={`${className}${on ? " on" : ""}`} onClick={() => toggleCart(recipe.id)} aria-pressed={on}>
+      <button
+        class={`${className}${on ? " on" : ""}`}
+        onClick={() => {
+          haptic("light");
+          toggleCart(recipe.id);
+        }}
+        aria-pressed={on}
+      >
         {on ? `✓ ${t("added")}` : big ? `＋ ${t("addToCard")}` : `＋ ${t("add")}`}
       </button>
     );
@@ -22,8 +29,16 @@ export function CardButton({ recipe, className, big = false }: { recipe: Recipe;
   const item = onActiveCard.value.get(recipe.id);
   if (!card) {
     return (
-      <button class={className} disabled title={t("noCardTitle")}>
-        {t("noCardShort")}
+      <button
+        class={`${className} no-card-cta`}
+        onClick={() => {
+          haptic("light");
+          detailId.value = null;
+          route.value = "card";
+          showToast(t("connectCardFirst"), "info", 4500);
+        }}
+      >
+        {big ? `💾 ${t("connectCard")}` : t("addToThisCard")}
       </button>
     );
   }

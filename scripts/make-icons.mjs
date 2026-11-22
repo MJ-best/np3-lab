@@ -231,5 +231,28 @@ for (const [name, scale] of Object.entries(DENSITIES)) {
   out(`${RES}/mipmap-${name}/ic_launcher_foreground.png`, mascotBleed(108 * scale, 72 / 108));
 }
 
+/** Centered rounded mascot tile on pure OLED black for the iOS LaunchScreen. */
+function splashIcon(size) {
+  const k = 1024 / size;
+  const TILE = { x0: 64, y0: 64, x1: 960, y1: 960, r: 205 };
+  return png(
+    size,
+    (x, y) => {
+      const px = x * k;
+      const py = y * k;
+      const a = cover(roundBox(px, py, TILE.x0, TILE.y0, TILE.x1, TILE.y1, TILE.r), k);
+      if (a === 0) return [0, 0, 0];
+      const rgb = paintMascot(px, py, k);
+      return rgb.map((c) => Math.round(c * a));
+    },
+    true,
+  );
+}
+
 // iOS: one 1024 px icon, square and opaque (iOS rounds the corners; the App Store rejects alpha).
 out("ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png", mascotBleed(1024, 1, { opaque: true }));
+// iOS launch screen icon on pure black (1x / 2x / 3x matching Splash.imageset/Contents.json).
+out("ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-2.png", splashIcon(128));
+out("ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png", splashIcon(256));
+out("ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png", splashIcon(384));
+

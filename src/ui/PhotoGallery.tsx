@@ -1,6 +1,6 @@
 import { useRef, useState } from "preact/hooks";
 import { t } from "../i18n";
-import { importPhotos } from "../photoImport";
+import { importPhotos, photoImportProgress } from "../photoImport";
 import { SCENES, photosByRecipe } from "../photos";
 import { PHOTO_ACCEPT } from "../raw";
 import { allRecipes, photoQuery, recipeById } from "../state";
@@ -22,11 +22,13 @@ export function PhotoGallery() {
   const query = photoQuery.value;
   const visible = withPhotos.filter((r) => matchesQuery(r, query));
   const shownOrphans = query.trim() ? [] : orphans;
+  const progress = photoImportProgress.value;
+  const busyLabel = progress ? t("analyzingPhotos", { done: progress.done, total: progress.total }) : "…";
 
   const add = async (files: File[]) => {
     if (files.length === 0) return;
     setBusy(true);
-    await importPhotos(files);
+    await importPhotos(files, { askOnUnknown: true });
     setBusy(false);
   };
 
@@ -45,6 +47,14 @@ export function PhotoGallery() {
           void add(files);
         }}
       />
+      {progress && (
+        <div class="import-progress" role="status" aria-live="polite">
+          <div class="import-progress-bar">
+            <span style={{ width: `${Math.round((progress.done / Math.max(1, progress.total)) * 100)}%` }} />
+          </div>
+          <span class="muted small">{busyLabel}</span>
+        </div>
+      )}
       {empty ? (
         <div class="empty-hero">
           <div class="empty-hero-icon" aria-hidden="true">
@@ -58,7 +68,7 @@ export function PhotoGallery() {
           <p>{t("photoGalleryEmpty")}</p>
           <p>
             <button class="primary big" disabled={busy} onClick={() => input.current?.click()}>
-              {busy ? "…" : `＋ ${t("importFirstPhotosBtn")}`}
+              {busy ? busyLabel : `＋ ${t("importFirstPhotosBtn")}`}
             </button>
           </p>
           <ul class="empty-features">
@@ -73,7 +83,7 @@ export function PhotoGallery() {
             <input class="search" type="search" placeholder={t("search")} value={query} onInput={(e) => (photoQuery.value = e.currentTarget.value)} />
             <div class="toolbar-actions">
               <button class="primary" disabled={busy} onClick={() => input.current?.click()}>
-                {busy ? "…" : `＋ ${t("importPhotosBtn")}`}
+                {busy ? busyLabel : `＋ ${t("importPhotosBtn")}`}
               </button>
             </div>
           </div>

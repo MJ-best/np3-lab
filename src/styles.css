@@ -40,6 +40,18 @@ body {
   font: 14px/1.5 var(--font);
   -webkit-font-smoothing: antialiased;
 }
+html.scroll-locked,
+html.scroll-locked body {
+  overflow: hidden;
+}
+
+button,
+a,
+summary,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
 
 button,
 input,
@@ -54,11 +66,14 @@ button {
   background: var(--panel-2);
   border-radius: var(--radius-sm);
   padding: 7px 12px;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s ease, opacity 0.12s;
   white-space: nowrap;
 }
 button:hover:not(:disabled) {
   background: var(--panel-3);
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 button:disabled {
   opacity: 0.45;
@@ -814,21 +829,44 @@ button.on:hover:not(:disabled) {
 
 /* Detail overlay & dialogs */
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .overlay {
   position: fixed;
   inset: 0;
   z-index: 40;
   background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: grid;
   place-items: center;
   padding: 24px;
   overflow: auto;
+  overscroll-behavior: contain;
+  animation: fadeIn 0.16s ease-out;
 }
 .detail {
   width: min(1320px, 100%);
   max-height: calc(100vh - 48px);
   overflow: auto;
+  overscroll-behavior: contain;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
   gap: 20px;
@@ -836,6 +874,7 @@ button.on:hover:not(:disabled) {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 18px;
+  animation: sheetIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .detail-media {
   display: flex;
@@ -945,6 +984,8 @@ button.on:hover:not(:disabled) {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 18px;
+  overscroll-behavior: contain;
+  animation: sheetIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .parse-result {
   margin-top: 10px;
@@ -2799,3 +2840,207 @@ a.button:hover {
   font-weight: 700;
   margin: 0 0 14px;
 }
+
+/* Round 2: iOS / iPadOS native feel, custom modals, progress & compact mobile controls */
+
+.lightbox {
+  overscroll-behavior: contain;
+  animation: fadeIn 0.16s ease-out;
+}
+.card-thumb:active img,
+.photo-tile:active img {
+  transform: scale(0.97);
+}
+
+/* iPad portrait (761px..980px): keep topbar height exact so sticky editor preview aligns cleanly. */
+html.android .topbar,
+html.ios .topbar {
+  min-height: var(--topbar-h);
+  height: var(--topbar-h);
+}
+
+/* Custom confirmation modal */
+.confirm-dialog {
+  width: min(400px, 100%);
+}
+.confirm-message {
+  margin: 0 0 6px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+/* EXIF-less photo recipe assignment picker */
+.assign-dialog {
+  width: min(480px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+}
+.assign-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  max-height: 44vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.assign-list li {
+  border-bottom: 1px solid var(--line);
+}
+.assign-list li:last-child {
+  border-bottom: none;
+}
+.assign-row {
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  background: none;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+}
+.assign-row:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+.assign-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.assign-sub {
+  color: var(--muted);
+  font-size: 12px;
+  flex: none;
+}
+
+/* Multi-photo EXIF import progress bar */
+.import-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.import-progress-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--panel-3);
+  overflow: hidden;
+}
+.import-progress-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.15s ease-out;
+}
+
+/* CurveEditor touch removal state */
+.editor.compact .curve-svg {
+  display: block;
+  max-width: 260px;
+  margin: 0 auto;
+}
+.curve-point.removing {
+  fill: var(--danger);
+  stroke: var(--danger);
+  opacity: 0.85;
+}
+.curve-bar {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.curve-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Interactive "Connect SD card" card button when no card is plugged in */
+.add-btn.no-card-cta {
+  color: var(--muted);
+  border-style: dashed;
+}
+.add-btn.no-card-cta:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* RecipeDetail 3-tier action hierarchy */
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+}
+.detail-cta {
+  width: 100%;
+}
+.detail-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.detail-action-grid button:only-child {
+  grid-column: 1 / -1;
+}
+.detail-action-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+/* Compact mobile FrameView tabs */
+.lightbox.frame-view.compact {
+  justify-content: space-between;
+  overflow: hidden;
+}
+.lightbox.frame-view.compact .frame-preview img {
+  max-height: 100%;
+}
+.frame-tabs {
+  margin-bottom: 2px;
+}
+
+/* Settings About footer on iOS/Android */
+.settings-about {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.settings-about strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.settings-about .hint {
+  margin: 2px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .detail,
+  .dialog,
+  .lightbox {
+    animation: none;
+  }
+  button:active:not(:disabled),
+  .card-thumb:active img,
+  .photo-tile:active img {
+    transform: none;
+  }
+}
+

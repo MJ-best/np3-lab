@@ -2,13 +2,14 @@ import { useEffect, useState } from "preact/hooks";
 import { asLegacy, currentCamera, legacyBytes, legacyCamera } from "../camera";
 import { activeCard, addToActiveCard } from "../cards";
 import { t, type MessageKey } from "../i18n";
-import { isAndroid, isDesktop } from "../native";
+import { haptic, isAndroid, isDesktop } from "../native";
 import { NP_NAME_MAX, RANGES, TONE_KEYS, isValidNpName, paramsToBytes, type ScalarKey } from "../np3/recipe";
 import { formatRecipeText } from "../np3/textFormat";
 import { downloadBytes } from "../pack/download";
 import {
   activeSample,
   addToCart,
+  askConfirm,
   draft,
   draftParams,
   myRecipes,
@@ -119,7 +120,7 @@ export function Editor() {
     { id: "save", key: "editorTabSave" },
   ];
 
-  const previewMaxHeight = compact ? Math.max(170, Math.min(260, Math.round(vh * 0.3))) : 560;
+  const previewMaxHeight = compact ? Math.max(170, Math.min(420, Math.round(vh * 0.32))) : 560;
 
   const infoPanel = (
     <div class="panel">
@@ -170,7 +171,12 @@ export function Editor() {
         >
           {t("downloadFile", { ext: legacy ? "NCP" : "NP3" })}
         </button>
-        <button class="ghost" onClick={() => confirm(t("confirmReset")) && resetDraft()}>
+        <button
+          class="ghost"
+          onClick={async () => {
+            if (await askConfirm({ message: t("confirmReset"), confirmLabel: t("resetDraft"), danger: true })) resetDraft();
+          }}
+        >
           {t("resetDraft")}
         </button>
       </div>
@@ -247,7 +253,10 @@ export function Editor() {
                 role="tab"
                 aria-selected={tab === item.id}
                 class={`editor-tab${tab === item.id ? " active" : ""}`}
-                onClick={() => setTab(item.id)}
+                onClick={() => {
+                  if (tab !== item.id) haptic("selection");
+                  setTab(item.id);
+                }}
               >
                 {t(item.key)}
                 {item.id === "save" && d.dirty && <span class="dirty-dot" aria-label={t("unsaved")} />}

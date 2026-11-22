@@ -2,8 +2,19 @@ import Capacitor
 import UIKit
 import UniformTypeIdentifiers
 
-/// Registers the app's own plugin (local plugins aren't discovered automatically).
+/// Registers the app's own plugin and matches the OLED-black WebView chrome (no white launch flash).
 class MainViewController: CAPBridgeViewController {
+    override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        overrideUserInterfaceStyle = .dark
+        view.backgroundColor = .black
+        webView?.isOpaque = false
+        webView?.backgroundColor = .black
+        webView?.scrollView.backgroundColor = .black
+    }
+
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(SafFoldersPlugin())
     }
@@ -32,6 +43,7 @@ public class SafFoldersPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDele
         CAPPluginMethod(name: "writeFile", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "deleteFile", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "saveFile", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "haptic", returnType: CAPPluginReturnNone),
     ]
 
     private static let maxFileBytes = 1024 * 1024
@@ -285,6 +297,30 @@ public class SafFoldersPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDele
             guard let dir = try Self.folder(root, call, create: false), let f = try Self.childNamed(dir, name) else { throw PluginError("not-found") }
             do { try FileManager.default.removeItem(at: f) } catch { throw PluginError("cannot-delete") }
             return nil
+        }
+    }
+
+    /// Lightweight native tactile feedback for tabs, sliders, saves, and SD card actions.
+    @objc func haptic(_ call: CAPPluginCall) {
+        let style = call.getString("style") ?? "light"
+        DispatchQueue.main.async {
+            switch style {
+            case "selection":
+                let gen = UISelectionFeedbackGenerator()
+                gen.selectionChanged()
+            case "medium":
+                let gen = UIImpactFeedbackGenerator(style: .medium)
+                gen.impactOccurred()
+            case "success":
+                let gen = UINotificationFeedbackGenerator()
+                gen.notificationOccurred(.success)
+            case "warning":
+                let gen = UINotificationFeedbackGenerator()
+                gen.notificationOccurred(.warning)
+            default:
+                let gen = UIImpactFeedbackGenerator(style: .light)
+                gen.impactOccurred()
+            }
         }
     }
 }

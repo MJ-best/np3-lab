@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "preact/hooks";
 import { t, type MessageKey } from "../i18n";
+import { haptic, isAndroid } from "../native";
 import { CURVE_PRESETS, MAX_CURVE_POINTS, cleanPoints, pointsToRaw, type CurvePoint } from "../np3/toneCurve";
 
 interface Props {
@@ -11,7 +12,9 @@ const SIZE = 256;
 /** Padding around the plot so points on the edges aren't clipped. */
 const PAD = 7;
 const VIEW = SIZE + PAD * 2;
-const HIT = 10;
+const HIT = 14;
+/** Dragging a point this far (CSS px) past the curve box removes it on release. */
+const REMOVE_MARGIN = 34;
 const PRESET_LABELS: Record<string, MessageKey> = {
   linear: "presetLinear",
   sCurve: "presetSCurve",
@@ -23,6 +26,8 @@ const PRESET_LABELS: Record<string, MessageKey> = {
 export function CurveEditor({ points, onChange }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [removing, setRemoving] = useState(false);
   const pts = useMemo(() => cleanPoints(points), [points]);
 
   const path = useMemo(() => {
@@ -40,10 +45,27 @@ export function CurveEditor({ points, onChange }: Props) {
     return { x: Math.round(Math.min(255, Math.max(0, x))), y: Math.round(Math.min(255, Math.max(0, y))) };
   };
 
+  const isOutside = (e: PointerEvent): boolean => {
+    const rect = svgRef.current!.getBoundingClientRect();
+    return (
+      e.clientX < rect.left - REMOVE_MARGIN ||
+      e.clientX > rect.right + REMOVE_MARGIN ||
+      e.clientY < rect.top - REMOVE_MARGIN ||
+      e.clientY > rect.bottom + REMOVE_MARGIN
+    );
+  };
+
   const hitIndex = (p: CurvePoint) => {
     const rect = svgRef.current!.getBoundingClientRect();
     const scale = (VIEW / rect.width) * (255 / SIZE);
     return pts.findIndex((q) => Math.hypot(q.x - p.x, q.y - p.y) <= HIT * scale * 1.5);
+  };
+
+  const deletePoint = (idx: number) => {
+    if (idx < 0 || idx >= pts.length || pts.length <= 2) return;
+    haptic("light");
+    onChange(pts.filter((_, j) => j !== idx));
+    setSelected(null);
   };
 
   const onPointerDown = (e: PointerEvent) => {
@@ -54,13 +76,24 @@ export function CurveEditor({ points, onChange }: Props) {
       const next = cleanPoints([...pts, p]);
       i = next.findIndex((q) => q.x === p.x);
       onChange(next);
+      haptic("selection");
     }
     (e.currentTarget as Element).setPointerCapture(e.pointerId);
     setDrag(i);
+    setSelected(i);
+    setRemoving(false);
   };
 
   const onPointerMove = (e: PointerEvent) => {
     if (drag === null) return;
+    if (pts.length > 2 && isOutside(e)) {
+      if (!removing) {
+        haptic("light");
+        setRemoving(true);
+      }
+      return;
+    }
+    if (removing) setRemoving(false);
     const p = toCurve(e);
     // Keep points in order: a point can't pass its neighbours.
     const lo = drag > 0 ? pts[drag - 1].x + 1 : 0;
@@ -69,10 +102,20 @@ export function CurveEditor({ points, onChange }: Props) {
     onChange(next);
   };
 
+  const onPointerEnd = (commit: boolean) => {
+    if (commit && drag !== null && removing && pts.length > 2) {
+      deletePoint(drag);
+    }
+    setDrag(null);
+    setRemoving(false);
+  };
+
   const onDblClick = (e: MouseEvent) => {
     const i = hitIndex(toCurve(e));
-    if (i >= 0 && pts.length > 2) onChange(pts.filter((_, j) => j !== i));
+    if (i >= 0 && pts.length > 2) deletePoint(i);
   };
+
+  const canDeleteSelected = selected !== null && selected < pts.length && pts.length > 2;
 
   return (
     <div class="curve">
@@ -82,8 +125,8 @@ export function CurveEditor({ points, onChange }: Props) {
         class="curve-svg"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={() => setDrag(null)}
-        onPointerCancel={() => setDrag(null)}
+        onPointerUp={() => onPointerEnd(true)}
+        onPointerCancel={() => onPointerEnd(false)}
         onDblClick={onDblClick}
       >
         {[64, 128, 192].map((v) => (
@@ -94,29 +137,48 @@ export function CurveEditor({ points, onChange }: Props) {
         ))}
         <line class="curve-diagonal" x1={0} y1={SIZE} x2={SIZE} y2={0} />
         <path class="curve-path" d={path} />
-        {pts.map((p, i) => (
-          <circle
-            key={i}
-            class={`curve-point${drag === i ? " active" : ""}`}
-            cx={(p.x / 255) * SIZE}
-            cy={SIZE - (p.y / 255) * SIZE}
-            r={5}
-          />
-        ))}
+        {pts.map((p, i) => {
+          const isActive = drag === i || selected === i;
+          const isRemoving = drag === i && removing;
+          return (
+            <circle
+              key={i}
+              class={`curve-point${isActive ? " active" : ""}${isRemoving ? " removing" : ""}`}
+              cx={(p.x / 255) * SIZE}
+              cy={SIZE - (p.y / 255) * SIZE}
+              r={isActive ? 6.5 : 5.5}
+            />
+          );
+        })}
       </svg>
       <div class="curve-bar">
         <div class="chips">
           {Object.entries(CURVE_PRESETS).map(([key, preset]) => (
-            <button key={key} class="chip small" onClick={() => onChange(preset.map((p) => ({ ...p })))}>
+            <button
+              key={key}
+              class="chip small"
+              onClick={() => {
+                haptic("selection");
+                setSelected(null);
+                onChange(preset.map((p) => ({ ...p })));
+              }}
+            >
               {t(PRESET_LABELS[key])}
             </button>
           ))}
         </div>
-        <span class="curve-count">
-          {pts.length}/{MAX_CURVE_POINTS}
-        </span>
+        <div class="curve-bar-right">
+          {canDeleteSelected && (
+            <button type="button" class="danger ghost small-btn" onClick={() => deletePoint(selected!)}>
+              {t("curveDeletePoint")}
+            </button>
+          )}
+          <span class="curve-count">
+            {pts.length}/{MAX_CURVE_POINTS}
+          </span>
+        </div>
       </div>
-      <p class="hint">{t("curveHelp")}</p>
+      <p class="hint">{t(isAndroid ? "curveHelpTouch" : "curveHelp")}</p>
     </div>
   );
 }

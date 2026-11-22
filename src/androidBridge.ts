@@ -40,6 +40,7 @@ interface SafFoldersPlugin {
   /** Android: the bytes go ahead in their own call (see SafFoldersPlugin.stageSave). */
   stageSave(opts: { data: string }): Promise<void>;
   saveFile(opts: { name: string; mime: string; data?: string }): Promise<{ saved: boolean }>;
+  haptic?(opts: { style: "selection" | "light" | "medium" | "success" | "warning" }): void;
   addListener(event: "foldersChanged", cb: () => void): Promise<PluginListenerHandle>;
 }
 
@@ -156,6 +157,8 @@ export interface AndroidExtras {
   forgetCard(uri: string): Promise<void>;
   /** "Save as" dialog for one file; false if cancelled. */
   saveFile(bytes: Uint8Array, fileName: string, mime: string): Promise<boolean>;
+  /** Native tactile feedback on iOS (UIFeedbackGenerator) and Android (vibration). */
+  haptic(style: "selection" | "light" | "medium" | "success" | "warning"): void;
 }
 
 export function createAndroidBridge(): (NativeBridge & AndroidExtras) | undefined {
@@ -194,6 +197,14 @@ export function createAndroidBridge(): (NativeBridge & AndroidExtras) | undefine
       if (platform === "ios") return (await Saf.saveFile({ name: fileName, mime, data: toBase64(bytes) })).saved;
       await Saf.stageSave({ data: toBase64(bytes) });
       return (await Saf.saveFile({ name: fileName, mime })).saved;
+    },
+
+    haptic(style) {
+      if (platform === "ios") {
+        Saf.haptic?.({ style });
+      } else if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+        navigator.vibrate(style === "medium" || style === "warning" ? 18 : 8);
+      }
     },
 
     async readCard(uri): Promise<NativeCardFile[]> {

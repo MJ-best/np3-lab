@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { legacyCamera, viewParams } from "../camera";
 import { t } from "../i18n";
+import { isAndroid } from "../native";
 import { sanitizeNpName, type RecipeParams } from "../np3/recipe";
 import { extractSourceMeta, parseRecipes, type ParsedBlock } from "../np3/textFormat";
 import { renderThumbnail, type PreparedSource } from "../render/renderer";
@@ -114,10 +115,10 @@ export function TextImportDialog() {
           placeholder={PLACEHOLDER}
           value={text}
           onInput={(e) => setText(e.currentTarget.value)}
-          autoFocus
+          autoFocus={!isAndroid}
         />
 
-        {linkOnly && <p class="warn-text">{t("redditLinkOnly")}</p>}
+        {linkOnly && <p class="warn-text">{t(isAndroid ? "redditLinkOnlyMobile" : "redditLinkOnly")}</p>}
         {text.trim() && !linkOnly && (
           <p class={blocks.length > 0 ? "ok-text" : "warn-text"}>
             {blocks.length > 0 ? t("foundRecipes", { n: blocks.length }) : t("noRecipesFound")}

@@ -24,6 +24,7 @@ import { fileBaseFor } from "../pack/naming";
 import {
   activeSample,
   allSamples,
+  askConfirm,
   detailTab,
   deleteMine,
   detailId,
@@ -35,7 +36,7 @@ import {
 import { BAND_HUES } from "./ColorPanels";
 import { CompareSlider } from "./CompareSlider";
 import { copyText } from "./Editor";
-import { usePreparedSample } from "./hooks";
+import { usePreparedSample, useScrollLock } from "./hooks";
 import { badgeClass, sourceBadge } from "./RecipeCard";
 import { cardRecipeById } from "../cards";
 import { CardButton } from "./CardButton";
@@ -318,34 +319,51 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
             ))}
           </div>
         )}
-        <div class="button-col">
-          {inLibrary && <CardButton recipe={recipe} className="primary" big />}
-          {recipe.params && (
-            <button onClick={() => openInEditor(recipe)}>{editable ? t("openInEditor") : t("duplicateEdit")}</button>
+        <div class="detail-actions">
+          {inLibrary && <CardButton recipe={recipe} className="primary detail-cta" big />}
+          {(recipe.params || outBytes) && (
+            <div class="detail-action-grid">
+              {recipe.params && (
+                <button onClick={() => openInEditor(recipe)}>{editable ? t("openInEditor") : t("duplicateEdit")}</button>
+              )}
+              {outBytes && (
+                <button onClick={() => downloadBytes(outBytes, `${fileBaseFor(recipe)}${pcExt(outBytes)}`)}>
+                  {t("downloadFile", { ext: pcExt(outBytes).slice(1) })}
+                </button>
+              )}
+            </div>
           )}
-          {outBytes && (
-            <button onClick={() => downloadBytes(outBytes, `${fileBaseFor(recipe)}${pcExt(outBytes)}`)}>{t("downloadFile", { ext: pcExt(outBytes).slice(1) })}</button>
-          )}
-          {recipe.params && <button onClick={() => copyText(formatRecipeText(recipe.npName, recipe.params!))}>{t("copyText")}</button>}
-          {canShare(recipe) && (
-            <button disabled={shareBusy.value} onClick={() => void shareRecipe(recipe)}>
-              🔗 {shareBusy.value ? "…" : t("shareLink")} <span class="pro-tag">Pro</span>
-            </button>
-          )}
-          {recipe.source !== "builtin" && inLibrary && (
-            <button
-              class="danger ghost"
-              onClick={() => {
-                const name = tx(recipe.title);
-                if (confirm(photoCount > 0 ? t("confirmDeleteWithPhotos", { name, n: photoCount }) : t("confirmDelete", { name }))) {
-                  deleteMine(recipe.id);
-                  detailId.value = null;
-                }
-              }}
-            >
-              {t("deleteRecipe")}
-            </button>
-          )}
+          <div class="detail-action-more">
+            {recipe.params && (
+              <button class="ghost small-btn" onClick={() => copyText(formatRecipeText(recipe.npName, recipe.params!))}>
+                {t("copyText")}
+              </button>
+            )}
+            {canShare(recipe) && (
+              <button class="ghost small-btn" disabled={shareBusy.value} onClick={() => void shareRecipe(recipe)}>
+                🔗 {shareBusy.value ? "…" : t("shareLink")} <span class="pro-tag">Pro</span>
+              </button>
+            )}
+            {recipe.source !== "builtin" && inLibrary && (
+              <button
+                class="danger ghost small-btn"
+                onClick={async () => {
+                  const name = tx(recipe.title);
+                  const ok = await askConfirm({
+                    message: photoCount > 0 ? t("confirmDeleteWithPhotos", { name, n: photoCount }) : t("confirmDelete", { name }),
+                    confirmLabel: t("deleteRecipe"),
+                    danger: true,
+                  });
+                  if (ok) {
+                    deleteMine(recipe.id);
+                    detailId.value = null;
+                  }
+                }}
+              >
+                {t("deleteRecipe")}
+              </button>
+            )}
+          </div>
         </div>
         {recipe.params && (
           <>
@@ -374,6 +392,7 @@ export function RecipeDetail() {
  * ends on the backdrop itself (so dragging a slider out of the dialog doesn't close it).
  */
 export function Overlay({ onClose, children }: { onClose: () => void; children: ComponentChildren }) {
+  useScrollLock();
   const downOnBackdrop = useRef(false);
   const close = useRef(onClose);
   close.current = onClose;

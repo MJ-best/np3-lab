@@ -9,8 +9,8 @@ export function handleAndroidBack() {
   void CapApp.addListener("backButton", () => {
     if (document.querySelector(".overlay, .lightbox")) {
       window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-    } else if (route.value !== "card") {
-      route.value = "card";
+    } else if (route.value !== "gallery") {
+      route.value = "gallery";
     } else {
       // Keep the app (and the card listing) alive, like the home button.
       void CapApp.minimizeApp();
