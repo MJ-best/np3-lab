@@ -1,6 +1,7 @@
 import { COMMUNITY_SOURCES, communityInfo, communityProgress } from "../community";
 import { lang, t } from "../i18n";
 import { askConfirm, refreshCommunityRecipes, removeCommunityRecipes } from "../state";
+import { IconDownload } from "./Icons";
 
 const SourceLinks = ({ sources }: { sources: { id: string; label: string; home: string; count?: number }[] }) => (
   <>
@@ -67,7 +68,14 @@ export function CommunityPanel() {
         <p class="hint">{t("communityRights")}</p>
       </div>
       <button class="primary big" disabled={busy} onClick={() => refreshCommunityRecipes()}>
-        {busy ? progressText : `⬇ ${t("communityDownload")}`}
+        {busy ? (
+          progressText
+        ) : (
+          <span class="btn-inline">
+            <IconDownload size={16} />
+            {t("communityDownload")}
+          </span>
+        )}
       </button>
     </div>
   );

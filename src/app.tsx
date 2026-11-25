@@ -19,6 +19,7 @@ import {
   draft,
   importSession,
   openImport,
+  openNewEditor,
   route,
   saveDraft,
   toasts,
@@ -28,6 +29,7 @@ import { ConfirmDialog } from "./ui/ConfirmDialog";
 import { Editor } from "./ui/Editor";
 import { Gallery } from "./ui/Gallery";
 import { HomeView } from "./ui/HomeView";
+import { IconPlus } from "./ui/Icons";
 import { ImportDialog, np3FromFiles } from "./ui/ImportDialog";
 import { Landing } from "./ui/Landing";
 import { Logo } from "./ui/Logo";
@@ -227,14 +229,21 @@ export function App() {
           </div>
         </header>
       ) : (
-        <header class="topbar">
-          <div class="brand">
-            <Logo />
-            <div>
-              <strong>NP3 Lab</strong>
-              <span class="tagline">{t("appTagline")}</span>
+        <header class={`topbar${mobileNav ? " mobile-topbar" : ""}`}>
+          {mobileNav ? (
+            <div class="mobile-header-title">
+              {route.value === "home" && <Logo />}
+              <h1>{route.value === "home" ? "NP3 Lab" : route.value === "gallery" ? t("tabLibrary") : t("tabPhotos")}</h1>
             </div>
-          </div>
+          ) : (
+            <div class="brand">
+              <Logo />
+              <div>
+                <strong>NP3 Lab</strong>
+                <span class="tagline">{t("appTagline")}</span>
+              </div>
+            </div>
+          )}
           {!mobileNav && (
             <nav class="tabs" role="tablist">
               {TABS.map((tab) => (
@@ -252,6 +261,19 @@ export function App() {
             </nav>
           )}
           <div class="topbar-actions">
+            {mobileNav && route.value === "gallery" && (
+              <button
+                class="header-action-btn primary"
+                aria-label={t("newRecipe")}
+                title={t("newRecipe")}
+                onClick={() => {
+                  haptic("light");
+                  openNewEditor();
+                }}
+              >
+                <IconPlus size={18} />
+              </button>
+            )}
             {accountsEnabled && !account.value && (
               <button class="lang" onClick={() => (guest.value = false)}>
                 {t("signIn")}

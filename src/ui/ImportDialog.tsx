@@ -4,6 +4,7 @@ import { t, type MessageKey } from "../i18n";
 import { isAndroid, isDesktop } from "../native";
 import { canUseCardFolder, pickCardFolder, readNp3Files } from "../pack/cardWriter";
 import { commitImport, importSession, openImport, showToast, updateImportEntry, type ImportEntry } from "../state";
+import { IconCard } from "./Icons";
 import { Overlay } from "./RecipeDetail";
 
 const STATUS_KEYS: Record<ImportEntry["status"], MessageKey> = {
@@ -74,7 +75,10 @@ export function ImportDialog() {
                 if (files) openImport(session.mode, files);
               }}
             >
-              💾 {t("readCard")}
+              <span class="btn-inline">
+                <IconCard size={15} />
+                {t("readCard")}
+              </span>
             </button>
           )}
           <button onClick={() => fileRef.current?.click()}>{t("pickFiles")}</button>

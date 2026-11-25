@@ -3,6 +3,7 @@ import { t } from "../i18n";
 import { haptic, isDesktop } from "../native";
 import type { Recipe } from "../np3/recipe";
 import { cart, detailId, route, showToast, toggleCart } from "../state";
+import { IconCard } from "./Icons";
 
 /**
  * "Add" toggle used on recipe cards and in the detail view.
@@ -38,7 +39,14 @@ export function CardButton({ recipe, className, big = false }: { recipe: Recipe;
           showToast(t("connectCardFirst"), "info", 4500);
         }}
       >
-        {big ? `💾 ${t("connectCard")}` : t("addToThisCard")}
+        {big ? (
+          <span class="btn-inline">
+            <IconCard size={16} />
+            {t("connectCard")}
+          </span>
+        ) : (
+          t("addToThisCard")
+        )}
       </button>
     );
   }

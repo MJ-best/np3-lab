@@ -1,6 +1,10 @@
+import { useState } from "preact/hooks";
 import { currentCamera, setCameraModel } from "../camera";
 import { CAMERA_GUIDES } from "../cameraGuide";
 import { lang, t } from "../i18n";
+import { haptic } from "../native";
+import { IconCamera, IconCheck, IconChevronDown } from "./Icons";
+import { Overlay } from "./RecipeDetail";
 
 function MenuPath({ items }: { items: string[] }) {
   return (
@@ -32,7 +36,10 @@ export function CameraGuide({ title = true }: { title?: boolean }) {
             role="radio"
             aria-checked={g.id === guide.id}
             class={`chip${g.id === guide.id ? " active" : ""}`}
-            onClick={() => setCameraModel(g.id)}
+            onClick={() => {
+              haptic("selection");
+              setCameraModel(g.id);
+            }}
           >
             {g.label || t("otherZ")}
           </button>
@@ -59,15 +66,70 @@ export function CameraGuide({ title = true }: { title?: boolean }) {
   );
 }
 
-/** The camera the recipes are for, as a compact menu (settings, the recipes tab). */
+/** The camera the recipes are for, as a native-style picker trigger + sheet (settings, recipes tab). */
 export function CameraSelect() {
+  const [open, setOpen] = useState(false);
+  const current = currentCamera.value;
+  const label = (current.label || t("otherZ")) + (current.legacy ? ` · ${t("legacyShort")}` : "");
+
   return (
-    <select class="camera-select" aria-label={t("cameraModel")} value={currentCamera.value.id} onChange={(e) => setCameraModel(e.currentTarget.value)}>
-      {CAMERA_GUIDES.map((g) => (
-        <option key={g.id} value={g.id}>
-          {(g.label || t("otherZ")) + (g.legacy ? ` · ${t("legacyShort")}` : "")}
-        </option>
-      ))}
-    </select>
+    <>
+      <button
+        type="button"
+        class="camera-select-btn"
+        aria-label={t("cameraModel")}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => {
+          haptic("light");
+          setOpen(true);
+        }}
+      >
+        <IconCamera size={15} />
+        <span class="camera-select-label">{label}</span>
+        <IconChevronDown size={14} />
+      </button>
+      {open && (
+        <Overlay onClose={() => setOpen(false)}>
+          <div class="dialog camera-picker-dialog" role="dialog" aria-modal="true" aria-label={t("cameraModel")}>
+            <div class="detail-head">
+              <h2>{t("cameraModel")}</h2>
+              <button class="icon-btn" aria-label={t("close")} onClick={() => setOpen(false)}>
+                ✕
+              </button>
+            </div>
+            <div class="sheet-list" role="listbox" aria-label={t("cameraModel")}>
+              {CAMERA_GUIDES.map((g) => {
+                const selected = g.id === current.id;
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    class={`sheet-item${selected ? " active" : ""}`}
+                    onClick={() => {
+                      haptic("selection");
+                      setCameraModel(g.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <span class="sheet-item-main">
+                      <strong>{g.label || t("otherZ")}</strong>
+                      <span class={`badge${g.legacy ? "" : " accent"}`}>{g.legacy ? "NCP" : "NP3"}</span>
+                    </span>
+                    {selected && (
+                      <span class="sheet-item-check">
+                        <IconCheck size={16} />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </Overlay>
+      )}
+    </>
   );
 }

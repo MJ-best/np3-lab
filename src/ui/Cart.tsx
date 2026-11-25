@@ -6,6 +6,7 @@ import { downloadBytes } from "../pack/download";
 import { MAX_PER_CARD, chunk, planCardFiles } from "../pack/naming";
 import { buildZip, zipFileName } from "../pack/zip";
 import { CameraGuide } from "./CameraGuide";
+import { IconCard, IconDownload } from "./Icons";
 import { askConfirm, cartRecipes, clearCart, detailId, moveInCart, naming, removeFromCart, route, setNaming, showToast } from "../state";
 
 interface Outcome {
@@ -143,12 +144,18 @@ export function Cart() {
           <div class="button-col">
             {direct && (
               <button class="primary big" disabled={busy || items.length === 0} onClick={writeCard}>
-                💾 {t("writeToCard")}
+                <span class="btn-inline">
+                  <IconCard size={16} />
+                  {t("writeToCard")}
+                </span>
               </button>
             )}
             {direct && <p class="hint">{t("writeHint")}</p>}
             <button class={direct ? "big" : "primary big"} disabled={busy || items.length === 0} onClick={downloadZip}>
-              ⬇ {t("downloadZip")}
+              <span class="btn-inline">
+                <IconDownload size={16} />
+                {t("downloadZip")}
+              </span>
             </button>
             {!direct && <p class="hint">{t("chromeHint")}</p>}
           </div>

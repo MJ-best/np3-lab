@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { currentCamera, legacyCamera } from "../camera";
 import { CameraSelect } from "./CameraGuide";
 import { t, tagLabel, tx } from "../i18n";
 import type { Recipe } from "../np3/recipe";
-import { isAndroid, isDesktop } from "../native";
+import { haptic, isAndroid, isDesktop } from "../native";
 import { canUseCardFolder } from "../pack/cardWriter";
 import { downloadText } from "../pack/download";
 import {
@@ -26,9 +26,11 @@ import { exportAllRecipes } from "../exportAll";
 import { importPhotos } from "../photoImport";
 import { PHOTO_ACCEPT } from "../raw";
 import { CommunityPanel } from "./CommunityPanel";
-import { usePreparedSample } from "./hooks";
+import { useMediaQuery, usePreparedSample } from "./hooks";
+import { IconChevronDown, IconPlus } from "./Icons";
 import { np3FromCard, np3FromFiles } from "./ImportDialog";
 import { RecipeCard } from "./RecipeCard";
+import { Overlay } from "./RecipeDetail";
 import { SceneChips } from "./SceneChips";
 
 /** Does the recipe match the search box? Name, camera name, author, tags, notes and look. */
@@ -49,6 +51,8 @@ export function Gallery() {
   const photoInput = useRef<HTMLInputElement>(null);
   const backupInput = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDetailsElement>(null);
+  const mobile = useMediaQuery("(max-width: 760px)");
+  const [importSheetOpen, setImportSheetOpen] = useState(false);
   const source = usePreparedSample(activeSample.value);
   const recipes = allRecipes.value;
 
@@ -86,26 +90,74 @@ export function Gallery() {
     if (files && files.length > 0) openImport("file", files);
   };
 
+  const runImportAction = (fn: () => void) => {
+    setImportSheetOpen(false);
+    menuRef.current?.removeAttribute("open");
+    fn();
+  };
+
+  const importOptions = (
+    <>
+      <button onClick={() => runImportAction(() => photoInput.current?.click())}>{t("importPhotos")}</button>
+      <button onClick={() => runImportAction(() => (pasteOpen.value = true))}>{t("pasteText")}</button>
+      <button onClick={() => runImportAction(() => openImport("imaging-cloud"))}>{t("importCloud")}</button>
+      {isDesktop && !isAndroid && <button onClick={() => runImportAction(() => void importFromThisMac())}>{t("localNp3Search")}</button>}
+      <button onClick={() => runImportAction(() => np3Input.current?.click())}>{t("importNp3")}</button>
+      {!isDesktop && canUseCardFolder() && <button onClick={() => runImportAction(() => void importFromCard())}>{t("importFromCard")}</button>}
+    </>
+  );
+
   return (
     <div class="gallery">
       <div class="toolbar">
         <input class="search" type="search" placeholder={t("search")} value={query} onInput={(e) => setQuery(e.currentTarget.value)} />
         <div class="toolbar-actions">
-          <details class="menu" ref={menuRef}>
-            <summary>{t("importMore")} ▾</summary>
-            <div class="menu-list" onClick={() => menuRef.current?.removeAttribute("open")}>
-              <button onClick={() => photoInput.current?.click()}>{t("importPhotos")}</button>
-              <button onClick={() => (pasteOpen.value = true)}>{t("pasteText")}</button>
-              <button onClick={() => openImport("imaging-cloud")}>{t("importCloud")}</button>
-              {isDesktop && !isAndroid && <button onClick={() => void importFromThisMac()}>{t("localNp3Search")}</button>}
-              <button onClick={() => np3Input.current?.click()}>{t("importNp3")}</button>
-              {!isDesktop && canUseCardFolder() && <button onClick={importFromCard}>{t("importFromCard")}</button>}
-            </div>
-          </details>
-          <button class="primary" onClick={openNewEditor}>
-            ＋ {t("newRecipe")}
-          </button>
+          {mobile ? (
+            <button
+              type="button"
+              onClick={() => {
+                haptic("light");
+                setImportSheetOpen(true);
+              }}
+            >
+              <span class="btn-inline">
+                {t("importMore")}
+                <IconChevronDown size={13} />
+              </span>
+            </button>
+          ) : (
+            <details class="menu" ref={menuRef}>
+              <summary>
+                <span class="btn-inline">
+                  {t("importMore")}
+                  <IconChevronDown size={13} />
+                </span>
+              </summary>
+              <div class="menu-list">{importOptions}</div>
+            </details>
+          )}
+          {!mobile && (
+            <button class="primary" onClick={openNewEditor}>
+              <span class="btn-inline">
+                <IconPlus size={15} />
+                {t("newRecipe")}
+              </span>
+            </button>
+          )}
         </div>
+        {importSheetOpen && (
+          <Overlay onClose={() => setImportSheetOpen(false)}>
+            <div class="dialog action-sheet" role="dialog" aria-modal="true" aria-label={t("importMore")}>
+              <div class="detail-head">
+                <h2>{t("importMore")}</h2>
+                <button class="icon-btn" aria-label={t("close")} onClick={() => setImportSheetOpen(false)}>
+                  ✕
+                </button>
+              </div>
+              <div class="sheet-list">{importOptions}</div>
+            </div>
+          </Overlay>
+        )}
         <input
           ref={photoInput}
           type="file"

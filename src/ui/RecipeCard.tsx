@@ -7,6 +7,7 @@ import type { Recipe } from "../np3/recipe";
 import { renderThumbnail, type PreparedSource } from "../render/renderer";
 import { photosByRecipe } from "../photos";
 import { detailId } from "../state";
+import { IconCamera } from "./Icons";
 import { CardButton } from "./CardButton";
 
 // Render thumbnails one at a time so the page stays responsive.
@@ -62,7 +63,11 @@ export function RecipeCard({ recipe, source }: { recipe: Recipe; source: Prepare
         ) : (
           <div class="thumb-placeholder" />
         )}
-        {photos.length > 0 && <span class="badge floating bottom photo-count">📷 {photos.length}</span>}
+        {photos.length > 0 && (
+          <span class="badge floating bottom photo-count">
+            <IconCamera size={12} /> {photos.length}
+          </span>
+        )}
         <span class={`badge floating ${badgeClass(recipe)}`}>{sourceBadge(recipe)}</span>
         {!recipe.params && <span class="badge floating right warn">{recipe.raw ? pcExt(recipe.raw).slice(1) : "NP3"}</span>}
       </button>

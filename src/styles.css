@@ -3404,6 +3404,167 @@ html.ios .editor-topbar-title {
   padding-top: 4px;
 }
 
+/* Phase 2: Unified SVG icons, native mobile header, custom sheet pickers, and mobile bottom sheets */
+.ui-icon {
+  display: inline-block;
+  flex: none;
+  vertical-align: -0.15em;
+}
+.btn-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.card-head-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.badge.photo-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mobile-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.mobile-header-title h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+.header-action-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.camera-select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  min-height: 36px;
+  max-width: 100%;
+  min-width: 0;
+}
+.camera-select-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.camera-picker-dialog,
+.action-sheet {
+  width: min(440px, 100%);
+  padding: 20px;
+}
+.camera-picker-dialog .detail-head,
+.action-sheet .detail-head {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sheet-list button,
+.sheet-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  padding: 12px 14px;
+  min-height: 46px;
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  font-size: 14.5px;
+}
+.sheet-item.active {
+  border-color: var(--accent);
+  background: rgba(255, 225, 0, 0.08);
+}
+.sheet-item-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.sheet-item-check {
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+
+@keyframes sheetUp {
+  from {
+    opacity: 0.4;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .overlay:has(.dialog:not(.confirm-dialog):not(.onboarding)),
+  .overlay:has(.detail),
+  html.android .overlay:has(.dialog:not(.confirm-dialog):not(.onboarding)),
+  html.ios .overlay:has(.dialog:not(.confirm-dialog):not(.onboarding)),
+  html.android .overlay:has(.detail),
+  html.ios .overlay:has(.detail) {
+    align-items: end;
+    justify-items: stretch;
+    padding: calc(24px + var(--safe-top)) 0 0 0;
+  }
+  .overlay > .dialog:not(.confirm-dialog):not(.onboarding),
+  .overlay > .detail {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - var(--safe-top) - 24px);
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    padding: 12px 18px calc(20px + var(--safe-bottom));
+    animation: sheetUp 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .overlay > .dialog:not(.confirm-dialog):not(.onboarding)::before,
+  .overlay > .detail::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    margin: 0 auto 14px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay,
   .detail,

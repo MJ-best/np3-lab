@@ -35,6 +35,7 @@ import {
 } from "../state";
 import { BAND_HUES } from "./ColorPanels";
 import { CompareSlider } from "./CompareSlider";
+import { IconCamera } from "./Icons";
 import { copyText } from "./Editor";
 import { usePreparedSample, useScrollLock } from "./hooks";
 import { badgeClass, sourceBadge } from "./RecipeCard";
@@ -270,7 +271,10 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
         {hasPhotos && (
           <div class="segmented media-tabs" role="tablist">
             <button role="tab" aria-selected={view === "photos"} class={view === "photos" ? "active" : ""} onClick={() => setView("photos")}>
-              📷 {t("myPhotosTab", { n: photoCount })}
+              <span class="btn-inline">
+                <IconCamera size={14} />
+                {t("myPhotosTab", { n: photoCount })}
+              </span>
             </button>
             <button role="tab" aria-selected={view === "preview"} class={view === "preview" ? "active" : ""} onClick={() => setView("preview")}>
               {t("previewTab")}

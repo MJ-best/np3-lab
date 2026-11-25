@@ -24,6 +24,7 @@ import { renderThumbnail, type PreparedSource } from "../render/renderer";
 import { currentCamera, legacyCamera, viewParams } from "../camera";
 import { activeSample, allRecipes, detailId } from "../state";
 import { CameraGuide } from "./CameraGuide";
+import { IconCard, IconEdit, IconEject, IconTrash } from "./Icons";
 import { usePreparedSample } from "./hooks";
 import { Overlay } from "./RecipeDetail";
 
@@ -101,7 +102,10 @@ function CardTile({ item, source }: { item: CardItem; source: PreparedSource | n
           />
         ) : (
           <button class="card-npname mono" title={t("rename")} onClick={startEditing}>
-            {item.recipe.npName} <span aria-hidden="true">✎</span>
+            {item.recipe.npName}{" "}
+            <span aria-hidden="true">
+              <IconEdit size={13} />
+            </span>
           </button>
         )}
         <div class="card-file-row">
@@ -110,7 +114,7 @@ function CardTile({ item, source }: { item: CardItem; source: PreparedSource | n
             {title !== item.recipe.npName && ` · ${title}`}
           </span>
           <button class="icon-btn subtle" title={t("removeFromCard")} aria-label={t("removeFromCard")} onClick={() => removeFromActiveCard(item)}>
-            🗑
+            <IconTrash size={15} />
           </button>
         </div>
       </div>
@@ -237,14 +241,20 @@ export function CardView({ embedded = false }: { embedded?: boolean }) {
         <div class="chips">
           {cards.value.map((c) => (
             <button key={c.id} class={`chip${c.id === card.id ? " active" : ""}`} onClick={() => (activeCardId.value = c.id)}>
-              💾 {c.name}
+              <span class="btn-inline">
+                <IconCard size={14} />
+                {c.name}
+              </span>
             </button>
           ))}
         </div>
       )}
       <div class="card-head panel">
         <div class="card-head-main">
-          <h2>💾 {card.name}</h2>
+          <h2 class="card-head-title">
+            <IconCard size={20} />
+            {card.name}
+          </h2>
           <div class="capacity">
             <div class="capacity-bar">
               <span style={{ width: `${Math.min(100, (count / MAX_PER_CARD) * 100)}%` }} />
@@ -270,7 +280,12 @@ export function CardView({ embedded = false }: { embedded?: boolean }) {
               {t("disconnectCard")}
             </button>
           ) : (
-            <button onClick={() => ejectActiveCard()}>⏏ {t("eject")}</button>
+            <button onClick={() => ejectActiveCard()}>
+              <span class="btn-inline">
+                <IconEject size={15} />
+                {t("eject")}
+              </span>
+            </button>
           )}
         </div>
       </div>
