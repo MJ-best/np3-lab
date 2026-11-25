@@ -35,7 +35,8 @@ import {
 } from "../state";
 import { BAND_HUES } from "./ColorPanels";
 import { CompareSlider } from "./CompareSlider";
-import { IconCamera } from "./Icons";
+import { IconCamera, IconClose, IconLink } from "./Icons";
+import { haptic } from "../native";
 import { copyText } from "./Editor";
 import { usePreparedSample, useScrollLock } from "./hooks";
 import { badgeClass, sourceBadge } from "./RecipeCard";
@@ -267,6 +268,13 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
 
   return (
     <div class="detail" role="dialog" aria-modal="true" aria-label={tx(recipe.title)}>
+      <div class="detail-mobile-head">
+        <span class={`badge ${badgeClass(recipe)}`}>{sourceBadge(recipe)}</span>
+        <strong class="detail-mobile-title">{tx(recipe.title)}</strong>
+        <button class="icon-btn" aria-label={t("close")} onClick={() => (detailId.value = null)}>
+          <IconClose size={16} />
+        </button>
+      </div>
       <div class="detail-media">
         {hasPhotos && (
           <div class="segmented media-tabs" role="tablist">
@@ -304,7 +312,7 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
         <div class="detail-head">
           <span class={`badge ${badgeClass(recipe)}`}>{sourceBadge(recipe)}</span>
           <button class="icon-btn" aria-label={t("close")} onClick={() => (detailId.value = null)}>
-            ✕
+            <IconClose size={16} />
           </button>
         </div>
         <h2>{tx(recipe.title)}</h2>
@@ -345,7 +353,11 @@ function DetailBody({ recipe }: { recipe: Recipe }) {
             )}
             {canShare(recipe) && (
               <button class="ghost small-btn" disabled={shareBusy.value} onClick={() => void shareRecipe(recipe)}>
-                🔗 {shareBusy.value ? "…" : t("shareLink")} <span class="pro-tag">Pro</span>
+                <span class="btn-inline">
+                  <IconLink size={14} />
+                  {shareBusy.value ? "…" : t("shareLink")}
+                  <span class="pro-tag">Pro</span>
+                </span>
               </button>
             )}
             {recipe.source !== "builtin" && inLibrary && (
@@ -391,29 +403,122 @@ export function RecipeDetail() {
   );
 }
 
+const overlayStack: (() => void)[] = [];
+
 /**
- * Backdrop for dialogs. Closes on Escape, or on a click that both starts and
- * ends on the backdrop itself (so dragging a slider out of the dialog doesn't close it).
+ * Backdrop for dialogs & mobile bottom sheets.
+ * - Escape / Android Back only closes the topmost overlay in the stack.
+ * - On mobile (when `sheet` is true), dragging down from the grabber or scrolled-top sheet dismisses it.
  */
-export function Overlay({ onClose, children }: { onClose: () => void; children: ComponentChildren }) {
+export function Overlay({
+  onClose,
+  children,
+  sheet = true,
+}: {
+  onClose: () => void;
+  children: ComponentChildren;
+  sheet?: boolean;
+}) {
   useScrollLock();
   const downOnBackdrop = useRef(false);
   const close = useRef(onClose);
   close.current = onClose;
+  const [nested] = useState(() => overlayStack.length > 0);
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const touchState = useRef<{ y0: number; t0: number; active: boolean; scrollEl: HTMLElement | null } | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close.current();
+    const entry = () => close.current();
+    overlayStack.push(entry);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && overlayStack[overlayStack.length - 1] === entry) {
+        e.stopImmediatePropagation();
+        entry();
+      }
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      const idx = overlayStack.lastIndexOf(entry);
+      if (idx >= 0) overlayStack.splice(idx, 1);
+    };
   }, []);
+
+  const onTouchStart = (e: TouchEvent) => {
+    if (!sheet || e.touches.length !== 1) return;
+    if (typeof window !== "undefined" && window.innerWidth > 760) return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('.compare, [role="slider"], input, textarea, .curve, .wheel')) return;
+    const wrap = wrapRef.current;
+    const scrollEl = (wrap?.lastElementChild as HTMLElement | null) ?? null;
+    const onGrabber = !!target?.closest(".sheet-grabber");
+    if (!onGrabber && scrollEl && scrollEl.scrollTop > 2) return;
+    touchState.current = { y0: e.touches[0].clientY, t0: performance.now(), active: false, scrollEl };
+  };
+
+  const onTouchMove = (e: TouchEvent) => {
+    const st = touchState.current;
+    if (!st || e.touches.length !== 1) return;
+    const dy = e.touches[0].clientY - st.y0;
+    if (!st.active) {
+      if (dy < 8) return;
+      if (st.scrollEl && st.scrollEl.scrollTop > 2) {
+        touchState.current = null;
+        return;
+      }
+      st.active = true;
+      setDragging(true);
+    }
+    if (dy > 0) {
+      e.preventDefault();
+      setDragY(dy);
+    } else {
+      setDragY(0);
+    }
+  };
+
+  const onTouchEnd = () => {
+    const st = touchState.current;
+    touchState.current = null;
+    if (!st?.active) return;
+    const dt = Math.max(1, performance.now() - st.t0);
+    const velocity = dragY / dt;
+    setDragging(false);
+    if (dragY > 90 || (dragY > 45 && velocity > 0.45)) {
+      haptic("light");
+      setDragY(0);
+      close.current();
+    } else {
+      setDragY(0);
+    }
+  };
+
   return (
     <div
-      class="overlay"
+      class={`overlay${sheet ? " sheet-overlay" : ""}${nested ? " nested" : ""}`}
       onPointerDown={(e) => (downOnBackdrop.current = e.target === e.currentTarget)}
       onClick={(e) => {
         if (downOnBackdrop.current && e.target === e.currentTarget) onClose();
       }}
     >
-      {children}
+      {sheet ? (
+        <div
+          ref={wrapRef}
+          class={`sheet-wrap${dragging ? " dragging" : ""}`}
+          style={dragY > 0 ? { transform: `translateY(${dragY}px)` } : undefined}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
+        >
+          <div class="sheet-grabber" aria-hidden="true" />
+          {children}
+        </div>
+      ) : (
+        children
+      )}
     </div>
   );
 }

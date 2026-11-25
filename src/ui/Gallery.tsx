@@ -5,29 +5,24 @@ import { t, tagLabel, tx } from "../i18n";
 import type { Recipe } from "../np3/recipe";
 import { haptic, isAndroid, isDesktop } from "../native";
 import { canUseCardFolder } from "../pack/cardWriter";
-import { downloadText } from "../pack/download";
 import {
   activeSample,
   allRecipes,
-  exportBackup,
-  importBackup,
   openImport,
   openNewEditor,
   pasteOpen,
   galleryFilter,
   recipeQuery,
-  showToast,
   type GalleryFilter,
 } from "../state";
 import { communityInfo } from "../community";
 import { lookOf } from "../look";
 import { importFromThisMac } from "../localNp3";
-import { exportAllRecipes } from "../exportAll";
 import { importPhotos } from "../photoImport";
 import { PHOTO_ACCEPT } from "../raw";
 import { CommunityPanel } from "./CommunityPanel";
 import { useMediaQuery, usePreparedSample } from "./hooks";
-import { IconChevronDown, IconPlus } from "./Icons";
+import { IconChevronDown, IconClose, IconPlus } from "./Icons";
 import { np3FromCard, np3FromFiles } from "./ImportDialog";
 import { RecipeCard } from "./RecipeCard";
 import { Overlay } from "./RecipeDetail";
@@ -49,7 +44,6 @@ export function Gallery() {
   const setFilter = (f: GalleryFilter) => (galleryFilter.value = f);
   const np3Input = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
-  const backupInput = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDetailsElement>(null);
   const mobile = useMediaQuery("(max-width: 760px)");
   const [importSheetOpen, setImportSheetOpen] = useState(false);
@@ -151,7 +145,7 @@ export function Gallery() {
               <div class="detail-head">
                 <h2>{t("importMore")}</h2>
                 <button class="icon-btn" aria-label={t("close")} onClick={() => setImportSheetOpen(false)}>
-                  ✕
+                  <IconClose size={16} />
                 </button>
               </div>
               <div class="sheet-list">{importOptions}</div>
@@ -222,8 +216,8 @@ export function Gallery() {
       </div>
 
       <div class="scene-row">
-        <span class="label">{t("scene")}</span>
-        <SceneChips showHint />
+        {!mobile && <span class="label">{t("scene")}</span>}
+        <SceneChips showHint={!mobile} />
       </div>
 
       {visible.length === 0 ? (
@@ -253,37 +247,6 @@ export function Gallery() {
       )}
 
       {communityInfo.value && <CommunityPanel />}
-
-      <div class="backup-row">
-        <button class="link" onClick={() => void exportAllRecipes()}>
-          {t("exportAll")}
-        </button>
-        <span aria-hidden="true">·</span>
-        <button class="link" onClick={() => downloadText(exportBackup(), "np3-lab-backup.json")}>
-          {t("backupExport")}
-        </button>
-        <span aria-hidden="true">·</span>
-        <button class="link" onClick={() => backupInput.current?.click()}>
-          {t("backupImport")}
-        </button>
-        <input
-          ref={backupInput}
-          type="file"
-          accept=".json,application/json"
-          hidden
-          onChange={async (e) => {
-            const input = e.currentTarget;
-            const file = input.files?.[0];
-            input.value = "";
-            if (!file) return;
-            try {
-              showToast(t("backupRestored", { n: importBackup(await file.text()) }), "ok");
-            } catch {
-              showToast(t("backupInvalid"), "error");
-            }
-          }}
-        />
-      </div>
     </div>
   );
 }

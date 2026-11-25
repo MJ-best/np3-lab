@@ -27,7 +27,7 @@ export function Onboarding() {
   };
 
   return (
-    <Overlay onClose={completeOnboarding}>
+    <Overlay onClose={completeOnboarding} sheet={false}>
       <div class="dialog onboarding" role="dialog" aria-modal="true" aria-label={t("homeGuideTitle")}>
         <div class="onboarding-top">
           <div class="onboarding-dots" aria-hidden="true">

@@ -1,31 +1,24 @@
-import { useMemo } from "preact/hooks";
-import { currentCamera } from "../camera";
-import { activeCard, pickAndroidCard } from "../cards";
+import { useMemo, useState } from "preact/hooks";
 import { t } from "../i18n";
-import { haptic, isAndroid, isDesktop } from "../native";
+import { haptic, isDesktop } from "../native";
 import {
   activeSample,
   allRecipes,
-  cartRecipes,
-  guideCollapsed,
   myRecipes,
   openNewEditor,
   reopenOnboarding,
   route,
-  setGuideCollapsed,
 } from "../state";
 import { CameraGuide } from "./CameraGuide";
 import { CardView } from "./CardView";
 import { Cart } from "./Cart";
 import { usePreparedSample } from "./hooks";
+import { IconChevronDown, IconChevronRight, IconPlus } from "./Icons";
 import { RecipeCard } from "./RecipeCard";
 
 export function HomeView() {
   const source = usePreparedSample(activeSample.value);
-  const card = activeCard.value;
-  const camera = currentCamera.value;
-  const collapsed = guideCollapsed.value;
-  const readyCount = isDesktop ? (card?.np3Count ?? 0) : cartRecipes.value.length;
+  const [guideOpen, setGuideOpen] = useState(false);
 
   // Lead with the user's own recipes, then fill up to 6 slots with built-ins.
   const featured = useMemo(() => {
@@ -36,117 +29,88 @@ export function HomeView() {
     return [...mine, ...rest];
   }, [myRecipes.value, allRecipes.value]);
 
-  const step2Done = isDesktop ? !!card : cartRecipes.value.length > 0;
-  const step3Done = readyCount > 0;
-
   return (
     <div class="home-view">
       {/* Primary hub: SD card on native apps, card pack on web */}
       <section class="home-card-section">{isDesktop ? <CardView embedded /> : <Cart />}</section>
 
-      {/* Collapsible 3-step Quick-Start Guide */}
-      <section class="panel home-guide">
-        <div class="home-guide-head">
-          <h3>{t("homeGuideTitle")}</h3>
-          <div class="home-guide-actions">
-            <button
-              class="ghost small-btn"
-              onClick={() => {
-                haptic("light");
-                reopenOnboarding();
-              }}
-            >
-              {t("homeReplayTutorial")}
-            </button>
-            <button
-              class="ghost small-btn"
-              aria-expanded={!collapsed}
-              onClick={() => setGuideCollapsed(!collapsed)}
-            >
-              {collapsed ? t("homeExpand") : t("homeCollapse")}
-            </button>
-          </div>
-        </div>
-        {!collapsed && (
-          <ol class="home-guide-steps">
-            <li class="home-step done" onClick={reopenOnboarding}>
-              <span class="home-step-num" aria-hidden="true">
-                ✓
-              </span>
-              <div class="home-step-body">
-                <strong>{t("homeGuideStep1Title")}</strong>
-                <span>{camera.label || t("otherZ")}</span>
-              </div>
-            </li>
-            <li
-              class={`home-step${step2Done ? " done" : ""}${isAndroid && !card ? " actionable" : ""}`}
-              onClick={() => {
-                if (isAndroid && !card) {
-                  haptic("light");
-                  void pickAndroidCard();
-                }
-              }}
-            >
-              <span class="home-step-num" aria-hidden="true">
-                {step2Done ? "✓" : "2"}
-              </span>
-              <div class="home-step-body">
-                <strong>{t("homeGuideStep2Title")}</strong>
-                <span>
-                  {isDesktop ? (card ? card.name : t("homeGuideStep2Idle")) : t("homeGuideStep2Web")}
-                </span>
-              </div>
-            </li>
-            <li
-              class={`home-step${step3Done ? " done" : " actionable"}`}
-              onClick={() => {
-                haptic("light");
-                route.value = "gallery";
-              }}
-            >
-              <span class="home-step-num" aria-hidden="true">
-                {step3Done ? "✓" : "3"}
-              </span>
-              <div class="home-step-body">
-                <strong>{t("homeGuideStep3Title")}</strong>
-                <span>{step3Done ? t("homeGuideStep3Count", { n: readyCount }) : t("homeGuideStep3Idle")}</span>
-              </div>
-            </li>
-          </ol>
-        )}
-      </section>
-
-      {/* Featured & recent recipes */}
+      {/* Featured & recent recipes (horizontal swipe carousel on mobile, grid on desktop) */}
       <section class="home-section">
         <div class="home-section-head">
           <h3>{t("homeFeaturedTitle")}</h3>
           <div class="home-section-actions">
-            <button class="small-btn" onClick={openNewEditor}>
-              ＋ {t("newRecipe")}
-            </button>
             <button
               class="ghost small-btn"
+              onClick={() => {
+                haptic("light");
+                openNewEditor();
+              }}
+            >
+              <span class="btn-inline">
+                <IconPlus size={14} />
+                {t("newRecipe")}
+              </span>
+            </button>
+            <button
+              class="ghost small-btn home-see-all"
               onClick={() => {
                 haptic("selection");
                 route.value = "gallery";
               }}
             >
-              {t("homeSeeAll")} →
+              <span class="btn-inline">
+                {t("homeSeeAll")}
+                <IconChevronRight size={14} />
+              </span>
             </button>
           </div>
         </div>
-        <div class="grid">
+        <div class="grid home-carousel">
           {featured.map((r) => (
             <RecipeCard key={r.id} recipe={r} source={source} />
           ))}
         </div>
       </section>
 
-      {/* Camera loading guide */}
-      <details class="panel guide-details">
-        <summary>{t("cameraGuideTitle")}</summary>
-        <CameraGuide title={false} />
-      </details>
+      {/* Native-style grouped list for camera guide & tutorial replay (no HTML <details> triangle) */}
+      <section class="grouped-list">
+        <div class="grouped-item">
+          <button
+            type="button"
+            class={`grouped-row${guideOpen ? " open" : ""}`}
+            aria-expanded={guideOpen}
+            onClick={() => {
+              haptic("selection");
+              setGuideOpen(!guideOpen);
+            }}
+          >
+            <span class="grouped-row-title">{t("cameraGuideTitle")}</span>
+            <span class="grouped-chevron">
+              <IconChevronDown size={16} />
+            </span>
+          </button>
+          {guideOpen && (
+            <div class="grouped-collapse">
+              <CameraGuide title={false} />
+            </div>
+          )}
+        </div>
+        <div class="grouped-item">
+          <button
+            type="button"
+            class="grouped-row"
+            onClick={() => {
+              haptic("light");
+              reopenOnboarding();
+            }}
+          >
+            <span class="grouped-row-title">{t("homeReplayTutorial")}</span>
+            <span class="grouped-chevron">
+              <IconChevronRight size={16} />
+            </span>
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

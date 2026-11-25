@@ -12,7 +12,7 @@ export function ConfirmDialog() {
     resolveConfirm(ok);
   };
   return (
-    <Overlay onClose={() => close(false)}>
+    <Overlay onClose={() => close(false)} sheet={false}>
       <div class="dialog confirm-dialog" role="alertdialog" aria-modal="true" aria-label={req.confirmLabel ?? t("confirmOk")}>
         <p class="confirm-message">{req.message}</p>
         <div class="button-row end">

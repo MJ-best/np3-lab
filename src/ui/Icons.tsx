@@ -115,3 +115,34 @@ export function IconCheck({ size = 16 }: IconProps) {
     </svg>
   );
 }
+
+export function IconClose({ size = 16 }: IconProps) {
+  return (
+    <svg class="ui-icon" viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </svg>
+  );
+}
+
+export function IconChevronRight({ size = 16 }: IconProps) {
+  return (
+    <svg class="ui-icon" viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  );
+}
+
+export function IconLink({ size = 14 }: IconProps) {
+  return (
+    <svg class="ui-icon" viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <path
+        d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10.7 5.22M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 1 0 7.07 7.07l1.41-1.41"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+}

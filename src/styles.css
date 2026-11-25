@@ -1,21 +1,21 @@
 :root {
-  /* Black background with Nikon yellow as the accent. */
+  /* OLED black canvas with Apple/Toss-style elevated dark surfaces and Nikon yellow accent. */
   --bg: #000000;
-  --panel: #111111;
-  --panel-2: #1a1a1a;
-  --panel-3: #262626;
-  --line: #2e2e2e;
-  --text: #f3f3f3;
-  --muted: #a3a3a3;
-  --faint: #6f6f6f;
+  --panel: #141416;
+  --panel-2: #1e1e22;
+  --panel-3: #2a2a30;
+  --line: rgba(255, 255, 255, 0.08);
+  --text: #f5f5f7;
+  --muted: #98989f;
+  --faint: #63636a;
   --accent: #ffe100;
   --accent-hover: #fff04d;
   --accent-ink: #111111;
-  --ok: #57cf8a;
-  --warn: #f0a33a;
-  --danger: #ff6b6b;
-  --radius: 10px;
-  --radius-sm: 7px;
+  --ok: #34c759;
+  --warn: #ff9f0a;
+  --danger: #ff453a;
+  --radius: 14px;
+  --radius-sm: 10px;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", "Pretendard", "Segoe UI", "Malgun Gothic",
     system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -1507,11 +1507,12 @@ input[type="range"].custom-track::-moz-range-thumb {
   bottom: 0;
   z-index: 25;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   padding: 4px calc(6px + var(--safe-right)) calc(4px + var(--safe-bottom)) calc(6px + var(--safe-left));
-  background: rgba(10, 10, 10, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(14, 14, 16, 0.86);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-top: 1px solid var(--line);
   -webkit-app-region: no-drag;
 }
@@ -3529,40 +3530,260 @@ html.ios .editor-topbar-title {
   }
 }
 
+/* Nested overlay avoids double dark blur */
+.overlay.nested {
+  background: rgba(0, 0, 0, 0.36);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Desktop: sheet-wrap is a transparent centering wrapper; grabber hidden */
+.sheet-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+}
+.sheet-grabber {
+  display: none;
+}
+
+/* RecipeDetail sticky mobile top bar (hidden on desktop) */
+.detail-mobile-head {
+  display: none;
+}
+@media (max-width: 980px) {
+  .detail-mobile-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--panel);
+  }
+  .detail-mobile-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 16px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .detail-info .detail-head {
+    display: none;
+  }
+  .detail-info h2 {
+    margin-top: 2px;
+  }
+}
+
 @media (max-width: 760px) {
-  .overlay:has(.dialog:not(.confirm-dialog):not(.onboarding)),
-  .overlay:has(.detail),
-  html.android .overlay:has(.dialog:not(.confirm-dialog):not(.onboarding)),
-  html.ios .overlay:has(.dialog:not(.confirm-dialog):not(.onboarding)),
-  html.android .overlay:has(.detail),
-  html.ios .overlay:has(.detail) {
+  .overlay.sheet-overlay,
+  html.android .overlay.sheet-overlay,
+  html.ios .overlay.sheet-overlay {
     align-items: end;
     justify-items: stretch;
-    padding: calc(24px + var(--safe-top)) 0 0 0;
+    padding: calc(20px + var(--safe-top)) 0 0 0;
   }
-  .overlay > .dialog:not(.confirm-dialog):not(.onboarding),
-  .overlay > .detail {
+  .sheet-wrap {
     width: 100%;
     max-width: 100%;
-    max-height: calc(100dvh - var(--safe-top) - 24px);
-    overflow-y: auto;
-    border-radius: 20px 20px 0 0;
-    border-left: 0;
-    border-right: 0;
-    border-bottom: 0;
-    padding: 12px 18px calc(20px + var(--safe-bottom));
+    background: var(--panel);
+    border-radius: 22px 22px 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
     animation: sheetUp 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
   }
-  .overlay > .dialog:not(.confirm-dialog):not(.onboarding)::before,
-  .overlay > .detail::before {
+  .sheet-wrap.dragging {
+    transition: none;
+  }
+  .sheet-grabber {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 10px 0 6px;
+    flex: none;
+    cursor: grab;
+    touch-action: none;
+  }
+  .sheet-grabber::after {
     content: "";
-    display: block;
-    width: 36px;
-    height: 4px;
+    width: 38px;
+    height: 4.5px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.22);
-    margin: 0 auto 14px;
+    background: rgba(255, 255, 255, 0.24);
   }
+  .sheet-wrap > .dialog,
+  .sheet-wrap > .detail {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - var(--safe-top) - 44px);
+    overflow-y: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 6px 18px calc(22px + var(--safe-bottom));
+    animation: none;
+  }
+}
+
+/* Real iOS Toggle Switches in Settings */
+.settings-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.toggle.switch-row {
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+}
+.ios-switch {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 46px !important;
+  height: 28px !important;
+  border-radius: 999px;
+  background: var(--panel-3);
+  border: none;
+  cursor: pointer;
+  flex: none;
+  transition: background 0.2s ease;
+}
+.ios-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ios-switch:checked {
+  background: var(--ok);
+}
+.ios-switch:checked::after {
+  transform: translateX(18px);
+}
+.ios-switch:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.settings-data {
+  padding-top: 2px;
+}
+.settings-data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Home horizontal snap-scroll carousel on mobile */
+@media (max-width: 760px) {
+  .home-carousel {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    margin: 0 -14px;
+    padding: 2px 14px 6px;
+    scrollbar-width: none;
+  }
+  .home-carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .home-carousel > .card {
+    flex: 0 0 218px;
+    scroll-snap-align: start;
+  }
+}
+
+/* iOS Settings-style Grouped List (Home Help & Guide) */
+.grouped-list {
+  background: var(--panel);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.grouped-item + .grouped-item {
+  border-top: 1px solid var(--line);
+}
+.grouped-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text);
+}
+.grouped-row:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+.grouped-row:active:not(:disabled) {
+  transform: none;
+  background: rgba(255, 255, 255, 0.07);
+}
+.grouped-chevron {
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+.grouped-row.open .grouped-chevron {
+  transform: rotate(180deg);
+}
+.grouped-collapse {
+  padding: 4px 16px 16px;
+  border-top: 1px solid var(--line);
+}
+
+/* Surface elevation polish: reduce wireframe 1px borders in favor of tonal depth */
+.topbar {
+  background: rgba(14, 14, 16, 0.84);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+.panel,
+.card {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+.chip {
+  border-color: transparent;
+}
+.chip.active {
+  border-color: rgba(255, 225, 0, 0.45);
+}
+.sheet-list button,
+.sheet-item {
+  border-color: transparent;
+}
+.sheet-item.active {
+  border-color: rgba(255, 225, 0, 0.45);
+}
+.home-see-all {
+  color: var(--muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,11 +1,14 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { account, accountsEnabled, deleteAccount, guest, lastSynced, signOutAccount, syncNow, syncStatus } from "../account";
 import { autoBackup, setAutoBackup } from "../cards";
+import { exportAllRecipes } from "../exportAll";
 import { lang, setLang, t, LANGS } from "../i18n";
 import { isAndroid, native, type NativeSettings } from "../native";
+import { downloadText } from "../pack/download";
 import { entitlement, isPro, manageSubscription, proPageUrl } from "../pro";
-import { askConfirm } from "../state";
+import { askConfirm, exportBackup, importBackup, showToast } from "../state";
 import { CameraSelect } from "./CameraGuide";
+import { IconClose } from "./Icons";
 import { Overlay } from "./RecipeDetail";
 
 /** Pro status: the paid-until date and subscription management, or where to learn about Pro. */
@@ -97,6 +100,7 @@ function AccountRows({ onClose }: { onClose: () => void }) {
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const [s, setS] = useState<NativeSettings | null>(null);
+  const backupInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
     void native?.getSettings().then(setS);
   }, []);
@@ -116,7 +120,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         <div class="detail-head">
           <h2>{t("settingsTitle")}</h2>
           <button class="icon-btn" aria-label={t("close")} onClick={onClose}>
-            ✕
+            <IconClose size={16} />
           </button>
         </div>
         <div class="setting-row">
@@ -141,19 +145,22 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         </div>
         {accountsEnabled && <AccountRows onClose={onClose} />}
         {native && (
-          <>
-            <label class="toggle">
+          <div class="settings-toggles">
+            <label class="toggle switch-row">
+              <span>{t("setAutoBackup")}</span>
               <input
+                class="ios-switch"
                 type="checkbox"
                 checked={autoBackup.value}
                 onChange={(e) => setAutoBackup(e.currentTarget.checked)}
               />
-              {t("setAutoBackup")}
             </label>
             {!isAndroid && (
               <>
-                <label class="toggle">
+                <label class="toggle switch-row">
+                  <span>{t("setOpenOnCard")}</span>
                   <input
+                    class="ios-switch"
                     type="checkbox"
                     checked={s?.openOnCard ?? true}
                     disabled={!s}
@@ -161,10 +168,11 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                       update({ openOnCard: e.currentTarget.checked })
                     }
                   />
-                  {t("setOpenOnCard")}
                 </label>
-                <label class="toggle">
+                <label class="toggle switch-row">
+                  <span>{t("setOpenAtLogin")}</span>
                   <input
+                    class="ios-switch"
                     type="checkbox"
                     checked={s?.openAtLogin ?? true}
                     disabled={!s || !s.canUseLoginItem}
@@ -172,15 +180,44 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                       update({ openAtLogin: e.currentTarget.checked })
                     }
                   />
-                  {t("setOpenAtLogin")}
                 </label>
                 {s && !s.canUseLoginItem && (
                   <p class="hint">{t("setLoginDevNote")}</p>
                 )}
               </>
             )}
-          </>
+          </div>
         )}
+        <div class="settings-data">
+          <div class="settings-data-actions">
+            <button class="small-btn" onClick={() => void exportAllRecipes()}>
+              {t("exportAll")}
+            </button>
+            <button class="small-btn" onClick={() => downloadText(exportBackup(), "np3-lab-backup.json")}>
+              {t("backupExport")}
+            </button>
+            <button class="small-btn" onClick={() => backupInput.current?.click()}>
+              {t("backupImport")}
+            </button>
+          </div>
+          <input
+            ref={backupInput}
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={async (e) => {
+              const input = e.currentTarget;
+              const file = input.files?.[0];
+              input.value = "";
+              if (!file) return;
+              try {
+                showToast(t("backupRestored", { n: importBackup(await file.text()) }), "ok");
+              } catch {
+                showToast(t("backupInvalid"), "error");
+              }
+            }}
+          />
+        </div>
         {isAndroid && (
           <div class="settings-about">
             <strong>{t("aboutApp")}</strong>
