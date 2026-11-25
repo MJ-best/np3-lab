@@ -30,6 +30,7 @@
 
 * {
   box-sizing: border-box;
+  touch-action: manipulation;
 }
 
 html,
@@ -239,22 +240,49 @@ code,
   padding: 5px 12px;
   font-size: 12.5px;
 }
+.settings-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  flex: none;
+}
+.settings-btn:hover:not(:disabled) {
+  color: var(--text);
+}
+.settings-btn svg {
+  display: block;
+}
 .setting-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
   border-bottom: 1px solid var(--line);
 }
 .setting-row .segmented {
   margin-bottom: 0;
 }
+.setting-row .camera-select {
+  max-width: 100%;
+  min-width: 0;
+}
 .settings .account {
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
   border-bottom: 1px solid var(--line);
+}
+.settings .account:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 .settings .account .setting-row {
   border-bottom: 0;
@@ -1548,11 +1576,9 @@ input[type="range"].custom-track::-moz-range-thumb {
     white-space: nowrap;
   }
   .settings-btn {
-    min-width: 38px;
-    min-height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: var(--text);
   }
   .app {
     padding-bottom: calc(var(--bottom-bar-h) + var(--safe-bottom));
@@ -1563,6 +1589,9 @@ input[type="range"].custom-track::-moz-range-thumb {
 }
 
 @media (max-width: 600px) {
+  .overlay {
+    padding: 16px;
+  }
   .content {
     padding: 14px;
   }
@@ -1877,8 +1906,7 @@ html.android .overlay,
 html.ios .overlay,
 html.android .lightbox,
 html.ios .lightbox {
-  padding-top: calc(16px + var(--safe-top));
-  padding-bottom: calc(16px + var(--safe-bottom));
+  padding: calc(16px + var(--safe-top)) calc(16px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(16px + var(--safe-left));
 }
 html.android .detail,
 html.ios .detail {
@@ -2152,18 +2180,36 @@ html.ios .card-npname span {
 
 .dialog.settings {
   width: min(460px, 100%);
+  padding: 22px;
+}
+.dialog.settings .detail-head {
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.dialog.settings > .setting-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+@media (max-width: 480px) {
+  .dialog.settings {
+    padding: 20px 18px;
+  }
 }
 .toggle {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 8px 0;
+  line-height: 1.45;
   cursor: pointer;
 }
 .toggle input {
   accent-color: var(--accent);
   width: 16px;
   height: 16px;
+  flex: none;
 }
 .badge.card {
   background: rgba(87, 207, 138, 0.14);
@@ -3018,16 +3064,17 @@ html.ios .topbar {
 /* Settings About footer on iOS/Android */
 .settings-about {
   margin-top: 14px;
-  padding-top: 12px;
+  padding-top: 14px;
   border-top: 1px solid var(--line);
 }
 .settings-about strong {
   display: block;
   font-size: 13px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .settings-about .hint {
-  margin: 2px 0;
+  margin: 4px 0 0;
+  line-height: 1.5;
 }
 
 @media (prefers-reduced-motion: reduce) {
