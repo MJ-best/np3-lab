@@ -6,19 +6,32 @@ import { handleAndroidBack } from "./androidBack";
 import { activeCard, startCardSync } from "./cards";
 import { lang, t, type MessageKey } from "./i18n";
 import { haptic, isAndroid, isDesktop, native } from "./native";
+import { isValidNpName } from "./np3/recipe";
 import { webglAvailable } from "./render/renderer";
 import { loadPhotoIndex } from "./photos";
 import { importPhotos } from "./photoImport";
 import { checkForNewLocalNp3 } from "./localNp3";
-import { builtinsReady, cartRecipes, dismissToast, importSession, openImport, route, toasts, type Route } from "./state";
-import { Cart } from "./ui/Cart";
-import { CardView } from "./ui/CardView";
+import {
+  builtinsReady,
+  cartRecipes,
+  closeEditor,
+  dismissToast,
+  draft,
+  importSession,
+  openImport,
+  route,
+  saveDraft,
+  toasts,
+  type MainTab,
+} from "./state";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
 import { Editor } from "./ui/Editor";
 import { Gallery } from "./ui/Gallery";
+import { HomeView } from "./ui/HomeView";
 import { ImportDialog, np3FromFiles } from "./ui/ImportDialog";
 import { Landing } from "./ui/Landing";
 import { Logo } from "./ui/Logo";
+import { Onboarding } from "./ui/Onboarding";
 import { PhotoAssignDialog } from "./ui/PhotoAssignDialog";
 import { PhotoGallery } from "./ui/PhotoGallery";
 import { ProDialog } from "./ui/ProDialog";
@@ -27,28 +40,24 @@ import { SettingsDialog } from "./ui/SettingsDialog";
 import { TextImportDialog } from "./ui/TextImportDialog";
 import { useMediaQuery } from "./ui/hooks";
 
-// Mac desktop is card-first; mobile apps and the browser build lead with Recipes.
-const TABS: { id: Route; key: MessageKey }[] =
-  isDesktop && !isAndroid
-    ? [
-        { id: "card", key: "tabCard" },
-        { id: "gallery", key: "tabLibrary" },
-        { id: "photos", key: "tabPhotos" },
-        { id: "editor", key: "tabEditor" },
-      ]
-    : [
-        { id: "gallery", key: "tabLibrary" },
-        { id: "photos", key: "tabPhotos" },
-        { id: "editor", key: "tabEditor" },
-        { id: "card", key: "tabCard" },
-      ];
+// Unified 3-tab structure across all platforms; Editor opens as a dedicated sub-screen.
+const TABS: { id: MainTab; key: MessageKey }[] = [
+  { id: "home", key: "tabHome" },
+  { id: "gallery", key: "tabLibrary" },
+  { id: "photos", key: "tabPhotos" },
+];
 
-function TabIcon({ id }: { id: Route }) {
-  if (id === "card") {
+function TabIcon({ id }: { id: MainTab }) {
+  if (id === "home") {
     return (
       <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
-        <path d="M7 3h7l5 5v12a1.5 1.5 0 0 1-1.5 1.5h-10.5A1.5 1.5 0 0 1 5.5 20V4.5A1.5 1.5 0 0 1 7 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-        <path d="M9.5 3v4M12.5 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <path
+          d="M3.5 10.5L12 3.5l8.5 7v9A1.5 1.5 0 0 1 19 21h-4.5v-6h-5v6H5a1.5 1.5 0 0 1-1.5-1.5v-9z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linejoin="round"
+        />
       </svg>
     );
   }
@@ -62,21 +71,11 @@ function TabIcon({ id }: { id: Route }) {
       </svg>
     );
   }
-  if (id === "photos") {
-    return (
-      <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
-        <rect x="3" y="4.5" width="18" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
-        <circle cx="8.5" cy="9.5" r="1.6" fill="currentColor" />
-        <path d="M4 17l5-4.5 3.5 3 3-2.5L20 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    );
-  }
   return (
     <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
-      <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-      <circle cx="9" cy="7" r="2.2" fill="var(--bg)" stroke="currentColor" stroke-width="1.8" />
-      <circle cx="15.5" cy="12" r="2.2" fill="var(--bg)" stroke="currentColor" stroke-width="1.8" />
-      <circle cx="10.5" cy="17" r="2.2" fill="var(--bg)" stroke="currentColor" stroke-width="1.8" />
+      <rect x="3" y="4.5" width="18" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+      <circle cx="8.5" cy="9.5" r="1.6" fill="currentColor" />
+      <path d="M4 17l5-4.5 3.5 3 3-2.5L20 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
   );
 }
@@ -186,66 +185,102 @@ export function App() {
       </div>
     );
 
-  const switchTab = (id: Route) => {
+  const switchTab = (id: MainTab) => {
     if (route.value !== id) haptic("selection");
     route.value = id;
   };
 
+  const inEditor = route.value === "editor";
+  const d = draft.value;
+  const canSaveDraft = isValidNpName(d.npName);
+
   return (
-    <div class="app">
-      <header class="topbar">
-        <div class="brand">
-          <Logo />
-          <div>
-            <strong>NP3 Lab</strong>
-            <span class="tagline">{t("appTagline")}</span>
-          </div>
-        </div>
-        {!mobileNav && (
-          <nav class="tabs" role="tablist">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={route.value === tab.id}
-                class={route.value === tab.id ? "active" : ""}
-                onClick={() => switchTab(tab.id)}
-              >
-                {t(tab.key)}
-                {tab.id === "card" && cardBadge !== null && <span class="count">{cardBadge}</span>}
-              </button>
-            ))}
-          </nav>
-        )}
-        <div class="topbar-actions">
-          {accountsEnabled && !account.value && (
-            <button class="lang" onClick={() => (guest.value = false)}>
-              {t("signIn")}
-            </button>
-          )}
-          <button class="settings-btn" aria-label={t("settingsTitle")} title={t("settingsTitle")} onClick={() => setSettingsOpen(true)}>
-            <SettingsIcon />
+    <div class={`app${inEditor ? " in-editor" : ""}`}>
+      {inEditor ? (
+        <header class="topbar editor-topbar">
+          <button
+            class="ghost editor-back-btn"
+            onClick={() => {
+              haptic("light");
+              void closeEditor();
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span>{t("back")}</span>
           </button>
-        </div>
-      </header>
+          <div class="editor-topbar-title">
+            <strong>{d.title.trim() || t("newRecipe")}</strong>
+            {d.dirty && <span class="dirty-dot" aria-label={t("unsaved")} />}
+          </div>
+          <div class="topbar-actions">
+            <button
+              class={`small-btn${d.dirty || !d.editingId ? " primary" : ""}`}
+              disabled={!canSaveDraft}
+              onClick={() => {
+                if (d.dirty || !d.editingId) saveDraft();
+              }}
+            >
+              {d.dirty || !d.editingId ? t("saveShort") : `✓ ${t("saveShort")}`}
+            </button>
+          </div>
+        </header>
+      ) : (
+        <header class="topbar">
+          <div class="brand">
+            <Logo />
+            <div>
+              <strong>NP3 Lab</strong>
+              <span class="tagline">{t("appTagline")}</span>
+            </div>
+          </div>
+          {!mobileNav && (
+            <nav class="tabs" role="tablist">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={route.value === tab.id}
+                  class={route.value === tab.id ? "active" : ""}
+                  onClick={() => switchTab(tab.id)}
+                >
+                  {t(tab.key)}
+                  {tab.id === "home" && cardBadge !== null && <span class="count">{cardBadge}</span>}
+                </button>
+              ))}
+            </nav>
+          )}
+          <div class="topbar-actions">
+            {accountsEnabled && !account.value && (
+              <button class="lang" onClick={() => (guest.value = false)}>
+                {t("signIn")}
+              </button>
+            )}
+            <button class="settings-btn" aria-label={t("settingsTitle")} title={t("settingsTitle")} onClick={() => setSettingsOpen(true)}>
+              <SettingsIcon />
+            </button>
+          </div>
+        </header>
+      )}
 
       {!gl && <div class="banner warn">{t("noWebgl")}</div>}
 
       <main class="content">
+        {route.value === "home" && <HomeView />}
         {route.value === "gallery" && <Gallery />}
         {route.value === "photos" && <PhotoGallery />}
         {route.value === "editor" && <Editor />}
-        {route.value === "card" && (isDesktop ? <CardView /> : <Cart />)}
       </main>
 
-      {!isAndroid && (
+      {!isAndroid && !inEditor && (
         <footer class="footer">
           <span>{t("unofficial")}</span>
           <span>{t("credits")}</span>
         </footer>
       )}
 
-      {mobileNav && (
+      {mobileNav && !inEditor && (
         <nav class="bottom-tabs" role="tablist">
           {TABS.map((tab) => (
             <button
@@ -257,7 +292,7 @@ export function App() {
             >
               <span class="bottom-tab-icon">
                 <TabIcon id={tab.id} />
-                {tab.id === "card" && cardBadge !== null && <span class="count">{cardBadge}</span>}
+                {tab.id === "home" && cardBadge !== null && <span class="count">{cardBadge}</span>}
               </span>
               <span class="bottom-tab-label">{t(tab.key)}</span>
             </button>
@@ -271,6 +306,7 @@ export function App() {
       <ImportDialog />
       <PhotoAssignDialog />
       {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
+      <Onboarding />
       <ConfirmDialog />
 
       {dropping && (

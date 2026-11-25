@@ -188,16 +188,16 @@ function RecipePicker({ onClose, source }: { onClose: () => void; source: Prepar
   );
 }
 
-export function CardView() {
+export function CardView({ embedded = false }: { embedded?: boolean }) {
   const [picking, setPicking] = useState(false);
   const source = usePreparedSample(activeSample.value);
   const card = activeCard.value;
 
   if (!card) {
     return (
-      <div class="no-card">
+      <div class={embedded ? "panel home-card-hero" : "no-card"}>
         <div class="no-card-icon" aria-hidden="true">
-          <svg viewBox="0 0 64 64" width="72" height="72">
+          <svg viewBox="0 0 64 64" width={embedded ? "48" : "72"} height={embedded ? "48" : "72"}>
             <path d="M18 6h22l12 12v38a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="3" />
             <path d="M26 6v10M32 6v10M38 6v10" stroke="currentColor" stroke-width="3" />
           </svg>
@@ -208,7 +208,7 @@ export function CardView() {
             <p>{t(isIos ? "noCardBodyIos" : "noCardBodyAndroid")}</p>
             <p>
               <button class="primary" onClick={() => void pickAndroidCard()}>
-                💾 {t("connectCard")}
+                {t("connectCard")}
               </button>
             </p>
             <p class="hint">{t(isIos ? "pickCardHintIos" : "pickCardHint")}</p>
@@ -220,9 +220,11 @@ export function CardView() {
             <p class="hint">{t("noCardTray")}</p>
           </>
         )}
-        <div class="panel no-card-guide">
-          <CameraGuide />
-        </div>
+        {!embedded && (
+          <div class="panel no-card-guide">
+            <CameraGuide />
+          </div>
+        )}
       </div>
     );
   }
@@ -283,10 +285,12 @@ export function CardView() {
         </div>
       )}
 
-      <details class="panel guide-details">
-        <summary>{t("cameraGuideTitle")}</summary>
-        <CameraGuide title={false} />
-      </details>
+      {!embedded && (
+        <details class="panel guide-details">
+          <summary>{t("cameraGuideTitle")}</summary>
+          <CameraGuide title={false} />
+        </details>
+      )}
 
       {picking && <RecipePicker source={source} onClose={() => setPicking(false)} />}
     </div>

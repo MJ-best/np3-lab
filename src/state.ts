@@ -4,7 +4,7 @@ import { recipeFromBackup } from "./backup";
 import { legacyBytes } from "./camera";
 import { downloadCommunityRecipes, forgetCommunityRecipes, isCommunityRecipe, storedCommunityRecipes } from "./community";
 import { t, tx } from "./i18n";
-import { haptic, isAndroid, isDesktop } from "./native";
+import { haptic } from "./native";
 import {
   TONE_KEYS,
   defaultParams,
@@ -31,12 +31,31 @@ import { base64ToBytes, bytesToBase64, readStore, writeStore } from "./storage";
 // ---------------------------------------------------------------------------
 // Navigation & UI
 
-export type Route = "gallery" | "photos" | "editor" | "card";
-// Mac desktop is card-first; mobile/tablet & web open on Recipes so first-time users see content immediately.
-export const route = signal<Route>(isDesktop && !isAndroid ? "card" : "gallery");
+export type MainTab = "home" | "gallery" | "photos";
+export type Route = MainTab | "editor";
+export const route = signal<Route>("home");
+/** Tab to return to when leaving the dedicated Editor screen. */
+export const prevRoute = signal<MainTab>("home");
 export const detailId = signal<string | null>(null);
 /** Which side of the recipe dialog to open on; null lets it decide (photos first when there are any). */
 export const detailTab = signal<"photos" | "preview" | null>(null);
+
+export const onboardingDone = signal<boolean>(readStore<boolean>("onboardingDone") ?? false);
+export const onboardingOpen = signal<boolean>(!onboardingDone.value);
+export function completeOnboarding() {
+  onboardingDone.value = true;
+  onboardingOpen.value = false;
+  writeStore("onboardingDone", true);
+}
+export function reopenOnboarding() {
+  onboardingOpen.value = true;
+}
+
+export const guideCollapsed = signal<boolean>(readStore<boolean>("guideCollapsed") ?? false);
+export function setGuideCollapsed(v: boolean) {
+  guideCollapsed.value = v;
+  writeStore("guideCollapsed", v);
+}
 
 export type GalleryFilter = "all" | "mine" | "reddit" | "imaging-cloud" | `tag:${string}`;
 /** Recipes-tab search text. */
@@ -484,6 +503,25 @@ export function resetDraft() {
   writeStore("draft", draft.value);
 }
 
+export function openNewEditor() {
+  if (route.value !== "editor") prevRoute.value = route.value;
+  resetDraft();
+  route.value = "editor";
+}
+
+export async function closeEditor() {
+  if (route.value !== "editor") return;
+  if (draft.value.dirty) {
+    const ok = await askConfirm({
+      message: t("discardEditorConfirm"),
+      confirmLabel: t("discardAndExit"),
+      danger: true,
+    });
+    if (!ok) return;
+  }
+  route.value = prevRoute.value;
+}
+
 export function openInEditor(recipe: Recipe) {
   if (!recipe.params) return;
   const editable = recipe.source === "mine" && !recipe.raw;
@@ -501,6 +539,7 @@ export function openInEditor(recipe: Recipe) {
   };
   writeStore("draft", draft.value);
   detailId.value = null;
+  if (route.value !== "editor") prevRoute.value = route.value;
   route.value = "editor";
 }
 
@@ -518,6 +557,7 @@ export function loadParamsIntoEditor(params: RecipeParams, name?: string, npName
     dirty: true,
   };
   writeStore("draft", draft.value);
+  if (route.value !== "editor") prevRoute.value = route.value;
   route.value = "editor";
 }
 

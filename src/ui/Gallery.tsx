@@ -12,11 +12,10 @@ import {
   exportBackup,
   importBackup,
   openImport,
+  openNewEditor,
   pasteOpen,
-  resetDraft,
   galleryFilter,
   recipeQuery,
-  route,
   showToast,
   type GalleryFilter,
 } from "../state";
@@ -103,13 +102,7 @@ export function Gallery() {
               {!isDesktop && canUseCardFolder() && <button onClick={importFromCard}>{t("importFromCard")}</button>}
             </div>
           </details>
-          <button
-            class="primary"
-            onClick={() => {
-              resetDraft();
-              route.value = "editor";
-            }}
-          >
+          <button class="primary" onClick={openNewEditor}>
             ＋ {t("newRecipe")}
           </button>
         </div>

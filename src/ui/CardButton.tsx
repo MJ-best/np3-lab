@@ -34,7 +34,7 @@ export function CardButton({ recipe, className, big = false }: { recipe: Recipe;
         onClick={() => {
           haptic("light");
           detailId.value = null;
-          route.value = "card";
+          route.value = "home";
           showToast(t("connectCardFirst"), "info", 4500);
         }}
       >

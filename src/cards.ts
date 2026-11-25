@@ -143,7 +143,7 @@ function applyCards(next: NativeCard[]) {
   if (inserted) {
     activeCardId.value = inserted.id;
     // On mobile, jump straight to the SD Card tab as soon as a card is recognised.
-    if (isAndroid) route.value = "card";
+    if (isAndroid) route.value = "home";
   } else if (!next.some((c) => c.id === activeCardId.value)) {
     activeCardId.value = next[0]?.id ?? null;
   }

@@ -3077,6 +3077,333 @@ html.ios .topbar {
   line-height: 1.5;
 }
 
+/* Dedicated Editor screen header */
+.app.in-editor {
+  padding-bottom: var(--safe-bottom);
+}
+.app.in-editor .toasts {
+  bottom: calc(16px + var(--safe-bottom));
+}
+.editor-topbar {
+  justify-content: space-between;
+  gap: 10px;
+}
+.editor-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px 6px 6px;
+  font-size: 13.5px;
+  color: var(--text);
+  flex: none;
+}
+.editor-topbar-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 170px);
+  min-width: 0;
+}
+.editor-topbar-title strong {
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html.android .editor-topbar-title,
+html.ios .editor-topbar-title {
+  top: calc(50% + var(--safe-top) / 2);
+  transform: translate(-50%, -50%);
+}
+
+/* Home Dashboard */
+.home-view {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.home-card-hero {
+  text-align: center;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.home-card-hero .no-card-icon {
+  margin-bottom: 2px;
+  color: var(--accent);
+}
+.home-card-hero h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.home-card-hero p {
+  margin: 0;
+  max-width: 440px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.home-card-hero p:has(button) {
+  margin-top: 6px;
+}
+
+.home-guide {
+  padding: 16px 18px;
+}
+.home-guide-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.home-guide-head h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.home-guide-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.home-guide-steps {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.home-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  transition: border-color 0.14s, background 0.14s;
+}
+.home-step.actionable {
+  cursor: pointer;
+}
+.home-step.actionable:hover {
+  border-color: var(--accent);
+  background: rgba(255, 225, 0, 0.04);
+}
+.home-step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--panel-3);
+  color: var(--muted);
+  flex: none;
+}
+.home-step.done .home-step-num {
+  background: rgba(87, 207, 138, 0.18);
+  color: var(--ok);
+}
+.home-step-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.home-step-body strong {
+  font-size: 13.5px;
+  line-height: 1.3;
+}
+.home-step-body span {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.home-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.home-section-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.home-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 760px) {
+  .home-guide-steps {
+    grid-template-columns: 1fr;
+  }
+  .home-guide {
+    padding: 14px;
+  }
+  .home-card-hero {
+    padding: 20px 16px;
+  }
+}
+
+/* First-run 3-step Onboarding */
+.dialog.onboarding {
+  width: min(460px, 100%);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.onboarding-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.onboarding-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--panel-3);
+  transition: width 0.2s, background 0.2s;
+}
+.onboarding-dot.active {
+  width: 22px;
+  background: var(--accent);
+}
+.onboarding-dot.done {
+  background: var(--ok);
+}
+.onboarding-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.onboarding-body h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+.onboarding-desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+.onboarding-hero-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+.onboarding-hero-icon.accent {
+  background: rgba(255, 225, 0, 0.12);
+  border-color: rgba(255, 225, 0, 0.35);
+  color: var(--accent);
+}
+.onboarding-chips {
+  margin: 4px 0 0;
+}
+.onboarding-support {
+  margin: 2px 0 0;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.onboarding-support.ok {
+  background: rgba(87, 207, 138, 0.12);
+  color: var(--ok);
+}
+.onboarding-support.warn {
+  background: rgba(240, 163, 58, 0.12);
+  color: var(--warn);
+}
+.onboarding-steps {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboarding-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+.onboarding-step-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.onboarding-steps strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.onboarding-steps p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.45;
+  word-break: keep-all;
+}
+.onboarding-cta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+.onboarding-cta-stack button {
+  width: 100%;
+}
+.onboarding-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay,
   .detail,

@@ -98,16 +98,6 @@ export function Editor() {
     showToast(`${t("added")} ✓`, "ok");
   };
 
-  const quickSave = () => {
-    if (!nameOk) {
-      setTab("save");
-      showToast(t("nameInvalid"), "error");
-      return;
-    }
-    if (d.dirty || !d.editingId) saveDraft();
-    else setTab("save");
-  };
-
   const editorTabs: { id: EditorTab; key: MessageKey }[] = [
     { id: "mood", key: "editorTabMood" },
     { id: "tone", key: "editorTabTone" },
@@ -237,11 +227,6 @@ export function Editor() {
       <section class="editor-preview">
         <div class="editor-preview-bar">
           <SceneChips compact={compact} />
-          {compact && (
-            <button class={`small-btn editor-quick-save${d.dirty || !d.editingId ? " primary" : ""}`} onClick={quickSave}>
-              {d.dirty || !d.editingId ? t("saveShort") : `✓ ${t("saveShort")}`}
-            </button>
-          )}
         </div>
         <CompareSlider source={source} params={legacy ? asLegacy(draftParams.value) : draftParams.value} maxHeight={previewMaxHeight} />
         {!compact && <p class="hint">{t("approxPreview")}</p>}
