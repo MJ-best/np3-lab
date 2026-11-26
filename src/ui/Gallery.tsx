@@ -22,7 +22,7 @@ import { importPhotos } from "../photoImport";
 import { PHOTO_ACCEPT } from "../raw";
 import { CommunityPanel } from "./CommunityPanel";
 import { useMediaQuery, usePreparedSample } from "./hooks";
-import { IconChevronDown, IconClose, IconPlus } from "./Icons";
+import { IconChevronDown, IconClose, IconPlus, IconSearch } from "./Icons";
 import { np3FromCard, np3FromFiles } from "./ImportDialog";
 import { RecipeCard } from "./RecipeCard";
 import { Overlay } from "./RecipeDetail";
@@ -104,7 +104,15 @@ export function Gallery() {
   return (
     <div class="gallery">
       <div class="toolbar">
-        <input class="search" type="search" placeholder={t("search")} value={query} onInput={(e) => setQuery(e.currentTarget.value)} />
+        <div class="search-field">
+          <IconSearch size={15} />
+          <input class="search" type="search" placeholder={t("search")} value={query} onInput={(e) => setQuery(e.currentTarget.value)} />
+          {query && (
+            <button type="button" class="search-clear" aria-label={t("clearSearch")} onClick={() => setQuery("")}>
+              <IconClose size={12} />
+            </button>
+          )}
+        </div>
         <div class="toolbar-actions">
           {mobile ? (
             <button

@@ -1,22 +1,24 @@
 :root {
-  /* OLED black canvas with Apple/Toss-style elevated dark surfaces and Nikon yellow accent. */
+  /* Authentic Apple iOS Dark Mode system colors (UIColor.system*) + Nikon yellow tint. */
   --bg: #000000;
-  --panel: #141416;
-  --panel-2: #1e1e22;
-  --panel-3: #2a2a30;
-  --line: rgba(255, 255, 255, 0.08);
-  --text: #f5f5f7;
-  --muted: #98989f;
-  --faint: #63636a;
-  --accent: #ffe100;
-  --accent-hover: #fff04d;
-  --accent-ink: #111111;
-  --ok: #34c759;
+  --panel: #1c1c1e;
+  --panel-2: #2c2c2e;
+  --panel-3: #3a3a3c;
+  --fill: rgba(118, 118, 128, 0.24);
+  --fill-2: rgba(118, 118, 128, 0.36);
+  --line: rgba(84, 84, 88, 0.48);
+  --text: #ffffff;
+  --muted: rgba(235, 235, 245, 0.6);
+  --faint: rgba(235, 235, 245, 0.3);
+  --accent: #ffd60a;
+  --accent-hover: #ffe347;
+  --accent-ink: #000000;
+  --ok: #30d158;
   --warn: #ff9f0a;
   --danger: #ff453a;
-  --radius: 14px;
+  --radius: 16px;
   --radius-sm: 10px;
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", "Pretendard", "Segoe UI", "Malgun Gothic",
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Apple SD Gothic Neo", "Pretendard", "Segoe UI",
     system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --safe-top: max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px));
@@ -24,7 +26,7 @@
   --safe-left: max(env(safe-area-inset-left), var(--safe-area-inset-left, 0px));
   --safe-right: max(env(safe-area-inset-right), var(--safe-area-inset-right, 0px));
   --topbar-h: 58px;
-  --bottom-bar-h: 60px;
+  --bottom-bar-h: 56px;
   color-scheme: dark;
 }
 
@@ -3786,7 +3788,435 @@ html.ios .editor-topbar-title {
   color: var(--muted);
 }
 
+/* =========================================================================
+   Apple Native iOS Design Language (HIG Dark Mode)
+   ========================================================================= */
+
+/* Borderless fill buttons & Apple circular close buttons */
+button {
+  border-color: transparent;
+  background: var(--fill);
+  font-weight: 500;
+}
+button:hover:not(:disabled) {
+  background: var(--fill-2);
+}
+button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+button.ghost {
+  background: transparent;
+  border-color: transparent;
+}
+button.ghost:hover:not(:disabled) {
+  background: var(--fill);
+}
+button.on {
+  background: rgba(48, 209, 88, 0.18);
+  border-color: transparent;
+  color: var(--ok);
+}
+
+/* Signature iOS circular close button */
+.detail-head .icon-btn,
+.detail-mobile-head .icon-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--fill);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.detail-head .icon-btn:hover:not(:disabled),
+.detail-mobile-head .icon-btn:hover:not(:disabled) {
+  background: var(--fill-2);
+  color: var(--text);
+}
+
+/* App Store-style tinted capsule "+ Add" button on recipe cards */
+.add-btn {
+  background: rgba(255, 214, 10, 0.16);
+  color: var(--accent);
+  font-weight: 600;
+  padding: 4px 11px;
+}
+.add-btn:hover:not(:disabled) {
+  background: rgba(255, 214, 10, 0.24);
+}
+.add-btn.on {
+  background: rgba(48, 209, 88, 0.18);
+  color: var(--ok);
+}
+
+/* Borderless cards & panels relying on Apple system surface elevation */
+.panel,
+.card {
+  border: none;
+  background: var(--panel);
+}
+.card {
+  border-radius: var(--radius);
+}
+.card-body {
+  padding: 12px 13px 13px;
+}
+.card-title {
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+
+/* iOS UISearchBar */
+.search-field {
+  flex: 1 1 220px;
+  max-width: 340px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 10px;
+  background: var(--fill);
+  border-radius: 10px;
+  color: var(--muted);
+  transition: background 0.15s ease;
+}
+.search-field:focus-within {
+  background: var(--fill-2);
+}
+.search-field .search {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  height: 100%;
+  color: var(--text);
+  outline: none;
+}
+.search-field .search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.search-field .search::placeholder {
+  color: var(--muted);
+}
+.search-clear {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(235, 235, 245, 0.25);
+  color: #1c1c1e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.search-clear:hover:not(:disabled) {
+  background: rgba(235, 235, 245, 0.4);
+}
+@media (max-width: 480px) {
+  .search-field {
+    flex: 1 1 0;
+    max-width: none;
+  }
+}
+
+/* iOS UISegmentedControl */
+.segmented {
+  background: var(--fill);
+  border: none;
+  border-radius: 9px;
+  padding: 2px;
+  gap: 2px;
+}
+.segmented button {
+  background: transparent;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.segmented button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+.segmented button.active {
+  background: #636366;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.36), 0 0.5px 1px rgba(0, 0, 0, 0.24);
+}
+
+/* iOS Large Title + Scroll-Aware Frosted Navigation Bar */
+.ios-large-title {
+  margin: 0 0 14px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+  line-height: 1.15;
+  color: var(--text);
+}
+.mobile-topbar {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 0.5px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.mobile-topbar.scrolled {
+  background: rgba(22, 22, 24, 0.82);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom-color: var(--line);
+}
+.mobile-header-left {
+  display: inline-flex;
+  align-items: center;
+  min-width: 32px;
+}
+.mobile-inline-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  white-space: nowrap;
+}
+html.android .mobile-inline-title,
+html.ios .mobile-inline-title {
+  top: calc(50% + var(--safe-top) / 2);
+}
+.mobile-topbar.scrolled .mobile-inline-title {
+  opacity: 1;
+}
+.mobile-topbar .settings-btn,
+.mobile-topbar .header-action-btn {
+  background: transparent;
+  color: var(--accent);
+  width: 36px;
+  height: 36px;
+}
+.mobile-topbar .settings-btn:hover:not(:disabled),
+.mobile-topbar .header-action-btn:hover:not(:disabled) {
+  background: var(--fill);
+}
+
+/* Borderless Apple Nav Bar Text Buttons (Editor) */
+.nav-text-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 400;
+  padding: 6px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.nav-text-btn:hover:not(:disabled) {
+  background: transparent;
+  opacity: 0.75;
+}
+.nav-save-btn {
+  font-weight: 600;
+  color: var(--muted);
+}
+.nav-save-btn.active {
+  color: var(--accent);
+}
+.editor-topbar {
+  background: rgba(22, 22, 24, 0.86);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 0.5px solid var(--line);
+}
+
+/* iOS UITabBar refinement */
+.bottom-tabs {
+  background: rgba(22, 22, 24, 0.82);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.14);
+  padding-top: 6px;
+}
+.bottom-tab {
+  background: transparent;
+  color: #8e8e93;
+  gap: 2px;
+}
+.bottom-tab:hover:not(:disabled) {
+  background: transparent;
+}
+.bottom-tab.active {
+  color: var(--accent);
+}
+.bottom-tab-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* iOS Inset Grouped Settings */
+.dialog.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dialog.settings .detail-head {
+  padding-bottom: 0;
+  margin-bottom: 2px;
+  border-bottom: none;
+}
+.ios-group {
+  background: var(--panel-2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ios-group > .setting-row,
+.ios-group > .toggle.switch-row,
+.ios-group > .ios-group-btn {
+  position: relative;
+  margin: 0;
+  padding: 12px 16px;
+  min-height: 46px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.ios-group > *:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 0;
+  bottom: 0;
+  height: 0.5px;
+  background: var(--line);
+}
+.ios-group-btn {
+  width: 100%;
+  text-align: left;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+}
+.ios-group-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+}
+.ios-group-btn:active:not(:disabled) {
+  transform: none;
+  background: rgba(255, 255, 255, 0.09);
+}
+.ios-group-hint {
+  padding: 0 16px 12px;
+  margin: 0;
+}
+.dialog.settings .settings-about {
+  margin-top: 2px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--line);
+}
+
+/* iOS UIAlertController style for ConfirmDialog on mobile */
+@media (max-width: 760px) {
+  .dialog.confirm-dialog {
+    width: min(280px, calc(100% - 32px));
+    padding: 0;
+    border-radius: 14px;
+    border: none;
+    background: rgba(38, 38, 40, 0.94);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    overflow: hidden;
+    text-align: center;
+  }
+  .dialog.confirm-dialog .confirm-message {
+    padding: 20px 18px 18px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+  .dialog.confirm-dialog .button-row.end {
+    margin: 0;
+    gap: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 0.5px solid var(--line);
+  }
+  .dialog.confirm-dialog .button-row.end button {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 13px 10px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .dialog.confirm-dialog .button-row.end button:first-child {
+    border-right: 0.5px solid var(--line);
+    color: var(--text);
+    font-weight: 400;
+  }
+  .dialog.confirm-dialog .button-row.end button.danger {
+    color: var(--danger);
+    font-weight: 600;
+  }
+  .dialog.confirm-dialog .button-row.end button.primary {
+    background: transparent;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .dialog.confirm-dialog .button-row.end button:active:not(:disabled) {
+    transform: none;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Subtle native view transition */
+@keyframes viewIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.route-view {
+  animation: viewIn 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Tighten mobile top content padding under transparent mobile nav bar */
+@media (max-width: 600px) {
+  .content {
+    padding: 6px 16px 20px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .route-view,
   .overlay,
   .detail,
   .dialog,

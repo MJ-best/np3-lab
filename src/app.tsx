@@ -146,7 +146,14 @@ export function App() {
   const dropping = useWindowDrop();
   const [gl] = useState(() => webglAvailable());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const mobileNav = useMediaQuery("(max-width: 760px)");
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 18);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   useEffect(() => {
     document.documentElement.lang = lang.value;
     void loadPhotoIndex();
@@ -169,7 +176,10 @@ export function App() {
       return () => window.removeEventListener("focus", onFocus);
     }
   }, []);
-  useEffect(() => window.scrollTo(0, 0), [route.value]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    setScrolled(false);
+  }, [route.value]);
 
   const cardBadge =
     !isDesktop && cartRecipes.value.length > 0
@@ -195,20 +205,21 @@ export function App() {
   const inEditor = route.value === "editor";
   const d = draft.value;
   const canSaveDraft = isValidNpName(d.npName);
+  const mobileTitle = route.value === "home" ? "NP3 Lab" : route.value === "gallery" ? t("tabLibrary") : t("tabPhotos");
 
   return (
     <div class={`app${inEditor ? " in-editor" : ""}`}>
       {inEditor ? (
         <header class="topbar editor-topbar">
           <button
-            class="ghost editor-back-btn"
+            class="nav-text-btn editor-back-btn"
             onClick={() => {
               haptic("light");
               void closeEditor();
             }}
           >
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-              <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             <span>{t("back")}</span>
           </button>
@@ -218,7 +229,7 @@ export function App() {
           </div>
           <div class="topbar-actions">
             <button
-              class={`small-btn${d.dirty || !d.editingId ? " primary" : ""}`}
+              class={`nav-text-btn nav-save-btn${d.dirty || !d.editingId ? " active" : ""}`}
               disabled={!canSaveDraft}
               onClick={() => {
                 if (d.dirty || !d.editingId) saveDraft();
@@ -229,12 +240,14 @@ export function App() {
           </div>
         </header>
       ) : (
-        <header class={`topbar${mobileNav ? " mobile-topbar" : ""}`}>
+        <header class={`topbar${mobileNav ? ` mobile-topbar${scrolled ? " scrolled" : ""}` : ""}`}>
           {mobileNav ? (
-            <div class="mobile-header-title">
-              {route.value === "home" && <Logo />}
-              <h1>{route.value === "home" ? "NP3 Lab" : route.value === "gallery" ? t("tabLibrary") : t("tabPhotos")}</h1>
-            </div>
+            <>
+              <div class="mobile-header-left">{route.value === "home" && !scrolled && <Logo />}</div>
+              <span class="mobile-inline-title" aria-hidden={!scrolled}>
+                {mobileTitle}
+              </span>
+            </>
           ) : (
             <div class="brand">
               <Logo />
@@ -263,7 +276,7 @@ export function App() {
           <div class="topbar-actions">
             {mobileNav && route.value === "gallery" && (
               <button
-                class="header-action-btn primary"
+                class="header-action-btn"
                 aria-label={t("newRecipe")}
                 title={t("newRecipe")}
                 onClick={() => {
@@ -271,7 +284,7 @@ export function App() {
                   openNewEditor();
                 }}
               >
-                <IconPlus size={18} />
+                <IconPlus size={20} />
               </button>
             )}
             {accountsEnabled && !account.value && (
@@ -289,10 +302,13 @@ export function App() {
       {!gl && <div class="banner warn">{t("noWebgl")}</div>}
 
       <main class="content">
-        {route.value === "home" && <HomeView />}
-        {route.value === "gallery" && <Gallery />}
-        {route.value === "photos" && <PhotoGallery />}
-        {route.value === "editor" && <Editor />}
+        {mobileNav && !inEditor && <h1 class="ios-large-title">{mobileTitle}</h1>}
+        <div key={route.value} class="route-view">
+          {route.value === "home" && <HomeView />}
+          {route.value === "gallery" && <Gallery />}
+          {route.value === "photos" && <PhotoGallery />}
+          {route.value === "editor" && <Editor />}
+        </div>
       </main>
 
       {!isAndroid && !inEditor && (

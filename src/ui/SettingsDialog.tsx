@@ -123,29 +123,31 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             <IconClose size={16} />
           </button>
         </div>
-        <div class="setting-row">
-          <span>{t("language")}</span>
-          <div class="segmented" role="radiogroup" aria-label={t("language")}>
-            {LANGS.map((l) => (
-              <button
-                key={l.id}
-                role="radio"
-                aria-checked={lang.value === l.id}
-                class={lang.value === l.id ? "active" : ""}
-                onClick={() => setLang(l.id)}
-              >
-                {l.label}
-              </button>
-            ))}
+        <div class="ios-group">
+          <div class="setting-row">
+            <span>{t("language")}</span>
+            <div class="segmented" role="radiogroup" aria-label={t("language")}>
+              {LANGS.map((l) => (
+                <button
+                  key={l.id}
+                  role="radio"
+                  aria-checked={lang.value === l.id}
+                  class={lang.value === l.id ? "active" : ""}
+                  onClick={() => setLang(l.id)}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-        <div class="setting-row">
-          <span>{t("cameraModel")}</span>
-          <CameraSelect />
+          <div class="setting-row">
+            <span>{t("cameraModel")}</span>
+            <CameraSelect />
+          </div>
         </div>
         {accountsEnabled && <AccountRows onClose={onClose} />}
         {native && (
-          <div class="settings-toggles">
+          <div class="ios-group">
             <label class="toggle switch-row">
               <span>{t("setAutoBackup")}</span>
               <input
@@ -182,24 +184,22 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
                   />
                 </label>
                 {s && !s.canUseLoginItem && (
-                  <p class="hint">{t("setLoginDevNote")}</p>
+                  <p class="hint ios-group-hint">{t("setLoginDevNote")}</p>
                 )}
               </>
             )}
           </div>
         )}
-        <div class="settings-data">
-          <div class="settings-data-actions">
-            <button class="small-btn" onClick={() => void exportAllRecipes()}>
-              {t("exportAll")}
-            </button>
-            <button class="small-btn" onClick={() => downloadText(exportBackup(), "np3-lab-backup.json")}>
-              {t("backupExport")}
-            </button>
-            <button class="small-btn" onClick={() => backupInput.current?.click()}>
-              {t("backupImport")}
-            </button>
-          </div>
+        <div class="ios-group ios-action-group">
+          <button type="button" class="ios-group-btn" onClick={() => void exportAllRecipes()}>
+            {t("exportAll")}
+          </button>
+          <button type="button" class="ios-group-btn" onClick={() => downloadText(exportBackup(), "np3-lab-backup.json")}>
+            {t("backupExport")}
+          </button>
+          <button type="button" class="ios-group-btn" onClick={() => backupInput.current?.click()}>
+            {t("backupImport")}
+          </button>
           <input
             ref={backupInput}
             type="file"

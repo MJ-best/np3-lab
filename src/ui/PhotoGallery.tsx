@@ -5,6 +5,7 @@ import { SCENES, photosByRecipe } from "../photos";
 import { PHOTO_ACCEPT } from "../raw";
 import { allRecipes, photoQuery, recipeById } from "../state";
 import { matchesQuery } from "./Gallery";
+import { IconClose, IconSearch } from "./Icons";
 import { PhotoLibrary } from "./PhotoLibrary";
 
 /** The Gallery tab: every photo, grouped by the recipe it was shot with. */
@@ -80,7 +81,15 @@ export function PhotoGallery() {
       ) : (
         <>
           <div class="toolbar">
-            <input class="search" type="search" placeholder={t("search")} value={query} onInput={(e) => (photoQuery.value = e.currentTarget.value)} />
+            <div class="search-field">
+              <IconSearch size={15} />
+              <input class="search" type="search" placeholder={t("search")} value={query} onInput={(e) => (photoQuery.value = e.currentTarget.value)} />
+              {query && (
+                <button type="button" class="search-clear" aria-label={t("clearSearch")} onClick={() => (photoQuery.value = "")}>
+                  <IconClose size={12} />
+                </button>
+              )}
+            </div>
             <div class="toolbar-actions">
               <button class="primary" disabled={busy} onClick={() => input.current?.click()}>
                 {busy ? busyLabel : `＋ ${t("importPhotosBtn")}`}
