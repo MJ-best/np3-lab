@@ -3,26 +3,39 @@ import { t } from "../i18n";
 import { haptic, isDesktop } from "../native";
 import type { Recipe } from "../np3/recipe";
 import { cart, detailId, route, showToast, toggleCart } from "../state";
-import { IconCard } from "./Icons";
+import { IconCard, IconCheck, IconPlus } from "./Icons";
 
 /**
  * "Add" toggle used on recipe cards and in the detail view.
  * Desktop/mobile app: writes to / removes from the inserted card right away, or guides to connect one.
  * Browser: adds to the basket that becomes a ZIP.
  */
-export function CardButton({ recipe, className, big = false }: { recipe: Recipe; className: string; big?: boolean }) {
+export function CardButton({
+  recipe,
+  className,
+  big = false,
+  compact = false,
+}: {
+  recipe: Recipe;
+  className: string;
+  big?: boolean;
+  compact?: boolean;
+}) {
   if (!isDesktop) {
     const on = cart.value.includes(recipe.id);
     return (
       <button
+        type="button"
         class={`${className}${on ? " on" : ""}`}
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           haptic("light");
           toggleCart(recipe.id);
         }}
         aria-pressed={on}
+        aria-label={on ? t("added") : t("addToCard")}
       >
-        {on ? `✓ ${t("added")}` : big ? `＋ ${t("addToCard")}` : `＋ ${t("add")}`}
+        {compact ? (on ? <IconCheck size={15} /> : <IconPlus size={15} />) : on ? `✓ ${t("added")}` : big ? `＋ ${t("addToCard")}` : `＋ ${t("add")}`}
       </button>
     );
   }
@@ -31,15 +44,20 @@ export function CardButton({ recipe, className, big = false }: { recipe: Recipe;
   if (!card) {
     return (
       <button
+        type="button"
         class={`${className} no-card-cta`}
-        onClick={() => {
+        aria-label={t("connectCard")}
+        onClick={(e) => {
+          e.stopPropagation();
           haptic("light");
           detailId.value = null;
           route.value = "home";
           showToast(t("connectCardFirst"), "info", 4500);
         }}
       >
-        {big ? (
+        {compact ? (
+          <IconPlus size={15} />
+        ) : big ? (
           <span class="btn-inline">
             <IconCard size={16} />
             {t("connectCard")}
@@ -52,12 +70,18 @@ export function CardButton({ recipe, className, big = false }: { recipe: Recipe;
   }
   return (
     <button
+      type="button"
       class={`${className}${item ? " on" : ""}`}
       aria-pressed={!!item}
+      aria-label={item ? t("removeFromCard") : t("addToThisCard")}
       title={item ? t("removeFromCard") : card.name}
-      onClick={() => (item ? removeFromActiveCard(item) : addToActiveCard([recipe]))}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (item) void removeFromActiveCard(item);
+        else void addToActiveCard([recipe]);
+      }}
     >
-      {item ? `✓ ${t("onCard")}` : big ? `＋ ${card.name}` : t("addToThisCard")}
+      {compact ? (item ? <IconCheck size={15} /> : <IconPlus size={15} />) : item ? `✓ ${t("onCard")}` : big ? `＋ ${card.name}` : t("addToThisCard")}
     </button>
   );
 }

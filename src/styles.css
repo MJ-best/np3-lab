@@ -4215,6 +4215,258 @@ html.ios .mobile-inline-title {
   }
 }
 
+/* =========================================================================
+   Apple Photos (iPhone & iPad Gallery) Photo-First Visual Layer
+   ========================================================================= */
+
+/* Photo-first RecipeCard tile (no bulky 4-line text box below) */
+.card.photo-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--panel);
+}
+.card.photo-card .card-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: block;
+}
+.card.photo-card.poster .card-thumb {
+  aspect-ratio: 4 / 5;
+}
+.card-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.76) 0%,
+    rgba(0, 0, 0, 0.24) 40%,
+    rgba(0, 0, 0, 0.04) 68%,
+    transparent 100%
+  );
+}
+.card-overlay-text {
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+  pointer-events: none;
+}
+.card-overlay-title {
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.25px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+.card.photo-card.poster .card-overlay-title {
+  font-size: 16px;
+}
+.card-overlay-sub {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 11px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-photo-pill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.card-quick-add {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  border: 0.5px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.card-quick-add:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.68);
+}
+.card-quick-add.on {
+  background: var(--ok);
+  border-color: transparent;
+  color: #000000;
+}
+
+/* Compact 1-row SD Card status strip on Home */
+.sd-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--panel);
+}
+.sd-strip-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: rgba(255, 214, 10, 0.14);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.sd-strip-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sd-strip-text strong {
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sd-strip-text span {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sd-strip-cta {
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  flex: none;
+}
+
+/* Tighter, Apple Photos-style grid density */
+.gallery .grid {
+  gap: 10px;
+}
+@media (min-width: 761px) {
+  .gallery .grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+  }
+}
+@media (max-width: 760px) {
+  .gallery .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .home-carousel > .card.photo-card.poster {
+    flex: 0 0 190px;
+  }
+}
+
+/* Apple Photos monochrome filter pills (white active pill) */
+.chips.filters .chip {
+  background: var(--fill);
+  color: var(--text);
+  border: none;
+  font-size: 13px;
+  padding: 6px 13px;
+}
+.chips.filters .chip.active {
+  background: #ffffff;
+  color: #000000;
+  font-weight: 600;
+  border: none;
+}
+
+/* Apple Photos tight edge-to-edge square photo grid on Photos tab */
+.photo-library {
+  gap: 24px;
+}
+.photo-group-head {
+  padding: 4px 0 8px;
+}
+.photo-group-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.photo-wall.small {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.photo-wall.small .photo-tile {
+  border-radius: 0;
+  aspect-ratio: 1 / 1;
+}
+@media (max-width: 760px) {
+  .photo-wall.small {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0 -16px;
+    border-radius: 0;
+  }
+}
+
+/* iOS 18 Apple Photos Floating Frosted Pill Tab Bar */
+@media (max-width: 760px) {
+  .bottom-tabs {
+    left: 20px;
+    right: 20px;
+    bottom: calc(10px + var(--safe-bottom));
+    padding: 5px 6px;
+    border-radius: 999px;
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    background: rgba(28, 28, 30, 0.78);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);
+  }
+  .bottom-tab {
+    border-radius: 999px;
+    padding: 5px 0;
+  }
+  .bottom-tab.active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .app:not(.in-editor) {
+    padding-bottom: calc(82px + var(--safe-bottom));
+  }
+  .toasts {
+    bottom: calc(84px + var(--safe-bottom));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .route-view,
   .overlay,

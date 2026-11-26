@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { pcExt } from "../np3/recipe";
 import { legacyCamera, viewParams } from "../camera";
-import { t, tagLabel, tx } from "../i18n";
-import { lookOf } from "../look";
+import { t, tx } from "../i18n";
 import type { Recipe } from "../np3/recipe";
 import { renderThumbnail, type PreparedSource } from "../render/renderer";
 import { photosByRecipe } from "../photos";
@@ -29,7 +28,15 @@ export function sourceBadge(r: Recipe): string {
 /** CSS class for the badge colour: origin wins over source. */
 export const badgeClass = (r: Recipe) => r.origin?.kind ?? r.source;
 
-export function RecipeCard({ recipe, source }: { recipe: Recipe; source: PreparedSource | null }) {
+export function RecipeCard({
+  recipe,
+  source,
+  poster = false,
+}: {
+  recipe: Recipe;
+  source: PreparedSource | null;
+  poster?: boolean;
+}) {
   const [thumb, setThumb] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLElement>(null);
@@ -54,7 +61,7 @@ export function RecipeCard({ recipe, source }: { recipe: Recipe; source: Prepare
   }, [source, recipe.params, legacyCamera.value, visible, !!cover]);
 
   return (
-    <article class="card" ref={ref}>
+    <article class={`card photo-card${poster ? " poster" : ""}`} ref={ref}>
       <button class="card-thumb" onClick={() => (detailId.value = recipe.id)} aria-label={tx(recipe.title)}>
         {cover ? (
           <img src={cover.thumbUrl} alt="" draggable={false} />
@@ -63,33 +70,19 @@ export function RecipeCard({ recipe, source }: { recipe: Recipe; source: Prepare
         ) : (
           <div class="thumb-placeholder" />
         )}
+        <div class="card-scrim" aria-hidden="true" />
         {photos.length > 0 && (
-          <span class="badge floating bottom photo-count">
-            <IconCamera size={12} /> {photos.length}
+          <span class="card-photo-pill">
+            <IconCamera size={11} /> {photos.length}
           </span>
         )}
-        <span class={`badge floating ${badgeClass(recipe)}`}>{sourceBadge(recipe)}</span>
-        {!recipe.params && <span class="badge floating right warn">{recipe.raw ? pcExt(recipe.raw).slice(1) : "NP3"}</span>}
+        {!recipe.params && <span class="badge floating left warn">{recipe.raw ? pcExt(recipe.raw).slice(1) : "NP3"}</span>}
+        <div class="card-overlay-text">
+          <span class="card-overlay-title">{tx(recipe.title)}</span>
+          <span class="card-overlay-sub mono">{recipe.npName}</span>
+        </div>
       </button>
-      <div class="card-body">
-        <div class="card-title-row">
-          <button class="card-title" onClick={() => (detailId.value = recipe.id)}>
-            {tx(recipe.title)}
-          </button>
-          <CardButton recipe={recipe} className="add-btn" />
-        </div>
-        {(recipe.description || recipe.params) && (
-          <p class="card-desc">{recipe.description ? tx(recipe.description) : tx(lookOf(recipe.params!, recipe.tags.includes("mono")).summary)}</p>
-        )}
-        <div class="card-meta">
-          <code>{recipe.npName}</code>
-          {recipe.tags.slice(0, 3).map((tag) => (
-            <span key={tag} class="tag">
-              {tagLabel(tag)}
-            </span>
-          ))}
-        </div>
-      </div>
+      <CardButton recipe={recipe} className="card-quick-add" compact />
     </article>
   );
 }

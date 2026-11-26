@@ -1,6 +1,7 @@
 import { useMemo, useState } from "preact/hooks";
+import { activeCard, pickAndroidCard } from "../cards";
 import { t } from "../i18n";
-import { haptic, isDesktop } from "../native";
+import { haptic, isAndroid, isDesktop } from "../native";
 import {
   activeSample,
   allRecipes,
@@ -13,28 +14,58 @@ import { CameraGuide } from "./CameraGuide";
 import { CardView } from "./CardView";
 import { Cart } from "./Cart";
 import { usePreparedSample } from "./hooks";
-import { IconChevronDown, IconChevronRight, IconPlus } from "./Icons";
+import { IconCard, IconChevronDown, IconChevronRight, IconPlus } from "./Icons";
 import { RecipeCard } from "./RecipeCard";
 
 export function HomeView() {
   const source = usePreparedSample(activeSample.value);
+  const card = activeCard.value;
   const [guideOpen, setGuideOpen] = useState(false);
 
-  // Lead with the user's own recipes, then fill up to 6 slots with built-ins.
+  // Lead with the user's own recipes, then fill up to 8 slots with built-ins.
   const featured = useMemo(() => {
-    const mine = myRecipes.value.slice(0, 6);
-    if (mine.length >= 6) return mine;
+    const mine = myRecipes.value.slice(0, 8);
+    if (mine.length >= 8) return mine;
     const seen = new Set(mine.map((r) => r.id));
-    const rest = allRecipes.value.filter((r) => !seen.has(r.id)).slice(0, 6 - mine.length);
+    const rest = allRecipes.value.filter((r) => !seen.has(r.id)).slice(0, 8 - mine.length);
     return [...mine, ...rest];
   }, [myRecipes.value, allRecipes.value]);
 
   return (
     <div class="home-view">
-      {/* Primary hub: SD card on native apps, card pack on web */}
-      <section class="home-card-section">{isDesktop ? <CardView embedded /> : <Cart />}</section>
+      {/* Compact 1-row SD card status banner when idle, full CardView when connected */}
+      <section class="home-card-section">
+        {isDesktop ? (
+          card ? (
+            <CardView embedded />
+          ) : (
+            <div class="sd-strip">
+              <div class="sd-strip-icon" aria-hidden="true">
+                <IconCard size={20} />
+              </div>
+              <div class="sd-strip-text">
+                <strong>{t(isAndroid ? "noCardTitleAndroid" : "noCardTitle")}</strong>
+                <span>{t("homeGuideStep2Idle")}</span>
+              </div>
+              {isAndroid && (
+                <button
+                  class="primary sd-strip-cta"
+                  onClick={() => {
+                    haptic("light");
+                    void pickAndroidCard();
+                  }}
+                >
+                  {t("connectCard")}
+                </button>
+              )}
+            </div>
+          )
+        ) : (
+          <Cart />
+        )}
+      </section>
 
-      {/* Featured & recent recipes (horizontal swipe carousel on mobile, grid on desktop) */}
+      {/* Apple Photos-style Memories / Featured poster carousel */}
       <section class="home-section">
         <div class="home-section-head">
           <h3>{t("homeFeaturedTitle")}</h3>
@@ -67,12 +98,12 @@ export function HomeView() {
         </div>
         <div class="grid home-carousel">
           {featured.map((r) => (
-            <RecipeCard key={r.id} recipe={r} source={source} />
+            <RecipeCard key={r.id} recipe={r} source={source} poster />
           ))}
         </div>
       </section>
 
-      {/* Native-style grouped list for camera guide & tutorial replay (no HTML <details> triangle) */}
+      {/* Clean Apple Photos Collections-style utility rows */}
       <section class="grouped-list">
         <div class="grouped-item">
           <button
