@@ -29,9 +29,9 @@ App Store Connect에 그대로 붙여 넣는 값입니다. 앱 이름은 30자, 
 ## 한국어
 
 - **이름**: NP3 Lab
-- **부제**: 니콘 Z 픽처 컨트롤 레시피 관리
-- **키워드**: 니콘,픽처컨트롤,NP3,레시피,필름,Zf,Z6,Z8,색감,플렉시블컬러,사진,카메라,SD카드
-- **프로모션 텍스트**: 니콘 Z 카메라의 Flexible Color 레시피를 고르고, 다듬고, SD 카드에 바로 넣으세요.
+- **부제**: SD카드용 NP3 색감 레시피 관리
+- **키워드**: NP3,레시피,필름,색감,플렉시블컬러,사진,카메라,SD카드,프리셋,컬러그레이딩
+- **프로모션 텍스트**: Flexible Color(.NP3) 레시피를 고르고, 다듬고, SD 카드에 바로 넣으세요.
 - **설명**:
 
 ```
@@ -52,9 +52,9 @@ NP3 Lab은 Nikon과 관계없는 독립 앱입니다. Nikon, Picture Control, NX
 ## English
 
 - **Name**: NP3 Lab
-- **Subtitle**: Picture Control recipes for Z
-- **Keywords**: nikon,picture control,np3,recipe,film,zf,z6,z8,flexible color,preset,camera,sd card
-- **Promotional text**: Pick, tweak and copy Flexible Color recipes for your Nikon Z camera straight to the SD card.
+- **Subtitle**: NP3 Color Recipes for SD Card
+- **Keywords**: np3,recipe,film,color grading,flexible color,preset,camera,sd card,photo,lut
+- **Promotional text**: Pick, tweak and copy Flexible Color (.NP3) recipes straight to your SD card.
 - **Description**:
 
 ```
@@ -75,9 +75,9 @@ NP3 Lab is an independent app, not affiliated with Nikon. Nikon, Picture Control
 ## 日本語
 
 - **名前**: NP3 Lab
-- **サブタイトル**: ニコンZのピクチャーコントロール管理
-- **キーワード**: ニコン,ピクチャーコントロール,NP3,レシピ,フィルム,Zf,Z6,Z8,フレキシブルカラー,カメラ,SDカード
-- **プロモーションテキスト**: ニコンZカメラのフレキシブルカラーのレシピを選んで、調整して、そのままSDカードへ。
+- **サブタイトル**: SDカード用NP3カラーレシピ管理
+- **キーワード**: NP3,レシピ,フィルム,色味,フレキシブルカラー,カメラ,SDカード,プリセット,写真
+- **プロモーションテキスト**: フレキシブルカラー(.NP3)のレシピを選んで、調整して、そのままSDカードへ。
 - **説明**:
 
 ```

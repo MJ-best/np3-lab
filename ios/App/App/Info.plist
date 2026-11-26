@@ -6,6 +6,10 @@
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allows taking a photo to preview color recipes or add it to your recipe gallery.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allows importing photos from your library to preview color recipes or organize them by recipe.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Saves framed photos you choose to save to your photo library.</string>
 	<key>CFBundleDisplayName</key>
