@@ -489,6 +489,8 @@ const ko = {
   onboardStartCard: "SD 카드 연결하기",
   onboardStartBrowse: "레시피 먼저 둘러보기",
   onboardStartHome: "홈으로 시작하기",
+  homeCardStripTitle: "SD 카드를 연결하세요",
+  homeCardStripSub: "리더기를 꽂고 카드를 선택하세요",
 };
 
 type Dict = Record<keyof typeof ko, string>;
@@ -971,6 +973,8 @@ const en: Dict = {
   onboardStartCard: "Connect SD Card",
   onboardStartBrowse: "Browse Recipes First",
   onboardStartHome: "Go to Home",
+  homeCardStripTitle: "Connect your SD card",
+  homeCardStripSub: "Plug in a reader and choose your card",
 };
 
 export type MessageKey = keyof typeof ko;
@@ -1457,6 +1461,8 @@ const ja: Dict = {
   onboardStartCard: "SDカードを接続",
   onboardStartBrowse: "レシピを先に見る",
   onboardStartHome: "ホームへ進む",
+  homeCardStripTitle: "SDカードを接続",
+  homeCardStripSub: "リーダーをつないでカードを選択",
 };
 
 const DICTS: Record<Lang, Dict> = { ko, en, ja };

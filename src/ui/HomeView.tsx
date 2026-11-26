@@ -22,12 +22,12 @@ export function HomeView() {
   const card = activeCard.value;
   const [guideOpen, setGuideOpen] = useState(false);
 
-  // Lead with the user's own recipes, then fill up to 8 slots with built-ins.
+  // Lead with the user's own recipes, then fill up to 6 slots with built-ins.
   const featured = useMemo(() => {
-    const mine = myRecipes.value.slice(0, 8);
-    if (mine.length >= 8) return mine;
+    const mine = myRecipes.value.slice(0, 6);
+    if (mine.length >= 6) return mine;
     const seen = new Set(mine.map((r) => r.id));
-    const rest = allRecipes.value.filter((r) => !seen.has(r.id)).slice(0, 8 - mine.length);
+    const rest = allRecipes.value.filter((r) => !seen.has(r.id)).slice(0, 6 - mine.length);
     return [...mine, ...rest];
   }, [myRecipes.value, allRecipes.value]);
 
@@ -44,8 +44,8 @@ export function HomeView() {
                 <IconCard size={20} />
               </div>
               <div class="sd-strip-text">
-                <strong>{t(isAndroid ? "noCardTitleAndroid" : "noCardTitle")}</strong>
-                <span>{t("homeGuideStep2Idle")}</span>
+                <strong>{t("homeCardStripTitle")}</strong>
+                <span>{t("homeCardStripSub")}</span>
               </div>
               {isAndroid && (
                 <button
