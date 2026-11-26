@@ -1,6 +1,6 @@
 [package]
 name = "np3-lab-desktop"
-version = "1.0.1"
+version = "1.1.0"
 description = "High-performance native desktop shell for NP3 Lab"
 authors = ["Min Jun (MJ-best)"]
 edition = "2021"
