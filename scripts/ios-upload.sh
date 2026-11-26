@@ -7,6 +7,9 @@ set -eu
 cd "$(dirname "$0")/.."
 OUT=build/ios
 rm -rf "$OUT"
+if [ "${SKIP_VERSION:-0}" != "1" ]; then
+  npm run version
+fi
 npm run build:ios
 xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
   -destination 'generic/platform=iOS' -archivePath "$OUT/NP3Lab.xcarchive" \
